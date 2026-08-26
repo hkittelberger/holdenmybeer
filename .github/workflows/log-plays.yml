@@ -1,0 +1,54 @@
+name: Log Spotify plays
+
+on:
+  schedule:
+    # Hourly, not every 3 hours: `recently-played` caps at 50 items with no
+    # backfill beyond that, so any wider interval risks losing plays if
+    # listening volume exceeds the cap during the window. Hourly shrinks
+    # the loss window; it does not eliminate it.
+    #
+    # Offset from the top of the hour on purpose: GitHub queues/delays
+    # scheduled workflow runs during high load, and load spikes at :00
+    # across the whole platform. Running at :07 avoids sitting in that
+    # queue.
+    - cron: "7 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  log-plays:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - run: node dist/index.js
+        env:
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+          SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      # Commits status.json back to the repo after every run. This is not
+      # just a status readout — GitHub auto-disables a scheduled workflow
+      # after 60 days with no commits to the repo (the scheduled runs
+      # happening don't count as activity, only pushes do). Since nothing
+      # else pushes to this repo regularly, this commit is what keeps the
+      # schedule alive.
+      - name: Commit status.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add status.json
+          git diff --staged --quiet || git commit -m "chore: update status.json"
+          git push

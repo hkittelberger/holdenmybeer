@@ -1,0 +1,18 @@
+# Local dev only — spins up a throwaway Postgres to test the insert/dedupe
+# SQL against without touching the real Neon database. The deployed
+# GitHub Actions job talks to Neon directly and has no Docker involvement.
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: spotify_logger
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
