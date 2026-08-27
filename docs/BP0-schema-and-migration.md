@@ -73,14 +73,17 @@ an `album_id` and a primary `track_artists` row; every album has a parsed
 `track_artists` has no orphaned `artist_id`; re-running `004` is a no-op
 (idempotent).
 
-### Neon `search_path` gotcha (matters for BP3)
+### Neon `search_path` gotcha — RESOLVED
 
-On the pooled Neon connection, unqualified `select ... from plays` fails
-with `relation "plays" does not exist` — `public` is not reliably on the
-role's `search_path` over the pooler. `select ... from public.plays` works.
-**The app's DB layer (HTTP driver) must schema-qualify tables or issue
-`set search_path = public` per request.** Noted here so BP3 doesn't lose
-time to it.
+The pooler was handing out sessions with an empty `search_path`, so
+unqualified `select ... from plays` failed with `relation "plays" does not
+exist`. Fix: `migrations/006_role_search_path.sql` —
+`alter role neondb_owner set search_path = public` — applied to
+`music-ranker-dev` (and to primary at BP7). This takes effect for every
+driver and connection mode, including the HTTP driver's one-shot queries,
+so BP3 does **not** need to schema-qualify or send a per-request SET.
+Migrations 002–005 also carry an in-transaction `set search_path = public`
+as belt-and-suspenders for a fresh branch where 006 hasn't run yet.
 
 ## The ordering problem (needs a decision)
 

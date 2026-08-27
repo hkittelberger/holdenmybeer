@@ -19,12 +19,39 @@ imports nothing (verified: `+0` on second run).
 
 | | |
 |---|---|
-| Raw records | 125,510 |
-| Skipped — no `spotify_track_uri` (podcasts / audiobooks / local files) | 1,570 |
+| Raw records (audio files) | 125,510 |
+| Skipped — podcast / audiobook (`spotify_episode_uri` / `audiobook_uri`) | 1,569 |
+| Skipped — no track URI (local file / removed track) | 1 |
 | Skipped — duplicate `(uri, ts)` across the export files | 69 |
 | **Inserted** | **123,871** |
 | — of which `ms_played < 30 s` | 25,729 |
-| Video history files | ignored |
+| `Streaming_History_Video_*.json` | not read at all |
+
+## Non-music / video policy (curator flag, 2026-08-27)
+
+Verified against the full export:
+
+- **Podcasts / audiobooks:** never carry a `spotify_track_uri` *and* an
+  episode/audiobook URI at the same time (0 rows). The import skips any row
+  with `spotify_episode_uri`, `audiobook_uri`, or `audiobook_chapter_uri`
+  **before** the track-URI check, so a future export shape can't leak one
+  in. **None are in `plays`; none ever will be** via this script or the
+  logger (recently-played is track-only; a `track.type !== 'track'` guard
+  goes into the BP3 logger rewrite as defence-in-depth).
+- **Music videos:** `Streaming_History_Video_*.json` holds 2,017 rows;
+  1,141 of them *do* reference real `spotify:track:` URIs (Spotify logs a
+  music-video watch against the track). These files are **not imported** —
+  curator does not want video listening tracked. Consequence: a track the
+  user consumed mainly as a video will read slightly low on lifetime
+  minutes. This is intended.
+- **Null safety:** podcast/video rows have null `master_metadata_*` fields;
+  they're filtered out before any field is read. The one code path that
+  could see a null is `track_name` on a kept row (→ `'(unknown)'` fallback,
+  0 occurrences); `album_name` is nullable in the schema.
+- If videos are ever wanted: read `Streaming_History_Video_*.json`, apply
+  the same `spotify_episode_uri` skip (drops the 876 video-podcasts), tag
+  the rest `source='export'`, and they fall under the same query-time
+  `ms_played >= 30000` rule automatically. No schema change needed.
 
 `plays` now holds **123,871 export + 164 live = 124,035** rows.
 **11,071 distinct `track_uri`** → BP2 metadata scope (~222 batched API calls).
