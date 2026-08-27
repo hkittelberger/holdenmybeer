@@ -53,6 +53,38 @@ entries and save. Schema already supports it (`showcase_rank int` +
 partial unique index on non-null rank). This is a GET + prefill in the BP6
 build, not a data-model change.
 
+## `pg` library — two deprecation warnings to clear before BP7
+
+Both scripts (and the logger) use `pg` against Neon and print:
+
+1. **`sslmode=require` → `verify-full` alias** changes in pg v9 /
+   pg-connection-string v3. Current behaviour is what we want for Neon.
+   Fix: pin `pg`, or add `uselibpqcompat=true` / make it `verify-full`
+   explicit in the connection strings.
+2. Batch script only: a stray `client.query() while already executing`
+   warning came from an unawaited per-connection `SET search_path` — removed
+   (migration 006 sets it on the role). No longer fires.
+
+Neither affects correctness now; clear #1 when touching the logger at BP3.
+
+## Spotify app is quota-constrained (BP2 + BP6) — decide if extended quota is worth requesting
+
+This app is in Spotify's default (development) mode:
+
+- **Batch endpoints 403.** `/v1/tracks?ids=`, `/v1/artists?ids=`,
+  `/v1/albums?ids=` → 403 Forbidden (Client Credentials *and* user token).
+  Single-resource endpoints + `/v1/search` work.
+- **Low request quota.** Running BP2 at concurrency 6 tripped a ~24 h
+  `429 QUOTA_EXCEEDED` lock (Retry-After ≈ 85,500 s). The real BP2 run has
+  to crawl at ~3 req/s.
+- BP6 admin catalogue search (`/v1/search`) is fine — low volume, one query
+  per keystroke-debounce.
+
+**Extended Quota Mode** (a form to Spotify describing the app) lifts both:
+batch endpoints + much higher rate. For a personal project it's optional —
+BP2 is a rare one-off and BP6 search is light — but if history re-imports
+become frequent, request it. Not blocking anything today.
+
 ## Query-time rule to apply everywhere (BP3 rollups, BP4/BP5 queries)
 
 A "counted" play is: `source = 'live' OR ms_played >= 30000`.
