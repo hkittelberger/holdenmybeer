@@ -6,6 +6,10 @@
 
 begin;
 
+-- Neon pooler does not honour a search_path startup option; set it here so
+-- unqualified table names resolve regardless of how psql connected.
+set search_path = public;
+
 create table monthly_artist_minutes (
   year         int not null,
   month        int not null,

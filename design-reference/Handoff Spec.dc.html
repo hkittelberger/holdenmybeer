@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin:0; padding:0; background:#E4E8DF; overflow-x:hidden; }
+  body { font-family:'Instrument Sans', system-ui, sans-serif; color:#1C221E; -webkit-font-smoothing:antialiased; }
+  * { box-sizing:border-box; }
+  a { color:#9E5C34; text-decoration:none; border-bottom:1px solid rgba(158,92,52,.35); }
+  a:hover { color:#7C4526; border-bottom-color:#7C4526; }
+  th, td { text-align:left; vertical-align:top; }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#E4E8DF;background-image:linear-gradient(#DADFD3 1px,transparent 1px);background-size:100% 34px">
+
+  <div style="max-width:1240px;margin:0 auto;padding:54px 26px 30px">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;color:#6B766C;text-transform:uppercase">Design handoff — HoldenMyMusic / Longplay Index</div>
+    <h1 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 120,'wght' 700;font-size:clamp(34px,5vw,58px);line-height:.98;margin:12px 0 0;text-transform:uppercase">Implementation<br>specification</h1>
+    <div style="display:flex;gap:34px;flex-wrap:wrap;margin-top:26px;padding-top:22px;border-top:2px solid #1C221E">
+      <div style="flex:1 1 340px;font-size:15px;line-height:1.72;color:#2E362F;max-width:560px;text-wrap:pretty">
+        Everything an engineer needs to rebuild the music section of holden.rs in a real codebase. Every specimen below is the <strong>live prototype</strong> loaded in a frame at the stated width and state — nothing here is a redrawn picture of it, so if the prototype changes this page changes with it.
+      </div>
+      <div style="flex:0 1 300px">
+        <sc-for list="{{ meta }}" as="m" hint-placeholder-count="4">
+          <div style="display:flex;justify-content:space-between;gap:14px;padding:7px 0;border-bottom:1px solid #D3D9CD">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:#6B766C;text-transform:uppercase">{{ m.k }}</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;text-align:right">{{ m.v }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:22px">
+      <sc-for list="{{ toc }}" as="t" hint-placeholder-count="7">
+        <a href="{{ t.href }}" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;padding:8px 11px;border:1px solid #B9C1B3;border-radius:2px;color:#1C221E;text-transform:uppercase" style-hover="border-color:#9E5C34;color:#9E5C34">{{ t.label }}</a>
+      </sc-for>
+    </div>
+  </div>
+
+  <div id="states" style="max-width:1240px;margin:0 auto;padding:34px 26px 0">
+    <div style="display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;padding-bottom:14px;border-bottom:2px solid #1C221E">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:34px;color:#9E5C34;line-height:1">01</div>
+      <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 118,'wght' 700;font-size:clamp(22px,3vw,32px);margin:0;text-transform:uppercase">Screen states</h2>
+      <div style="flex:1 1 260px;font-size:13px;color:#4E574F;line-height:1.6">Five states per screen, driven by one <code style="font-family:'IBM Plex Mono',monospace;font-size:12px;background:#DCE1D6;padding:1px 5px">dataState</code> value. Each tile is the real screen at 1280&nbsp;px, scaled to 32%.</div>
+    </div>
+
+    <sc-for list="{{ stateScreens }}" as="sc" hint-placeholder-count="3">
+      <div style="padding:30px 0 8px">
+        <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+          <div style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 700;font-size:19px;text-transform:uppercase">{{ sc.name }}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;color:#6B766C">{{ sc.route }}</div>
+        </div>
+        <div style="font-size:13px;color:#4E574F;line-height:1.65;margin-top:6px;max-width:820px;text-wrap:pretty">{{ sc.purpose }}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(224px,1fr));gap:16px;margin-top:18px">
+          <sc-for list="{{ sc.tiles }}" as="t" hint-placeholder-count="5">
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding-bottom:7px">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;color:{{ t.accent }};text-transform:uppercase">{{ t.label }}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#8A948B">{{ t.tag }}</span>
+              </div>
+              <sc-if value="{{ t.live }}" hint-placeholder-val="{{ true }}">
+                <div style="{{ t.frameWrap }}">
+                  <iframe src="{{ t.src }}" title="{{ t.title }}" loading="lazy" style="{{ t.frameStyle }}"></iframe>
+                </div>
+              </sc-if>
+              <sc-if value="{{ t.na }}" hint-placeholder-val="{{ false }}">
+                <div style="height:250px;border:1px dashed #A9B3A6;border-radius:3px;background:#EDEFE8;padding:16px;display:flex;flex-direction:column;justify-content:center">
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:#8A948B">NOT APPLICABLE</div>
+                  <div style="font-size:12px;line-height:1.6;color:#4E574F;margin-top:8px;text-wrap:pretty">{{ t.naReason }}</div>
+                </div>
+              </sc-if>
+              <div style="font-size:12px;line-height:1.6;color:#4E574F;margin-top:9px;text-wrap:pretty">{{ t.note }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+
+    <div style="border:1px solid #C7CEC1;background:#F4F5F0;border-radius:3px;padding:20px 22px;margin-top:14px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;color:#6B766C">STATES THAT DO NOT EXIST, AND WHY</div>
+      <sc-for list="{{ stateExceptions }}" as="e" hint-placeholder-count="4">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;padding:11px 0;border-bottom:1px solid #E1E5DB">
+          <span style="flex:0 0 200px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em">{{ e.k }}</span>
+          <span style="flex:1 1 300px;font-size:13px;line-height:1.6;color:#4E574F;text-wrap:pretty">{{ e.v }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div id="interactive" style="max-width:1240px;margin:0 auto;padding:54px 26px 0">
+    <div style="display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;padding-bottom:14px;border-bottom:2px solid #1C221E">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:34px;color:#9E5C34;line-height:1">02</div>
+      <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 118,'wght' 700;font-size:clamp(22px,3vw,32px);margin:0;text-transform:uppercase">Interactive states</h2>
+      <div style="flex:1 1 260px;font-size:13px;color:#4E574F;line-height:1.6">Rest / hover / focus-visible / active / disabled for every control. Specimens are real elements with the state styles applied statically, so you can read exact values off each one.</div>
+    </div>
+
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:22px">
+      <sc-for list="{{ specimens }}" as="sp" hint-placeholder-count="8">
+        <div style="flex:1 1 340px;border:1px solid #C7CEC1;background:#F4F5F0;border-radius:3px;padding:18px 20px 20px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
+            <span style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 700;font-size:15px;text-transform:uppercase;letter-spacing:.04em">{{ sp.name }}</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;color:#8A948B">{{ sp.where }}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:1px;margin-top:14px;background:#DDE2D8">
+            <sc-for list="{{ sp.states }}" as="st" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:14px;background:#EDEFE8;padding:11px 12px">
+                <span style="flex:0 0 88px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;color:#6B766C;text-transform:uppercase">{{ st.label }}</span>
+                <span style="{{ st.cell }}">
+                  <span style="{{ st.demo }}">{{ st.text }}</span>
+                </span>
+                <span style="flex:1 1 130px;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1.55;color:#4E574F;word-break:break-word">{{ st.spec }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="border-left:2px solid #9E5C34;padding:4px 0 4px 16px;margin-top:24px;max-width:820px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:#6B766C">GLOBAL RULES</div>
+      <sc-for list="{{ interactionRules }}" as="r" hint-placeholder-count="5">
+        <div style="font-size:13px;line-height:1.7;color:#2E362F;margin-top:7px;text-wrap:pretty">{{ r }}</div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div id="responsive" style="max-width:1240px;margin:0 auto;padding:54px 26px 0">
+    <div style="display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;padding-bottom:14px;border-bottom:2px solid #1C221E">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:34px;color:#9E5C34;line-height:1">03</div>
+      <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 118,'wght' 700;font-size:clamp(22px,3vw,32px);margin:0;text-transform:uppercase">Breakpoints</h2>
+      <div style="flex:1 1 260px;font-size:13px;color:#4E574F;line-height:1.6">One JS breakpoint at <code style="font-family:'IBM Plex Mono',monospace;font-size:12px;background:#DCE1D6;padding:1px 5px">780&nbsp;px</code> plus fluid clamps. Every screen shown at 390 / 834 / 1440.</div>
+    </div>
+
+    <sc-for list="{{ bpScreens }}" as="b" hint-placeholder-count="3">
+      <div style="padding:26px 0 6px">
+        <div style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 700;font-size:19px;text-transform:uppercase">{{ b.name }}</div>
+        <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;margin-top:14px">
+          <sc-for list="{{ b.frames }}" as="f" hint-placeholder-count="3">
+            <div style="{{ f.col }}">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding-bottom:7px">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;color:#1C221E">{{ f.label }}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#8A948B">{{ f.w }}</span>
+              </div>
+              <div style="{{ f.frameWrap }}">
+                <iframe src="{{ f.src }}" title="{{ f.title }}" loading="lazy" style="{{ f.frameStyle }}"></iframe>
+              </div>
+              <div style="font-size:12px;line-height:1.6;color:#4E574F;margin-top:9px;text-wrap:pretty">{{ f.note }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div id="components" style="max-width:1240px;margin:0 auto;padding:54px 26px 0">
+    <div style="display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;padding-bottom:14px;border-bottom:2px solid #1C221E">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:34px;color:#9E5C34;line-height:1">04</div>
+      <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 118,'wght' 700;font-size:clamp(22px,3vw,32px);margin:0;text-transform:uppercase">Component inventory</h2>
+      <div style="flex:1 1 260px;font-size:13px;color:#4E574F;line-height:1.6">These names are canonical. The same component keeps its name on every screen — no aliases.</div>
+    </div>
+    <div style="overflow-x:auto;margin-top:18px;border:1px solid #C7CEC1;border-radius:3px;background:#F4F5F0">
+      <table style="width:100%;min-width:860px;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="background:#EDEFE8">
+            <th style="padding:11px 14px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:#6B766C;text-transform:uppercase;border-bottom:1px solid #C7CEC1">Component</th>
+            <th style="padding:11px 14px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:#6B766C;text-transform:uppercase;border-bottom:1px solid #C7CEC1">Used on</th>
+            <th style="padding:11px 14px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:#6B766C;text-transform:uppercase;border-bottom:1px solid #C7CEC1">Props / variants</th>
+            <th style="padding:11px 14px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:#6B766C;text-transform:uppercase;border-bottom:1px solid #C7CEC1">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{ components }}" as="c" hint-placeholder-count="18">
+            <tr style="{{ c.row }}">
+              <td style="padding:11px 14px;border-bottom:1px solid #E1E5DB;font-family:'IBM Plex Mono',monospace;font-size:12px;white-space:nowrap">{{ c.name }}</td>
+              <td style="padding:11px 14px;border-bottom:1px solid #E1E5DB;font-size:12px;color:#4E574F">{{ c.used }}</td>
+              <td style="padding:11px 14px;border-bottom:1px solid #E1E5DB;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#4E574F">{{ c.props }}</td>
+              <td style="padding:11px 14px;border-bottom:1px solid #E1E5DB;font-size:12px;color:#4E574F;line-height:1.55">{{ c.note }}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="tokens" style="max-width:1240px;margin:0 auto;padding:54px 26px 0">
+    <div style="display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;padding-bottom:14px;border-bottom:2px solid #1C221E">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:34px;color:#9E5C34;line-height:1">05</div>
+      <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 118,'wght' 700;font-size:clamp(22px,3vw,32px);margin:0;text-transform:uppercase">Tokens</h2>
+      <div style="flex:1 1 260px;font-size:13px;color:#4E574F;line-height:1.6">Nothing is inherited from a framework. Every value used anywhere in the design is listed here.</div>
+    </div>
+
+    <div style="margin-top:22px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;color:#6B766C;text-transform:uppercase">Colour</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(184px,1fr));gap:12px;margin-top:12px">
+        <sc-for list="{{ colors }}" as="c" hint-placeholder-count="16">
+          <div style="border:1px solid #C7CEC1;background:#F4F5F0;border-radius:3px;overflow:hidden">
+            <div style="{{ c.swatch }}"></div>
+            <div style="padding:9px 11px 11px">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px">{{ c.hex }}</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;color:#8A948B;margin-top:3px;text-transform:uppercase">{{ c.name }}</div>
+              <div style="font-size:11px;color:#4E574F;line-height:1.5;margin-top:5px">{{ c.use }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:22px;flex-wrap:wrap;margin-top:30px">
+      <div style="flex:1 1 420px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;color:#6B766C;text-transform:uppercase">Type scale</div>
+        <div style="border:1px solid #C7CEC1;background:#F4F5F0;border-radius:3px;margin-top:12px">
+          <sc-for list="{{ typeScale }}" as="t" hint-placeholder-count="9">
+            <div style="display:flex;align-items:baseline;gap:14px;padding:12px 14px;border-bottom:1px solid #E1E5DB;flex-wrap:wrap">
+              <span style="{{ t.sample }}">{{ t.text }}</span>
+              <span style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#4E574F;text-align:right;line-height:1.5">{{ t.spec }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="flex:1 1 300px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;color:#6B766C;text-transform:uppercase">Spacing scale</div>
+        <div style="border:1px solid #C7CEC1;background:#F4F5F0;border-radius:3px;margin-top:12px;padding:6px 14px 14px">
+          <sc-for list="{{ spacing }}" as="s" hint-placeholder-count="9">
+            <div style="display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid #E1E5DB">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;width:44px">{{ s.px }}</span>
+              <span style="{{ s.bar }}"></span>
+              <span style="font-size:11px;color:#4E574F;text-align:right;flex:1 1 auto">{{ s.use }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;color:#6B766C;text-transform:uppercase;margin-top:24px">Radii &amp; shadows</div>
+        <div style="border:1px solid #C7CEC1;background:#F4F5F0;border-radius:3px;margin-top:12px;padding:16px 14px">
+          <div style="display:flex;gap:14px;flex-wrap:wrap">
+            <sc-for list="{{ radii }}" as="r" hint-placeholder-count="4">
+              <div style="text-align:center">
+                <div style="{{ r.demo }}"></div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;margin-top:6px">{{ r.px }}</div>
+                <div style="font-size:10px;color:#6B766C;margin-top:2px">{{ r.use }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:22px">
+            <sc-for list="{{ shadows }}" as="sh" hint-placeholder-count="4">
+              <div style="flex:1 1 120px">
+                <div style="{{ sh.demo }}"></div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#4E574F;margin-top:9px;line-height:1.5;word-break:break-word">{{ sh.css }}</div>
+                <div style="font-size:10px;color:#6B766C;margin-top:3px">{{ sh.use }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="border:1px solid #C7CEC1;background:#F4F5F0;border-radius:3px;padding:18px 20px;margin-top:22px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;color:#6B766C;text-transform:uppercase">Motion &amp; other constants</div>
+      <sc-for list="{{ misc }}" as="m" hint-placeholder-count="6">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid #E1E5DB">
+          <span style="flex:0 0 190px;font-family:'IBM Plex Mono',monospace;font-size:11px">{{ m.k }}</span>
+          <span style="flex:1 1 280px;font-size:12px;color:#4E574F;line-height:1.6">{{ m.v }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div id="decisions" style="max-width:1240px;margin:0 auto;padding:54px 26px 0">
+    <div style="display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;padding-bottom:14px;border-bottom:2px solid #1C221E">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:34px;color:#9E5C34;line-height:1">06</div>
+      <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 118,'wght' 700;font-size:clamp(22px,3vw,32px);margin:0;text-transform:uppercase">Decision log</h2>
+      <div style="flex:1 1 260px;font-size:13px;color:#4E574F;line-height:1.6">In plain language, for someone who wasn't in the room. Each entry: what we chose, what we rejected, and why.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-top:20px">
+      <sc-for list="{{ decisions }}" as="d" hint-placeholder-count="12">
+        <div style="border:1px solid #C7CEC1;background:#F4F5F0;border-radius:3px;padding:17px 19px 19px;border-left:3px solid #9E5C34">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:#6B766C;text-transform:uppercase">{{ d.tag }}</div>
+          <div style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 700;font-size:15px;text-transform:uppercase;margin:8px 0 9px;line-height:1.2">{{ d.title }}</div>
+          <div style="font-size:13px;line-height:1.7;color:#2E362F;text-wrap:pretty">{{ d.body }}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;color:#8A948B;margin-top:11px;line-height:1.55">{{ d.rejected }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div id="open" style="max-width:1240px;margin:0 auto;padding:54px 26px 0">
+    <div style="display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;padding-bottom:14px;border-bottom:2px solid #9E5C34">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:34px;color:#9E5C34;line-height:1">07</div>
+      <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 118,'wght' 700;font-size:clamp(22px,3vw,32px);margin:0;text-transform:uppercase">Unresolved &amp; placeholder</h2>
+      <div style="flex:1 1 260px;font-size:13px;color:#4E574F;line-height:1.6">Decide these <strong>before</strong> implementation. Severity is my read on how much rework a late answer causes.</div>
+    </div>
+    <div style="margin-top:20px;border:1px solid #9E5C34;border-radius:3px;overflow:hidden;background:#F4EDE6">
+      <sc-for list="{{ openItems }}" as="o" hint-placeholder-count="10">
+        <div style="display:flex;gap:16px;flex-wrap:wrap;padding:15px 18px;border-bottom:1px solid rgba(158,92,52,.24)">
+          <span style="{{ o.sev }}">{{ o.severity }}</span>
+          <div style="flex:1 1 320px;min-width:0">
+            <div style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 700;font-size:14px;text-transform:uppercase">{{ o.title }}</div>
+            <div style="font-size:13px;line-height:1.7;color:#2E362F;margin-top:6px;text-wrap:pretty">{{ o.body }}</div>
+          </div>
+          <div style="flex:0 1 230px;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1.6;color:#7C4526">{{ o.need }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="max-width:1240px;margin:0 auto;padding:46px 26px 90px">
+    <div style="border-top:2px solid #1C221E;padding-top:20px;display:flex;gap:26px;flex-wrap:wrap">
+      <div style="flex:1 1 300px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;color:#6B766C;text-transform:uppercase">Files in this handoff</div>
+        <sc-for list="{{ files }}" as="f" hint-placeholder-count="4">
+          <div style="display:flex;gap:12px;padding:9px 0;border-bottom:1px solid #D3D9CD;flex-wrap:wrap">
+            <span style="flex:0 0 220px;font-family:'IBM Plex Mono',monospace;font-size:11px">{{ f.name }}</span>
+            <span style="flex:1 1 220px;font-size:12px;color:#4E574F;line-height:1.55">{{ f.what }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex:0 1 320px;font-size:12px;line-height:1.7;color:#4E574F;text-wrap:pretty">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;color:#6B766C;text-transform:uppercase;margin-bottom:8px">How to read the prototypes</div>
+        The HTML files are design references, not production code. Rebuild them in the target stack with its own conventions. Every frame on this page is driven by URL parameters — <code style="font-family:'IBM Plex Mono',monospace;background:#DCE1D6;padding:1px 5px">?view=stats&amp;state=error</code>, <code style="font-family:'IBM Plex Mono',monospace;background:#DCE1D6;padding:1px 5px">?open=album</code>, <code style="font-family:'IBM Plex Mono',monospace;background:#DCE1D6;padding:1px 5px">?unlock=1</code> — so you can open any state directly.
+      </div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1240,&quot;height&quot;:1400}}">
+const APP = "Longplay%20Index.dc.html";
+const MOBILE = "HoldenMyMusic%20Mobile.dc.html";
+
+const SCREENS = [
+  { key:"library", name:"Library", route:"/music", extra:"",
+    purpose:"The shelf: a top-five carousel over the full rated catalogue as a sortable, filterable, paginated table. The primary screen — everything else is reached from here." },
+  { key:"stats", name:"Stats", route:"/music/stats", extra:"",
+    purpose:"The listening record for one year: totals, minutes per year, calendar heatmap, artist and album boards, top songs, discovery mix, and the public playlist." },
+  { key:"admin", name:"Admin", route:"/music/admin", extra:"&unlock=1",
+    purpose:"Private curator tools: add or re-rate an album, edit the top-five wheel, and set the per-year playlist links. Password-gated." }
+];
+
+const STATE_DEFS = [
+  { k:"loaded", label:"Loaded", tag:"HAPPY PATH", accent:"#1C221E",
+    notes:{ library:"14 albums, 8 per page. Default sort is score descending.",
+            stats:"2026 selected; every tile has data.",
+            admin:"Unlocked with ?unlock=1. Empty form, nothing picked yet." } },
+  { k:"loading", label:"Loading", tag:"SKELETON", accent:"#6B766C",
+    notes:{ library:"Five pulsing row skeletons (1.4s, 0.12s stagger) plus FETCHING CATALOGUE. Header, carousel and filters stay live — they need no server data.",
+            stats:"One pulsing panel replaces the whole body below the year selector; the year chips stay usable so a slow year can be abandoned.",
+            admin:"N/A" } },
+  { k:"error", label:"Error", tag:"RECOVERABLE", accent:"#9E5C34",
+    notes:{ library:"Copper-bordered panel with the HTTP code, last good sync time, and one TRY AGAIN button. Nothing stale is ever shown.",
+            stats:"Same panel, same retry. Year chips remain live.",
+            admin:"Inline banner only — the form still works for albums already in the index; just Spotify search is dead." } },
+  { k:"empty", label:"Empty", tag:"ZERO DATA", accent:"#6B766C",
+    notes:{ library:"Dashed drawer-card with RESET FILTERS. Same treatment serves both no-results-from-filters and a genuinely empty library.",
+            stats:"Dashed panel naming the year, pushing the user at the year chips.",
+            admin:"N/A" } },
+  { k:"dense", label:"High volume", tag:"140 ROWS", accent:"#1C221E",
+    notes:{ library:"140 albums: pagination goes to 18 pages, long titles ellipsis at one line, the numbering column widens to three digits.",
+            stats:"Album board scrolls inside its tile; artist board unchanged (derived from base data in the prototype).",
+            admin:"N/A" } }
+];
+
+const BPS = [
+  { label:"Mobile", w:390, note:{ library:"Sort chips return (the sortable header row is hidden below 780px), meta columns collapse into a third line under the artist, carousel narrows to 62vw.", stats:"Every two-up tile becomes one column; the calendar scrolls inside its card.", admin:"Form fields go full-width; the wheel editor's select and arrows wrap to a second line." } },
+  { label:"Tablet", w:834, note:{ library:"Still under 780? No — 834 crosses the breakpoint, so the header row and its sort buttons appear; the table gets its meta columns back.", stats:"Two tiles per row; charts keep full width.", admin:"Single column at 920px max, so it reads the same as desktop with more air." } },
+  { label:"Desktop", w:1440, note:{ library:"Full 1180px container, carousel at 348px sleeves, all four meta columns.", stats:"Songs and playlist sit side by side at equal height; calendar shows the whole year without scrolling.", admin:"Unchanged from tablet — the admin container is deliberately narrow." } }
+];
+
+class Component extends DCLogic {
+  frame(src, w, h, scale) {
+    return {
+      src,
+      frameWrap:`position:relative;width:100%;height:${Math.round(h*scale)}px;overflow:hidden;border:1px solid #C7CEC1;border-radius:3px;background:#E4E8DF`,
+      frameStyle:`position:absolute;top:0;left:0;width:${w}px;height:${h}px;border:0;transform:scale(${scale});transform-origin:top left;pointer-events:none`
+    };
+  }
+
+  renderVals() {
+    const sev = level => {
+      const c = level === "BLOCKER" ? "#9E5C34" : level === "SOON" ? "#7C4526" : "#6B766C";
+      return `flex:0 0 84px;align-self:flex-start;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;color:#F8F4EF;background:${c};padding:5px 8px;border-radius:2px;text-align:center`;
+    };
+    const btn = (bg, bd, fg, extra) => `display:inline-flex;align-items:center;padding:9px 14px;border:1px solid ${bd};background:${bg};color:${fg};border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;${extra||""}`;
+
+    return {
+      meta:[
+        { k:"Fidelity", v:"HIGH — PIXEL SPEC" },
+        { k:"Screens", v:"3 + 2 OVERLAYS" },
+        { k:"Breakpoint", v:"780 PX (JS)" },
+        { k:"Prototype states", v:"5" },
+        { k:"Date", v:"27 AUG 2026" }
+      ],
+      toc:[
+        { label:"01 States", href:"#states" },
+        { label:"02 Interactive", href:"#interactive" },
+        { label:"03 Breakpoints", href:"#responsive" },
+        { label:"04 Components", href:"#components" },
+        { label:"05 Tokens", href:"#tokens" },
+        { label:"06 Decisions", href:"#decisions" },
+        { label:"07 Open", href:"#open" }
+      ],
+
+      stateScreens: SCREENS.map(sc => ({
+        name:sc.name, route:sc.route, purpose:sc.purpose,
+        tiles: STATE_DEFS.map(st => {
+          const note = st.notes[sc.key];
+          const na = note === "N/A";
+          const base = {
+            label:st.label, tag:st.tag, accent:st.accent,
+            live: !na, na,
+            title:`${sc.name} — ${st.label}`,
+            note: na ? "" : note,
+            naReason: sc.key === "admin" && st.k === "loading"
+              ? "The admin form holds no server-fetched list of its own — it opens instantly behind the password gate, so there is nothing to skeleton. The Spotify lookup inside it has its own inline spinner row."
+              : sc.key === "admin" && st.k === "empty"
+                ? "An empty form IS the default state of this screen, shown in Loaded. A separate empty state would be the same pixels."
+                : sc.key === "admin" && st.k === "dense"
+                  ? "The form is fixed-length: one album, one rating, five wheel slots, eight playlist links. There is no list here that can grow."
+                  : "Not applicable."
+          };
+          return na ? base : Object.assign(base, this.frame(`${APP}?view=${sc.key}&state=${st.k}${sc.extra}`, 1280, 780, 0.32));
+        })
+      })),
+
+      stateExceptions:[
+        { k:"Album popup — all states", v:"The popup renders from a row the user just clicked, so its data is already in memory: it has no loading, error or empty state of its own. Its only variable content is the badge row, which is simply absent when an album qualifies for nothing. High volume is covered — a 25-track album just makes a taller share list." },
+        { k:"Artist popup — loading", v:"Same reason. The month chart is computed client-side from the already-loaded stream table; if you fetch it per-artist in production you will need to add a skeleton for the chart area, and that is a new state not in this design." },
+        { k:"Artist popup — empty", v:"Unreachable by construction: the artist only appears in the ranking because they have minutes. If you expose artist pages by URL, you need a 404 state that this design does not have." },
+        { k:"Admin — loading / empty / dense", v:"See the three N/A tiles above. All three are structurally impossible on a fixed-length local form." },
+        { k:"Mobile screens", v:"The mobile file shows the loaded state only. Its states are the same five as desktop and should be built from the desktop definitions; I did not draw ten more phone frames because nothing about the state treatments changes on mobile except width." }
+      ],
+
+      specimens:[
+        { name:"Primary button", where:"RESET FILTERS, TRY AGAIN, SAVE", states:[
+          { label:"Rest", text:"RESET FILTERS", demo:btn("#1C221E","#1C221E","#F4F5F0"), spec:"bg #1C221E · border #1C221E · text #F4F5F0" },
+          { label:"Hover", text:"RESET FILTERS", demo:btn("#9E5C34","#9E5C34","#F8F4EF"), spec:"bg #9E5C34 · border #9E5C34 · no lift, no scale" },
+          { label:"Focus-visible", text:"RESET FILTERS", demo:btn("#1C221E","#1C221E","#F4F5F0","outline:2px solid #9E5C34;outline-offset:3px"), spec:"outline 2px #9E5C34 · offset 3px" },
+          { label:"Active", text:"RESET FILTERS", demo:btn("#7C4526","#7C4526","#F8F4EF","transform:translateY(1px)"), spec:"bg #7C4526 · translateY(1px)" },
+          { label:"Disabled", text:"RESET FILTERS", demo:btn("#DDE2D8","#C7CEC1","#A2ABA1","cursor:not-allowed"), spec:"bg #DDE2D8 · text #A2ABA1 · cursor not-allowed · no hover" }
+        ]},
+        { name:"Chip / toggle", where:"Sort chips, year chips, FILTERS", states:[
+          { label:"Rest", text:"MINUTES", demo:btn("#F4F5F0","#B9C1B3","#4E574F"), spec:"bg #F4F5F0 · border #B9C1B3" },
+          { label:"Hover", text:"MINUTES", demo:btn("#EDEFE8","#9E5C34","#9E5C34"), spec:"border + text → #9E5C34" },
+          { label:"Focus-visible", text:"MINUTES", demo:btn("#F4F5F0","#B9C1B3","#4E574F","outline:2px solid #9E5C34;outline-offset:2px"), spec:"outline 2px #9E5C34 · offset 2px" },
+          { label:"Selected", text:"MINUTES ↓", demo:btn("#9E5C34","#9E5C34","#F8F4EF"), spec:"bg #9E5C34 · aria-pressed=true · arrow shows direction" },
+          { label:"Disabled", text:"MINUTES", demo:btn("transparent","#DDE2D8","#C2CABE","cursor:default"), spec:"border #DDE2D8 · text #C2CABE (pagination arrows at the ends)" }
+        ]},
+        { name:"Table row (card row)", where:"Catalogue table, artist & album boards", states:[
+          { label:"Rest", text:"PAPER RADIO", demo:"display:flex;align-items:center;padding:12px;background:transparent;border-left:3px solid #7E5A2E;font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 600;font-size:13px;text-transform:uppercase", spec:"transparent or #EBEEE6 (zebra) · 3px left rule in the album's own accent" },
+          { label:"Hover", text:"PAPER RADIO", demo:"display:flex;align-items:center;padding:12px;background:#DCE1D6;border-left:3px solid #7E5A2E;font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 600;font-size:13px;text-transform:uppercase", spec:"bg #DCE1D6 · transition background 160ms ease" },
+          { label:"Focus-visible", text:"PAPER RADIO", demo:"display:flex;align-items:center;padding:12px;background:#DCE1D6;border-left:3px solid #7E5A2E;outline:2px solid #9E5C34;outline-offset:-2px;font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 600;font-size:13px;text-transform:uppercase", spec:"inset outline (−2px) so it never clips in a scroller" },
+          { label:"Active", text:"PAPER RADIO", demo:"display:flex;align-items:center;padding:12px;background:#D3D9CD;border-left:3px solid #9E5C34;font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 600;font-size:13px;text-transform:uppercase", spec:"bg #D3D9CD · left rule → #9E5C34 on press" },
+          { label:"Disabled", text:"—", demo:"font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8A948B", spec:"N/A — every row is always openable" }
+        ]},
+        { name:"Text input / select", where:"Search, password, admin form", states:[
+          { label:"Rest", text:"album or artist", demo:"display:inline-flex;align-items:center;padding:10px 12px;border:1px solid #B9C1B3;background:#FBFCF9;border-radius:2px;font-size:13px;color:#8A948B;min-width:180px", spec:"bg #FBFCF9 · border #B9C1B3 · radius 2px" },
+          { label:"Hover", text:"album or artist", demo:"display:inline-flex;align-items:center;padding:10px 12px;border:1px solid #9AA595;background:#FBFCF9;border-radius:2px;font-size:13px;color:#8A948B;min-width:180px", spec:"border darkens to #9AA595" },
+          { label:"Focus-visible", text:"Paper Radio", demo:"display:inline-flex;align-items:center;padding:10px 12px;border:1px solid #9E5C34;background:#FBFCF9;border-radius:2px;outline:2px solid #9E5C34;outline-offset:1px;font-size:13px;min-width:180px", spec:"border #9E5C34 + outline 2px offset 1px" },
+          { label:"Invalid", text:"AT LEAST 4 CHARACTERS", demo:"display:inline-flex;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;color:#9E5C34", spec:"message in #9E5C34 mono 10px below the field; field keeps its border" },
+          { label:"Disabled", text:"album or artist", demo:"display:inline-flex;align-items:center;padding:10px 12px;border:1px solid #DDE2D8;background:#EDEFE8;border-radius:2px;font-size:13px;color:#B4BCB3;min-width:180px", spec:"bg #EDEFE8 · text #B4BCB3 (admin search in error state)" }
+        ]},
+        { name:"Link", where:"Footer, playlist links, inline", states:[
+          { label:"Rest", text:"Top 50 playlists", demo:"font-size:14px;color:#9E5C34;border-bottom:1px solid rgba(158,92,52,.35)", spec:"#9E5C34 · 1px underline at 35% alpha" },
+          { label:"Hover", text:"Top 50 playlists", demo:"font-size:14px;color:#7C4526;border-bottom:1px solid #7C4526", spec:"#7C4526 · underline to full alpha" },
+          { label:"Focus-visible", text:"Top 50 playlists", demo:"font-size:14px;color:#9E5C34;border-bottom:1px solid #9E5C34;outline:2px solid #9E5C34;outline-offset:2px", spec:"outline 2px offset 2px" },
+          { label:"On dark", text:"Spotify ↗", dark:true, demo:"font-size:14px;color:#D8DED1;border-bottom:1px solid transparent", spec:"#D8DED1 → #D8B08C on hover, underline appears" },
+          { label:"Disabled", text:"2021 — no link yet", demo:"font-size:13px;color:#8A948B;font-style:italic", spec:"years with no playlist render as muted text, not a dead link" }
+        ]},
+        { name:"Sleeve / carousel card", where:"Top-five wheel", states:[
+          { label:"Front", text:"", demo:"width:56px;height:56px;background:linear-gradient(152deg,#254742,#7E5A2E);box-shadow:0 26px 52px rgba(24,32,26,.34)", spec:"scale 1 · no filter · score stamp visible · shadow 0 26px 52px /.34" },
+          { label:"Flank ±1", text:"", demo:"width:40px;height:40px;background:linear-gradient(152deg,#254742,#7E5A2E);filter:saturate(.72) brightness(.82);box-shadow:0 12px 26px rgba(24,32,26,.2)", spec:"0.70 size · saturate(.72) brightness(.82) · rotate ±7deg" },
+          { label:"Flank ±2", text:"", demo:"width:28px;height:28px;background:linear-gradient(152deg,#254742,#7E5A2E);filter:saturate(.72) brightness(.66);box-shadow:0 12px 26px rgba(24,32,26,.2)", spec:"0.50 size · brightness(.66) · rotate ±14deg" },
+          { label:"Focus-visible", text:"", demo:"width:56px;height:56px;background:linear-gradient(152deg,#254742,#7E5A2E);outline:3px solid #9E5C34;outline-offset:5px", spec:"outline 3px #9E5C34 · offset 5px (thicker than elsewhere — it sits on artwork)" },
+          { label:"Beyond ±2", text:"", demo:"width:28px;height:28px;background:#DDE2D8", spec:"opacity 0 · pointer-events none" }
+        ]},
+        { name:"Heatmap cell", where:"Listening calendar", states:[
+          { label:"Zero", text:"", demo:"width:16px;height:16px;border-radius:2px;box-shadow:inset 0 0 0 1px #D3D9CD", spec:"transparent + 1px inset #D3D9CD — never the lightest shade" },
+          { label:"Bucket 1", text:"", demo:"width:16px;height:16px;border-radius:2px;background:#E9DFD2", spec:"#E9DFD2 (≤ p20 of the user's own non-zero days)" },
+          { label:"Bucket 5", text:"", demo:"width:16px;height:16px;border-radius:2px;background:#874C23", spec:"#874C23 (> p80)" },
+          { label:"Hover", text:"", demo:"width:16px;height:16px;border-radius:2px;background:#C7936C;transform:scale(1.35);box-shadow:0 0 0 1px #1C221E", spec:"scale 1.35 + 1px #1C221E ring · tooltip follows the pointer" },
+          { label:"Future", text:"", demo:"width:16px;height:16px;border-radius:2px;background:transparent", spec:"fully blank, no ring — days after today are not 'zero listening'" }
+        ]},
+        { name:"Badge", where:"Album popup recognition row — shown on its real dark wash", states:[
+          { label:"Accent", text:"★ ALL-TIME TOP 5", dark:true, demo:"display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;background:rgba(216,176,140,.22);border:1px solid rgba(216,176,140,.65);color:#F2DDC6;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;white-space:nowrap", spec:"bg rgba(216,176,140,.22) · border rgba(216,176,140,.65) · text #F2DDC6 — only the top-five badge is copper-tinted" },
+          { label:"Neutral", text:"◆ TOP ALBUM OF 2024", dark:true, demo:"display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.86);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;white-space:nowrap", spec:"bg rgba(255,255,255,.1) · border rgba(255,255,255,.3) · text rgba(255,255,255,.86) — year badges stay neutral so a multi-badge row keeps one focal point" },
+          { label:"Multiple", text:"★ TOP 5   ◆ 2024", dark:true, demo:"display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;background:rgba(216,176,140,.16);border:1px dashed rgba(255,255,255,.4);color:rgba(255,255,255,.8);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;white-space:nowrap", spec:"wrapping flex row, 8px gap, accent first then years oldest→newest" },
+          { label:"None", text:"", demo:"font-family:'IBM Plex Mono',monospace;font-size:10px;color:#8A948B", spec:"row is removed entirely — no placeholder, no reserved height" },
+          { label:"Hover", text:"", demo:"font-family:'IBM Plex Mono',monospace;font-size:10px;color:#8A948B", spec:"none — badges are not interactive" }
+        ]}
+      ].map(sp => Object.assign(sp, {
+        states: sp.states.map(st => Object.assign(st, {
+          cell: st.dark
+            ? "flex:0 0 auto;display:flex;align-items:center;min-height:40px;background:#254742;padding:10px 12px;border-radius:2px"
+            : "flex:0 0 auto;display:flex;align-items:center;min-height:40px"
+        }))
+      })),
+
+      interactionRules:[
+        "Focus ring is always 2px solid #9E5C34; offset is +2px in open layout, +3px on dark or filled buttons, −2px inside scrollers and 5px on artwork. Never remove it, and never rely on :focus alone — use :focus-visible so mouse clicks don't ring.",
+        "Hover never moves layout. Only background, border, colour, filter and (on heatmap cells only) transform change. No lifts, no shadow growth on rows.",
+        "Transitions: 160ms ease for row/background hover, 200ms ease for bar and chip colour, 420ms cubic-bezier(.22,.7,.2,1) for carousel movement, 300ms for panel slide-in. Everything drops to 0ms under prefers-reduced-motion.",
+        "Every toggle carries aria-pressed; the sort headers double as buttons and must expose aria-sort in a real implementation (the prototype only sets aria-pressed).",
+        "Hit targets are ≥36px on desktop and ≥44px on mobile. The pagination arrows and wheel-order buttons are the tightest — do not shrink them.",
+        "Disabled means border #DDE2D8, text #C2CABE, cursor default, no hover response. Never hide a disabled control."
+      ],
+
+      bpScreens: SCREENS.map(sc => ({
+        name:sc.name,
+        frames: BPS.map(bp => {
+          const scale = bp.w === 390 ? 0.72 : bp.w === 834 ? 0.42 : 0.30;
+          const h = bp.w === 390 ? 780 : 900;
+          return Object.assign({
+            label:bp.label, w:`${bp.w} × ${h}`, note:bp.note[sc.key],
+            title:`${sc.name} at ${bp.w}`,
+            col: bp.w === 390 ? "flex:0 1 300px" : bp.w === 834 ? "flex:1 1 360px" : "flex:1 1 420px"
+          }, this.frame(`${APP}?view=${sc.key}${sc.extra}`, bp.w, h, scale));
+        })
+      })),
+
+      components:[
+        ["SiteNav","All","items[], activeSection, musicMenuOpen","Sticky top bar with the wordmark. Music is the only item with a dropdown (Library / Stats). On mobile it collapses to a hamburger that opens the same list flattened."],
+        ["MusicMenu","All","open, current","Absolute dropdown under Music, 196px min-width, label + description per row."],
+        ["SectionHeader","All","kicker, title, aside","Mono kicker over an Archivo caps headline, 2px #1C221E rule beneath. The rhythm device for the whole page."],
+        ["AlbumCarousel","Library, Mobile 01","albums[5], heroIndex","Fanned sleeves, ±7° per step, size falloff 1 / .70 / .50, arrows + dots + hero caption."],
+        ["AlbumSleeve","Carousel, cards, thumbs","album, size, showStamp","The artwork primitive: gradient from the album's two colours plus one of four generated marks. Thumbs are the same component at 28–56px with the mark scaled."],
+        ["ScoreStamp","AlbumSleeve, Album popup","value","Copper block, mono, bottom-right, only on the front sleeve."],
+        ["FilterPanel","Library","open, ranges, onChange","Collapsible; holds three RangeSliders and the clear-all."],
+        ["RangeSlider","FilterPanel","min, max, lo, hi, format","Dual-thumb; drag either thumb, click the track to move the nearer, arrow keys step."],
+        ["SortChipRow","Library (<780), Mobile 01","keys[], active, dir","Horizontally scrolling chips. Above 780px this is replaced by SortableColumnHeader."],
+        ["SortableColumnHeader","Library (≥780)","keys[], active, dir","The column labels ARE the sort buttons; active one fills copper with ↑/↓."],
+        ["CatalogueTable","Library","rows, page, perPage=8","Zebra rows, per-album left accent rule, 56px art, four meta columns."],
+        ["Pagination","Library, Mobile 01","page, pageCount, onChange","Prev / numbered / next plus a 'showing x–y of n' line. Resets to 1 on any search, filter or sort change."],
+        ["StatTile","Stats, Mobile 02","label, value, note","The generic panel: 1px #C7CEC1, #F4F5F0 or #EDEFE8, 3px radius, mono kicker."],
+        ["RankBoard","Stats (artists, albums, songs)","rows, metric, onRowClick","One scrollable list component with three configurations — thumb + name + optional bar + right-aligned figure. Do not fork this per tile."],
+        ["MetricToggle","Stats top songs, Discovery","options[2], value","Two-segment inline switch, dark fill on the active side."],
+        ["YearBarChart","Stats, Artist popup","years[], selected","Clickable bars; selected bar copper, rest #B6BFB2."],
+        ["ListeningCalendar","Stats, Mobile 02","days[], quantiles","GitHub-style grid, 11px cells desktop / 8px mobile, quantile buckets, hover tooltip."],
+        ["DiscoveryChart","Stats","months[], mode","Stacked new-vs-repeat bars with the artists/tracks toggle."],
+        ["PlaylistPanel","Stats, Mobile 02","tracks, year, url","The dark counterpoint tile; art thumbs + times."],
+        ["DetailPanel","Album popup, Artist popup","subject, onClose","The shared slide-in shell: 560–600px desktop, full-width mobile, tinted from the subject's own colours, ESC and backdrop to close. Both popups are this component with different bodies."],
+        ["FactGrid","Both popups","facts[]","Hairline-separated cells on a dark wash; 5-up desktop, 2×2 mobile."],
+        ["BadgeRow","Album popup","badges[]","Pill badges, accent + neutral variants."],
+        ["TrackShareBars","Album popup","tracks[]","One rounded gradient bar per track in album order, share of album time, 0–100%."],
+        ["DualAxisLineChart","Artist popup","months[], share[]","Copper minutes line on the left axis, recessive dashed share line on the right 0–100% axis."],
+        ["LinerNote","Album popup","text","Ruled-paper block: 28px baselines, double copper margin rule."],
+        ["AdminGate","Admin","onUnlock","Password card with inline validation."],
+        ["Top5Editor","Admin","slots[5], albums[]","Per-slot select + up/down reorder + reset; writes straight to AlbumCarousel."],
+        ["SiteFooter","All","columns[]","Dark site-wide footer, three link columns plus the blurb."],
+        ["EmptyState","Library, Stats","kicker, title, line, action?","Dashed border, centred, optional single action."],
+        ["ErrorState","Library, Stats","code, lastSync, onRetry","Copper border, one retry button."],
+        ["SkeletonRows","Library","count","Pulsing grey blocks, 1.4s, 0.12s stagger."]
+      ].map(([name,used,props,note],i) => ({ name, used, props, note, row: i%2 ? "background:#F9FAF6" : "background:transparent" })),
+
+      colors:[
+        ["#E4E8DF","Paper","Page background; 34px horizontal rule pattern sits on it"],
+        ["#DADFD3","Rule","The 1px ledger line repeated every 34px"],
+        ["#EDEFE8","Panel sunken","Filter panel, alternate tiles, specimen rows"],
+        ["#F4F5F0","Panel raised","Default card/tile surface"],
+        ["#FBFCF9","Field","Input and select interiors"],
+        ["#EBEEE6","Zebra","Even table rows"],
+        ["#DCE1D6","Row hover","Table row hover fill"],
+        ["#D3D9CD","Row active","Table row press fill; heatmap zero ring"],
+        ["#C7CEC1","Border","Standard 1px card border"],
+        ["#B9C1B3","Border strong","Input and chip borders"],
+        ["#DDE2D8","Border disabled","Disabled control border; empty bar track"],
+        ["#1C221E","Ink","Body text, 2px section rules, dark buttons, footer"],
+        ["#2E362F","Ink soft","Long-form body copy in this spec"],
+        ["#4E574F","Ink muted","Secondary text, artist names"],
+        ["#6B766C","Ink faint","Mono kickers and labels"],
+        ["#8A948B","Ink faintest","Row numbers, counts, axis text"],
+        ["#9E5C34","Copper","THE accent: active state, focus ring, sort fill, error border, left rules"],
+        ["#7C4526","Copper deep","Link hover, button press"],
+        ["#D8B08C","Copper light","Accent on dark: chart line, badges, scores in popups"],
+        ["#F4EDE6","Copper wash","Error panel background"],
+        ["#F8F4EF","Copper text","Text on copper fills"],
+        ["#F4F5F0","Ink text","Text on ink fills"],
+        ["#E9DFD2","Heat 1","Calendar quantile 1 of 5"],
+        ["#DCBFA2","Heat 2","Calendar quantile 2"],
+        ["#C7936C","Heat 3","Calendar quantile 3"],
+        ["#A96A3E","Heat 4","Calendar quantile 4"],
+        ["#874C23","Heat 5","Calendar quantile 5"],
+        ["#B6BFB2","Bar inactive","Unselected chart bars; repeat-listen segment"]
+      ].map(([hex,name,use]) => ({
+        hex, name, use,
+        swatch:`height:56px;background:${hex};border-bottom:1px solid rgba(28,34,30,.12)`
+      })),
+
+      typeScale:[
+        ["Display","Archivo","clamp(34px,5vw,58px)","wdth 120 / wght 700, 0.98 line-height, uppercase","Implementation"],
+        ["H1","Archivo","clamp(28px,4.4vw,44px)","wdth 118 / wght 700, 1.0, uppercase","The year in minutes"],
+        ["H2","Archivo","clamp(22px,3vw,34px)","wdth 116–118 / wght 700, uppercase","Everything rated"],
+        ["H3","Archivo","26px","wdth 116 / wght 700, uppercase","Add an album"],
+        ["Tile title","Archivo","14–16px","wdth 114 / wght 700, .06–.08em tracking, uppercase","By artist — 2026"],
+        ["Row title","Archivo","15px","wdth 112 / wght 600, .02em, uppercase","Paper Radio"],
+        ["Body","Instrument Sans","15px","400, 1.72","Hand-picked, re-listened, argued over."],
+        ["Body small","Instrument Sans","13px","400, 1.65","Secondary copy and notes"],
+        ["Caption","Instrument Sans","11–12px","400, 1.55","Row subtitles"],
+        ["Data","IBM Plex Mono","11–14px","400–500, tabular figures","1,840"],
+        ["Data large","IBM Plex Mono","clamp(26px,3.6vw,36px)","500","12,960"],
+        ["Label","IBM Plex Mono","9–10px","400, .14–.18em, uppercase","SECTION C — LISTENING RECORD"]
+      ].map(([name,family,size,detail,text]) => ({
+        text: text || name,
+        sample: `font-family:${family === "Archivo" ? "'Archivo',sans-serif" : family === "IBM Plex Mono" ? "'IBM Plex Mono',monospace" : "'Instrument Sans',sans-serif"};font-size:${size.startsWith("clamp") ? "20px" : size.split("–")[0]};${family === "Archivo" ? "font-variation-settings:'wdth' 116,'wght' 700;text-transform:uppercase;" : ""}line-height:1.2;flex:0 1 auto`,
+        spec: `${name} · ${family} · ${size} · ${detail}`
+      })),
+
+      spacing:[
+        ["2px","Hairline gaps in fact grids"],
+        ["4–6px","Icon/label gaps, chip gaps"],
+        ["8px","Badge row gap, dot gap"],
+        ["12px","Row internal gap, tile padding tight"],
+        ["14–16px","Card padding small, grid gap"],
+        ["20–22px","Standard card padding; page gutter"],
+        ["26–30px","Gap between tiles"],
+        ["34–38px","Section top padding; ledger line pitch (34px)"],
+        ["54px","Gap between numbered sections"],
+        ["78–90px","Footer offset and page tail"]
+      ].map(([px,use],i) => ({
+        px, use,
+        bar:`display:block;height:8px;width:${[2,6,8,12,16,22,30,36,54,84][i]}px;background:#9E5C34;border-radius:1px`
+      })),
+
+      radii:[
+        ["0px","Sleeves, table rows, bars"],
+        ["2px","Buttons, inputs, chips"],
+        ["3px","Cards and panels"],
+        ["999px","Badges, dots, track-share bars"]
+      ].map(([px,use]) => ({
+        px, use,
+        demo:`width:52px;height:36px;background:#DCE1D6;border:1px solid #B9C1B3;border-radius:${px}`
+      })),
+
+      shadows:[
+        ["0 4px 12px rgba(24,32,26,.14)","Thumbnails and small art"],
+        ["0 12px 30px rgba(10,14,11,.30)","Liner note sheet, popup art"],
+        ["0 26px 52px rgba(24,32,26,.34)","Front carousel sleeve"],
+        ["-24px 0 60px rgba(16,22,18,.40)","Detail panel edge"],
+        ["0 14px 30px rgba(24,32,26,.20)","Nav dropdown"]
+      ].map(([css,use]) => ({
+        css, use,
+        demo:`height:44px;background:#F4F5F0;border:1px solid #E1E5DB;box-shadow:${css}`
+      })),
+
+      misc:[
+        { k:"Fonts", v:"Archivo (variable, wdth 100–125 / wght 400–800), Instrument Sans 400/500/600, IBM Plex Mono 400/500/600 — all Google Fonts." },
+        { k:"Breakpoint", v:"780px, evaluated in JS from window.innerWidth (not a media query) because it switches component identity, not just layout: SortChipRow ↔ SortableColumnHeader." },
+        { k:"Container widths", v:"1180px for library and stats, 920px for admin, 1240px for this spec. 22px gutters." },
+        { k:"Ledger background", v:"linear-gradient(#DADFD3 1px, transparent 1px) / 100% 34px on #E4E8DF." },
+        { k:"Easing", v:"cubic-bezier(.22,.7,.2,1) for movement; plain ease for colour." },
+        { k:"Durations", v:"160ms hover · 200ms colour/height · 220ms dot width · 300ms panel slide · 420ms carousel · 1.4s skeleton pulse." },
+        { k:"Scrollbars", v:"Hidden on every internal scroller (scrollbar-width:none + ::-webkit-scrollbar 0) with a 26px bottom mask fade instead. Page never scrolls horizontally." },
+        { k:"Pagination", v:"8 rows per page desktop, 6 mobile." },
+        { k:"Tabular figures", v:"All mono numerals should use font-variant-numeric: tabular-nums in production; the prototype relies on Plex Mono being monospaced." }
+      ],
+
+      decisions:[
+        { tag:"Navigation", title:"One site bar, not two", body:"An earlier version had a site-wide placeholder bar above a local music bar. Two bars stacked read as two products. Now there is a single sticky bar — Home / Courses / Design / Music / Photos / Admin — and the music sub-pages hang off a Music dropdown.", rejected:"Rejected: a persistent sub-nav under the site bar (wastes 44px on every screen for two links)." },
+        { tag:"Navigation", title:"Dropdown for Library / Stats, not tabs", body:"Only one of the six sections has sub-pages. Tabs would imply the whole site is tabbed and would leave five sections with an empty tab strip. A dropdown keeps the cost local to Music.", rejected:"Rejected: tabs (implies sibling structure everywhere), and a sidebar (a personal site of six pages doesn't earn one)." },
+        { tag:"Detail views", title:"Slide-in panel, not a modal or inline expansion", body:"Album and artist detail are long — chart, facts, track breakdown, note. A centred modal would need its own scroll and would be cropped on mobile; inline expansion would push 400px of table around and lose the reader's place. A right-edge panel keeps the list intact behind it and becomes a natural full-height sheet on mobile.", rejected:"Rejected: centred modal, inline accordion row." },
+        { tag:"Detail views", title:"Both popups are one component", body:"Album and artist share first-listened date, a minutes breakdown and a top-songs list. They are deliberately the same shell with the same fact grid and the same list rows, tinted from the subject's own colours, so a change to one is a change to both.", rejected:"Rejected: two bespoke layouts (guaranteed to drift)." },
+        { tag:"Filtering", title:"Dual-thumb ranges, not dropdowns", body:"Release year, rated year and score are all ranges. Six dropdowns (from/to × 3) hid the shape of the data and took four taps to express 'anything from the nineties'. Three sliders show the whole span and the current window at a glance.", rejected:"Rejected: paired from/to selects; a single 'decade' preset list (too coarse)." },
+        { tag:"Sorting", title:"The column header IS the sort control", body:"Having a 'Released' label above a 'RELEASE DATE' chip meant two things named the same thing, only one of which did anything. Merging them removes the redundancy and keeps the copper-fill affordance that made the chips legible as toggles.", rejected:"Rejected: keeping both (redundant); a sort dropdown (hides the current key)." },
+        { tag:"Sorting", title:"Chips return below 780px", body:"The header row is hidden on narrow screens because there are no columns to label, so the sort control has to live somewhere — a scrolling chip row above the list. This is why the breakpoint is in JS: the control changes identity, not just size.", rejected:"Rejected: a sort dropdown on mobile (extra tap, hides state)." },
+        { tag:"Volume", title:"Pagination over infinite scroll", body:"The catalogue is a reference index people scan and return to, not a feed. Pages give a stable address ('page 2, sorted by score') and a legible total. 8 per page desktop, 6 mobile, reset to page 1 whenever the query changes.", rejected:"Rejected: infinite scroll (no sense of size, no stable position), show-all (140 rows of artwork is a slow first paint)." },
+        { tag:"Data", title:"Two sources, one number", body:"Historical minutes come from summed ms_played in the export; recent minutes come from the hourly poll using full track duration. We deliberately do NOT mark which is which in the UI — the seam is an implementation detail and a footnote on every figure would be noise. The overcount on recent data is accepted.", rejected:"Rejected: a per-row provenance marker; two separate charts." },
+        { tag:"Data", title:"Heatmap shades are personal quantiles", body:"Fixed thresholds (say 0/30/60/120 minutes) would make a light listener's year uniformly pale and a heavy listener's uniformly dark. Bucketing on the user's own non-zero daily distribution keeps the contrast useful at any volume. Zero days are blank with a hairline ring, never the lightest bucket — absence must not read as a little.", rejected:"Rejected: absolute thresholds; a continuous gradient (unreadable at 11px)." },
+        { tag:"Data", title:"Share-of-listening on a second axis, recessive", body:"Minutes and percent-of-all-listening differ by two orders of magnitude; on one axis the percent line flatlines. It gets its own 0–100% right axis, and it is dashed and semi-transparent so it reads as context rather than a second headline.", rejected:"Rejected: one shared axis; a separate small chart (loses the correlation)." },
+        { tag:"Metrics", title:"Play count first, minutes on a toggle", body:"For songs, 'how many times' is the more human question and the more reliable number; minutes are derived. So plays is the default and minutes is one tap away, rather than showing both columns and doubling the row width.", rejected:"Rejected: both columns always; minutes as default." },
+        { tag:"Recognition", title:"Badges, and only two kinds", body:"'All-time top 5' is copper-tinted; year badges are neutral. Capping the palette at one accent means an album with three badges still has one focal point instead of a row of competing pills. If nothing qualifies, the row is removed entirely — no reserved space.", rejected:"Rejected: a colour per badge type; always-present greyed badge slots." },
+        { tag:"Craft", title:"Liner note on ruled paper", body:"The written review is the only long-form prose in the design and it read as an unstyled box floating on artwork. Ruled 28px baselines with a double copper margin rule frames it as a note the curator wrote, which is what it is.", rejected:"Rejected: plain card; italic pull-quote (fights the Archivo caps)." },
+        { tag:"Craft", title:"Hidden scrollbars with a mask fade", body:"There are ten internal scrollers; native bars added ten grey stripes to a design built on hairlines. Bars are hidden and each scroller fades out over its last 26px so there is still a signal that content continues.", rejected:"Rejected: visible styled scrollbars; fixed-height lists with no overflow." },
+        { tag:"Mobile", title:"Separate mobile file, same components", body:"The desktop file is responsive, but phone-specific decisions (carousel sizing, sheet popups, 2×2 fact grids, bottom tab bar) are easier to review side by side in device frames. The mobile file is a spec of those decisions, not a second app — every component in it is in the inventory above.", rejected:"Rejected: only responsive CSS (phone decisions become invisible in review)." },
+        { tag:"Admin", title:"Top-five editor lives with the data, not the design", body:"The carousel order is content, not layout, so it is edited in Admin — select per slot plus reorder arrows — and the library reads it live. No drag-and-drop: five items, and arrows are keyboard-accessible for free.", rejected:"Rejected: drag-to-reorder in the carousel itself (fights the swipe gesture)." }
+      ],
+
+      openItems:[
+        { severity:"BLOCKER", title:"All numbers in the prototype are synthetic", body:"Album titles, artists, ratings, minutes, play counts, daily heatmap values, discovery splits and month-by-month artist figures are deterministic fakes generated from a hash so the layout is stable across reloads. Nothing here is your real listening data.", need:"Wire to the real export + poll tables before any visual review of the numbers." },
+        { severity:"BLOCKER", title:"Cover art is generated, not real", body:"Every sleeve is a two-colour gradient plus one of four geometric marks, keyed off the album id. Real Spotify artwork will change the whole page's colour behaviour — the popups tint themselves from the sleeve colours, so those washes are also a guess.", need:"Confirm artwork source and licensing, then re-check popup tinting." },
+        { severity:"BLOCKER", title:"Artist profile pictures are monograms", body:"The ranking rows and artist popup use initials on a gradient disc. Real Spotify artist images are photographs and will need a different treatment (crop, ring, fallback for missing images).", need:"Decide: real photos with a monogram fallback, or monograms everywhere." },
+        { severity:"SOON", title:"Admin auth is fake", body:"Any four characters unlock the admin view, and the gate is client-side. There is no session, no token, no server check.", need:"Real auth decision — this is the only part of the design that must not be shipped as drawn." },
+        { severity:"SOON", title:"'Top album of YEAR' is defined as most-minutes", body:"I picked most minutes among albums rated in that year. It could equally be highest score, or a manual pick. Same question for 'All-time top 5' — currently the manually curated wheel order, which means the badge and the carousel can never disagree, by construction.", need:"Confirm both definitions." },
+        { severity:"SOON", title:"First-listened dates are derived, not recorded", body:"The prototype fakes first-listened as 12–170 days before the rating date. Your export has the real first stream; the poll table does not go back far enough for pre-export albums.", need:"Confirm the export covers every album, or accept 'first seen in export' as the label." },
+        { severity:"SOON", title:"Track-level share needs real tracklists", body:"Album tracklists are invented (6–7 tracks each). Real albums vary from 4 to 25 tracks, which changes the height of the share block substantially and may need a scroll or a top-N cut inside the popup.", need:"Decide the cap: all tracks, or top 12 plus 'show all'." },
+        { severity:"LATER", title:"Discovery 'new' is undefined", body:"The stacked chart shows new vs repeat artists/tracks per month, but 'new' needs a rule: first ever stream, first in this year, or first in a rolling 12 months. Each gives a visibly different chart.", need:"Pick a definition — I would default to first-ever." },
+        { severity:"LATER", title:"Dense state only expands the catalogue", body:"In the high-volume state the table grows to 140 albums, but the artist board and popups still read from the base 14-album set, so those tiles don't stress-test. That is a prototype shortcut, not a design intent.", need:"No decision needed — just don't read the dense stats tiles as final." },
+        { severity:"LATER", title:"Playlist links are placeholders", body:"The per-year Spotify playlist URLs are dummy strings, and 2019–2021 are deliberately empty to show the muted no-link treatment.", need:"Supply real URLs, or drop the years with no playlist." },
+        { severity:"LATER", title:"Site sections beyond Music are inert", body:"Home, Courses, Design and Photos are labels only — no routes, no design. Music and Admin are the only real destinations.", need:"Out of scope here; flag if the nav should hide unbuilt sections." },
+        { severity:"LATER", title:"No empty/404 for a linked artist", body:"Artist detail is only reachable by clicking a ranked row, so it can't be empty. If artists get their own URLs, a not-found state has to be designed.", need:"Only if artist pages become addressable." }
+      ].map(o => Object.assign(o, { sev: sev(o.severity) })),
+
+      files:[
+        { name:"Longplay Index.dc.html", what:"Desktop: library, stats, admin, both detail panels. Accepts ?view=, ?state=, ?open=, ?unlock=." },
+        { name:"HoldenMyMusic Mobile.dc.html", what:"Four phone screens at 402×874: album ranking, stats, album popup, artist popup." },
+        { name:"Handoff Spec.dc.html", what:"This document." },
+        { name:"ios-frame.jsx", what:"Device bezel used only by the mobile file — presentation scaffolding, not product code." },
+        { name:"support.js", what:"Prototype runtime. Do not port." }
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

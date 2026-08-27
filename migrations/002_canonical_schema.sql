@@ -7,6 +7,10 @@
 
 begin;
 
+-- Neon pooler does not honour a search_path startup option; set it here so
+-- unqualified table names resolve regardless of how psql connected.
+set search_path = public;
+
 -- ---------------------------------------------------------------------------
 -- Normalized metadata tables
 -- ---------------------------------------------------------------------------

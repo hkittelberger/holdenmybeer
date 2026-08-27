@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin:0; padding:0; background:#E4E8DF; overflow-x:hidden; }
+  body { font-family:'Instrument Sans', system-ui, sans-serif; color:#1C221E; -webkit-font-smoothing:antialiased; }
+  * { box-sizing:border-box; }
+  a { color:#9E5C34; text-decoration:none; border-bottom:1px solid rgba(158,92,52,.35); }
+  a:hover { color:#7C4526; border-bottom-color:#7C4526; }
+  * { scrollbar-width:none; -ms-overflow-style:none; }
+  *::-webkit-scrollbar { width:0; height:0; display:none; }
+  ::selection { background:#9E5C34; color:#F4F5F0; }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#E4E8DF;background-image:linear-gradient(#DADFD3 1px,transparent 1px);background-size:100% 34px;padding:46px 22px 90px">
+  <div style="max-width:1180px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;padding-bottom:18px;border-bottom:2px solid #1C221E">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;color:#6B766C;text-transform:uppercase">HoldenMyMusic — handheld</div>
+        <h1 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 118,'wght' 700;font-size:clamp(28px,4.4vw,44px);margin:9px 0 0;text-transform:uppercase;line-height:1">Four screens at 402pt</h1>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.7;color:#4E574F;max-width:300px">
+        Same drawer, one thumb. Lists go single-column, the carousel keeps its fan, and both detail views open as full-height sheets.
+      </div>
+    </div>
+
+    <div style="display:flex;gap:clamp(28px,5vw,64px);flex-wrap:wrap;justify-content:center;margin-top:44px">
+
+      <div style="flex:0 0 auto">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-bottom:12px">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;color:#1C221E">01 — ALBUM RANKING</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;color:#8A948B">402 × 874</span>
+        </div>
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" width="{{ dw }}" height="{{ dh }}" hint-size="402px,874px">
+          <div style="min-height:100%;display:flex;flex-direction:column;background:#E4E8DF;background-image:linear-gradient(#DADFD3 1px,transparent 1px);background-size:100% 30px">
+            <div style="position:sticky;top:0;z-index:5;background:rgba(228,232,223,.94);backdrop-filter:blur(8px);border-bottom:1px solid #C7CEC1;padding:60px 18px 11px;display:flex;align-items:center;gap:12px">
+              <span style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 122,'wght' 700;font-size:15px;letter-spacing:.12em;text-transform:uppercase">HoldenMyMusic</span>
+              <span style="margin-left:auto;display:flex;flex-direction:column;gap:3px;padding:6px 2px">
+                <span style="display:block;width:20px;height:1.5px;background:#1C221E"></span>
+                <span style="display:block;width:20px;height:1.5px;background:#1C221E"></span>
+                <span style="display:block;width:14px;height:1.5px;background:#9E5C34"></span>
+              </span>
+            </div>
+
+            <div style="padding:20px 18px 8px">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;color:#6B766C;text-transform:uppercase">Section A — My shelf</div>
+              <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 700;font-size:30px;line-height:.98;letter-spacing:-.01em;margin:8px 0 0;text-transform:uppercase">Five records<br>above the rest</h2>
+            </div>
+
+            <div style="position:relative;padding:22px 0 4px;overflow:hidden">
+              <div style="{{ stageStyle }}">
+                <sc-for list="{{ wheel }}" as="w" hint-placeholder-count="5">
+                  <div style="{{ w.stage }}">
+                    <button type="button" onClick="{{ w.go }}" aria-label="{{ w.aria }}" style="{{ w.sleeveBtn }}" style-focus="outline:3px solid #9E5C34;outline-offset:4px">
+                      <div style="{{ w.sleeveBg }}">
+                        <div style="position:absolute;left:7%;top:0;bottom:0;width:2px;background:rgba(0,0,0,.28)"></div>
+                        <div style="{{ w.mark }}"></div>
+                        <div style="position:absolute;left:0;right:0;bottom:0;padding:8px 10px;display:flex;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.1em;color:rgba(255,255,255,.72)">
+                          <span>{{ w.year }}</span>
+                        </div>
+                      </div>
+                      <div style="{{ w.stamp }}">{{ w.rating }}</div>
+                    </button>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:16px;padding:0 18px">
+                <button type="button" onClick="{{ prev }}" aria-label="Previous album" style="{{ navBtn }}" style-focus="outline:2px solid #9E5C34;outline-offset:3px">←</button>
+                <div style="flex:1 1 auto;min-width:0;text-align:center">
+                  <div style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 700;font-size:19px;text-transform:uppercase;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ hero.name }}</div>
+                  <div style="font-size:13px;color:#4E574F;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ hero.artist }}</div>
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;color:#6B766C;margin-top:6px">{{ hero.meta }}</div>
+                </div>
+                <button type="button" onClick="{{ next }}" aria-label="Next album" style="{{ navBtn }}" style-focus="outline:2px solid #9E5C34;outline-offset:3px">→</button>
+              </div>
+              <div style="display:flex;justify-content:center;gap:7px;margin-top:14px">
+                <sc-for list="{{ dots }}" as="d" hint-placeholder-count="5">
+                  <button type="button" onClick="{{ d.go }}" aria-label="{{ d.aria }}" style="{{ d.style }}" style-focus="outline:2px solid #9E5C34;outline-offset:3px"></button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="padding:22px 18px 0">
+              <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px;padding-bottom:10px;border-bottom:2px solid #1C221E">
+                <div>
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;color:#6B766C;text-transform:uppercase">Section B</div>
+                  <div style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 700;font-size:21px;text-transform:uppercase;margin-top:5px">Everything rated</div>
+                </div>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#6B766C;white-space:nowrap">{{ countLine }}</span>
+              </div>
+
+              <div style="display:flex;gap:8px;margin-top:14px">
+                <div style="flex:1 1 auto;display:flex;align-items:center;gap:8px;padding:11px 12px;border:1px solid #B9C1B3;background:#F4F5F0;border-radius:2px">
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#8A948B">⌕</span>
+                  <span style="font-size:14px;color:#8A948B">album or artist</span>
+                </div>
+                <button type="button" onClick="{{ toggleFilters }}" style="{{ filterBtn }}" style-focus="outline:2px solid #9E5C34;outline-offset:2px">{{ filterLabel }}</button>
+              </div>
+
+              <sc-if value="{{ filtersOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="border:1px solid #B9C1B3;background:#EDEFE8;border-radius:3px;padding:14px 16px 16px;margin-top:10px">
+                  <sc-for list="{{ ranges }}" as="g" hint-placeholder-count="3">
+                    <div style="padding-bottom:12px">
+                      <div style="display:flex;justify-content:space-between;align-items:baseline">
+                        <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:#6B766C;text-transform:uppercase">{{ g.label }}</span>
+                        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px">{{ g.readout }}</span>
+                      </div>
+                      <div style="position:relative;height:18px;margin-top:8px">
+                        <div style="position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:4px;border-radius:2px;background:#CFD6C9"></div>
+                        <div style="{{ g.fill }}"></div>
+                        <div style="{{ g.lo }}"></div>
+                        <div style="{{ g.hi }}"></div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <div data-hidescroll="" style="display:flex;gap:6px;overflow-x:auto;padding:14px 0 4px">
+                <sc-for list="{{ sorts }}" as="s" hint-placeholder-count="4">
+                  <button type="button" onClick="{{ s.go }}" aria-pressed="{{ s.on }}" style="{{ s.style }}" style-focus="outline:2px solid #9E5C34;outline-offset:2px">{{ s.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="padding:4px 18px 0;display:flex;flex-direction:column">
+              <sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+                <button type="button" onClick="{{ r.open }}" style="{{ r.style }}" style-hover="background:#DCE1D6" style-focus="outline:2px solid #9E5C34;outline-offset:-2px">
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#8A948B;width:20px;flex:0 0 20px;text-align:left">{{ r.idx }}</span>
+                  <div style="{{ r.thumb }}"><div style="{{ r.thumbMark }}"></div></div>
+                  <span style="flex:1 1 auto;min-width:0;text-align:left">
+                    <span style="display:block;font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 600;font-size:14px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+                    <span style="display:block;font-size:12px;color:#4E574F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.artist }}</span>
+                    <span style="display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;color:#8A948B;margin-top:3px">{{ r.meta }}</span>
+                  </span>
+                  <span style="{{ r.score }}">{{ r.rating }}</span>
+                </button>
+              </sc-for>
+
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px 2px 8px">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;color:#6B766C">{{ pageLine }}</span>
+                <div style="display:flex;gap:5px">
+                  <button type="button" onClick="{{ pagePrev }}" aria-label="Previous page" style="{{ prevStyle }}">←</button>
+                  <sc-for list="{{ pages }}" as="p" hint-placeholder-count="3">
+                    <button type="button" onClick="{{ p.go }}" aria-pressed="{{ p.on }}" style="{{ p.style }}">{{ p.label }}</button>
+                  </sc-for>
+                  <button type="button" onClick="{{ pageNext }}" aria-label="Next page" style="{{ nextStyle }}">→</button>
+                </div>
+              </div>
+            </div>
+
+            <div style="flex:1 1 auto"></div>
+            <div style="position:sticky;bottom:0;z-index:6;background:rgba(228,232,223,.95);backdrop-filter:blur(8px);border-top:1px solid #C7CEC1;padding:9px 18px 30px;display:flex;gap:6px">
+              <sc-for list="{{ tabsA }}" as="t" hint-placeholder-count="3">
+                <span style="{{ t.style }}"><span style="font-size:13px;line-height:1">{{ t.icon }}</span>{{ t.label }}</span>
+              </sc-for>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="flex:0 0 auto">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-bottom:12px">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;color:#1C221E">02 — STATS</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;color:#8A948B">402 × 874</span>
+        </div>
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" width="{{ dw }}" height="{{ dh }}" hint-size="402px,874px">
+          <div style="min-height:100%;display:flex;flex-direction:column;background:#E4E8DF;background-image:linear-gradient(#DADFD3 1px,transparent 1px);background-size:100% 30px">
+            <div style="position:sticky;top:0;z-index:5;background:rgba(228,232,223,.94);backdrop-filter:blur(8px);border-bottom:1px solid #C7CEC1;padding:60px 18px 11px;display:flex;align-items:center;gap:12px">
+              <span style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 122,'wght' 700;font-size:15px;letter-spacing:.12em;text-transform:uppercase">HoldenMyMusic</span>
+              <button type="button" onClick="{{ toggleMenu }}" aria-label="Site menu" aria-expanded="{{ menuOpenAria }}" style="margin-left:auto;display:flex;flex-direction:column;gap:3px;padding:8px 2px;background:transparent;border:0;cursor:pointer" style-focus="outline:2px solid #9E5C34;outline-offset:2px">
+                <span style="{{ burger1 }}"></span>
+                <span style="{{ burger2 }}"></span>
+                <span style="{{ burger3 }}"></span>
+              </button>
+            </div>
+
+            <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="border-bottom:1px solid #C7CEC1;background:#EDEFE8;padding:6px 18px 14px">
+                <sc-for list="{{ menuItems }}" as="m" hint-placeholder-count="6">
+                  <div style="{{ m.rowStyle }}">
+                    <span style="{{ m.labelStyle }}">{{ m.label }}</span>
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;color:#8A948B">{{ m.note }}</span>
+                  </div>
+                </sc-for>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:12px">
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;color:#9E5C34;border:1px solid rgba(158,92,52,.5);border-radius:999px;padding:6px 11px">SPOTIFY ↗</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;color:#6B766C;border:1px solid #C7CEC1;border-radius:999px;padding:6px 11px">EMAIL</span>
+                </div>
+              </div>
+            </sc-if>
+
+            <div style="padding:20px 18px 0">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;color:#6B766C;text-transform:uppercase">Section C — Listening record</div>
+              <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 700;font-size:29px;line-height:1;margin:8px 0 0;text-transform:uppercase">The year<br>in minutes</h2>
+              <div data-hidescroll="" style="display:flex;gap:6px;overflow-x:auto;padding:16px 0 2px">
+                <sc-for list="{{ statYears }}" as="y" hint-placeholder-count="8">
+                  <button type="button" onClick="{{ y.go }}" aria-pressed="{{ y.on }}" style="{{ y.style }}" style-focus="outline:2px solid #9E5C34;outline-offset:2px">{{ y.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#C7CEC1;margin:18px 18px 0;border:1px solid #C7CEC1;border-radius:3px;overflow:hidden">
+              <sc-for list="{{ statCards }}" as="c" hint-placeholder-count="4">
+                <div style="{{ c.style }}">
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.14em;color:#6B766C;text-transform:uppercase">{{ c.label }}</div>
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:500;margin-top:5px">{{ c.value }}</div>
+                  <div style="font-size:11px;color:#4E574F;margin-top:1px">{{ c.note }}</div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="margin:18px 18px 0;border:1px solid #C7CEC1;background:#EDEFE8;border-radius:3px;padding:16px 14px 12px">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:#6B766C;text-transform:uppercase">Minutes per year · tap a bar</div>
+              <div style="display:flex;align-items:flex-end;gap:6px;height:132px;margin-top:14px">
+                <sc-for list="{{ chart }}" as="b" hint-placeholder-count="8">
+                  <button type="button" onClick="{{ b.go }}" aria-label="{{ b.aria }}" style="flex:1 1 0;display:flex;flex-direction:column;justify-content:flex-end;height:100%;background:none;border:0;padding:0;cursor:pointer" style-focus="outline:2px solid #9E5C34;outline-offset:2px">
+                    <span style="{{ b.barStyle }}"></span>
+                    <span style="{{ b.labStyle }}">{{ b.year }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="margin:18px 18px 0;border:1px solid #C7CEC1;background:#EDEFE8;border-radius:3px;padding:16px 14px 14px">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:#6B766C;text-transform:uppercase">Listening calendar</span>
+                <span style="display:flex;align-items:center;gap:3px">
+                  <sc-for list="{{ heatLegend }}" as="l" hint-placeholder-count="5">
+                    <span style="{{ l.style }}"></span>
+                  </sc-for>
+                </span>
+              </div>
+              <div data-hidescroll="" style="overflow-x:auto;margin-top:12px;max-width:100%">
+                <div style="display:flex;gap:2px;height:11px;min-width:474px">
+                  <sc-for list="{{ heatMonthLabels }}" as="m" hint-placeholder-count="12">
+                    <span style="{{ m.style }}">{{ m.label }}</span>
+                  </sc-for>
+                </div>
+                <div style="display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,8px);gap:2px;min-width:474px">
+                  <sc-for list="{{ heatCells }}" as="c" hint-placeholder-count="140">
+                    <span style="{{ c.style }}"></span>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;color:#8A948B;margin-top:10px">{{ heatSummary }}</div>
+            </div>
+
+            <div style="margin:18px 18px 0;border:1px solid #C7CEC1;background:#F4F5F0;border-radius:3px;padding:16px 14px 12px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding-bottom:8px;border-bottom:1px solid #DDE2D8">
+                <span style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 700;font-size:13px;text-transform:uppercase;letter-spacing:.08em">By album — {{ statYear }}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#8A948B">{{ albumCount }}</span>
+              </div>
+              <div data-hidescroll="" style="{{ tileScroll }}">
+                <sc-for list="{{ albumBoard }}" as="a" hint-placeholder-count="8">
+                  <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #E7EAE2">
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#8A948B;width:16px;flex:0 0 16px">{{ a.rank }}</span>
+                    <div style="{{ a.thumb }}"><div style="{{ a.thumbMark }}"></div></div>
+                    <span style="flex:1 1 auto;min-width:0"><span style="display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.name }}</span><span style="display:block;font-size:11px;color:#6B766C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.artist }}</span></span>
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;width:44px;flex:0 0 44px;text-align:right">{{ a.mins }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="margin:18px 18px 0;border:1px solid #C7CEC1;background:#F4F5F0;border-radius:3px;padding:16px 14px 8px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding-bottom:8px;border-bottom:1px solid #DDE2D8">
+                <span style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 700;font-size:13px;text-transform:uppercase;letter-spacing:.08em">By artist — {{ statYear }}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9E5C34">ALL ↗</span>
+              </div>
+              <sc-for list="{{ artistBoard }}" as="a" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #E7EAE2">
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#8A948B;width:16px">{{ a.rank }}</span>
+                  <span style="{{ a.avatar }}">{{ a.initials }}</span>
+                  <span style="flex:1 1 auto;min-width:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.name }}</span>
+                  <span style="position:relative;flex:0 0 46px;height:5px;background:#DDE2D8"><span style="{{ a.bar }}"></span></span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;width:44px;text-align:right">{{ a.mins }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="margin:18px 18px 0;border:1px solid #C7CEC1;background:#F4F5F0;border-radius:3px;padding:16px 14px 8px">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                <span style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 700;font-size:13px;text-transform:uppercase;letter-spacing:.08em">Top songs</span>
+                <div style="display:flex;border:1px solid #1C221E;border-radius:2px;overflow:hidden">
+                  <sc-for list="{{ songMetrics }}" as="m" hint-placeholder-count="2">
+                    <button type="button" onClick="{{ m.go }}" aria-pressed="{{ m.on }}" style="{{ m.style }}" style-focus="outline:2px solid #9E5C34;outline-offset:-2px">{{ m.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+              <sc-for list="{{ topSongs }}" as="s" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #E7EAE2">
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#9E5C34;width:16px">{{ s.rank }}</span>
+                  <div style="{{ s.art }}"><div style="{{ s.artMark }}"></div></div>
+                  <span style="flex:1 1 auto;min-width:0"><span style="display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.title }}</span><span style="display:block;font-size:11px;color:#6B766C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.artist }}</span></span>
+                  <span style="text-align:right"><span style="display:block;font-family:'IBM Plex Mono',monospace;font-size:13px">{{ s.metric }}</span><span style="display:block;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.1em;color:#8A948B">{{ s.unit }}</span></span>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="margin:18px 18px 0;border:1px solid #C7CEC1;background:#EDEFE8;border-radius:3px;padding:16px 14px 12px">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:#6B766C;text-transform:uppercase">Discovery rate</span>
+                <div style="display:flex;border:1px solid #1C221E;border-radius:2px;overflow:hidden">
+                  <sc-for list="{{ discModes }}" as="m" hint-placeholder-count="2">
+                    <button type="button" onClick="{{ m.go }}" aria-pressed="{{ m.on }}" style="{{ m.style }}" style-focus="outline:2px solid #9E5C34;outline-offset:-2px">{{ m.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="display:flex;align-items:flex-end;gap:5px;height:118px;margin-top:14px">
+                <sc-for list="{{ discBars }}" as="b" hint-placeholder-count="12">
+                  <div style="flex:1 1 0;display:flex;flex-direction:column;justify-content:flex-end;height:100%;min-width:0">
+                    <span style="{{ b.newStyle }}"></span>
+                    <span style="{{ b.repStyle }}"></span>
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:#6B766C;text-align:center;padding-top:5px">{{ b.month }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:14px;margin-top:8px">
+                <span style="display:flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;color:#4E574F"><span style="width:9px;height:9px;border-radius:2px;background:#9E5C34"></span>NEW</span>
+                <span style="display:flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;color:#4E574F"><span style="width:9px;height:9px;border-radius:2px;background:#B6BFB2"></span>REPEAT</span>
+              </div>
+            </div>
+
+            <div style="margin:18px 18px 22px;border:1px solid #1C221E;background:#1C221E;border-radius:3px;padding:16px 16px 18px;color:#F4F5F0">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.16em;color:#9BA79C">PUBLIC PLAYLIST</div>
+              <div style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 700;font-size:17px;text-transform:uppercase;margin-top:5px">Top 50 songs of {{ statYear }}</div>
+              <sc-for list="{{ playlistPeek }}" as="t" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.12)">
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,.5);width:16px">{{ t.rank }}</span>
+                  <div style="{{ t.art }}"><div style="{{ t.artMark }}"></div></div>
+                  <span style="flex:1 1 auto;min-width:0"><span style="display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.title }}</span><span style="display:block;font-size:11px;color:rgba(255,255,255,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.artist }}</span></span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,.6)">{{ t.len }}</span>
+                </div>
+              </sc-for>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;color:#9BA79C">47 MORE ON SPOTIFY</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;color:#D8B08C;border:1px solid rgba(216,176,140,.45);border-radius:999px;padding:6px 12px">OPEN ↗</span>
+              </div>
+            </div>
+
+            <div style="flex:1 1 auto"></div>
+            <div style="position:sticky;bottom:0;z-index:6;background:rgba(228,232,223,.95);backdrop-filter:blur(8px);border-top:1px solid #C7CEC1;padding:9px 18px 30px;display:flex;gap:6px">
+              <sc-for list="{{ tabsB }}" as="t" hint-placeholder-count="3">
+                <span style="{{ t.style }}"><span style="font-size:13px;line-height:1">{{ t.icon }}</span>{{ t.label }}</span>
+              </sc-for>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="flex:0 0 auto">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-bottom:12px">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;color:#1C221E">03 — ALBUM POPUP</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;color:#8A948B">FULL SHEET</span>
+        </div>
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" width="{{ dw }}" height="{{ dh }}" hint-size="402px,874px">
+          <div style="{{ sheetShell }}">
+            <div style="{{ sheetWash }}"></div>
+            <div style="position:relative;display:flex;flex-direction:column;min-height:100%">
+              <div style="position:sticky;top:0;z-index:6;padding:58px 18px 12px;display:flex;align-items:center;gap:12px;background:{{ ab.stickyBg }};backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.14)">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;color:rgba(255,255,255,.62)">ALBUM CARD</span>
+                <span style="margin-left:auto;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-family:'IBM Plex Mono',monospace;font-size:13px">✕</span>
+              </div>
+              <div style="padding:20px 18px 40px">
+                <div style="display:flex;gap:16px;align-items:flex-end">
+                  <div style="{{ ab.sleeve }}">
+                    <div style="position:absolute;left:7%;top:0;bottom:0;width:2px;background:rgba(0,0,0,.3)"></div>
+                    <div style="{{ ab.mark }}"></div>
+                  </div>
+                  <div style="flex:1 1 auto;min-width:0">
+                    <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:rgba(255,255,255,.62)">{{ ab.artist }}</div>
+                    <div style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 118,'wght' 700;font-size:25px;line-height:1;color:#fff;text-transform:uppercase;margin-top:6px">{{ ab.name }}</div>
+                    <div style="display:flex;align-items:baseline;gap:7px;margin-top:9px">
+                      <span style="font-family:'IBM Plex Mono',monospace;font-size:30px;color:#D8B08C;line-height:1">{{ ab.rating }}</span>
+                      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,.5)">/ 10</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:18px">
+                  <sc-for list="{{ ab.badges }}" as="b" hint-placeholder-count="2">
+                    <span style="{{ b.style }}"><span style="font-size:11px;line-height:1">{{ b.icon }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase">{{ b.label }}</span></span>
+                  </sc-for>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.16);margin-top:20px">
+                  <sc-for list="{{ ab.facts }}" as="f" hint-placeholder-count="4">
+                    <div style="background:rgba(12,16,13,.42);padding:12px 13px">
+                      <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.14em;color:rgba(255,255,255,.58)">{{ f.label }}</div>
+                      <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:#fff;margin-top:4px">{{ f.value }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="margin-top:24px">
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,.24)">
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:rgba(255,255,255,.6)">SHARE OF MY TIME</span>
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.1em;color:rgba(255,255,255,.4)">TRACK ORDER ↓</span>
+                  </div>
+                  <sc-for list="{{ ab.trackShare }}" as="t" hint-placeholder-count="7">
+                    <div style="display:flex;align-items:center;gap:9px;padding:7px 0">
+                      <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(255,255,255,.45);width:16px;flex:0 0 16px">{{ t.no }}</span>
+                      <span style="flex:0 0 92px;min-width:0;font-size:12px;color:rgba(255,255,255,.92);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.title }}</span>
+                      <span style="position:relative;flex:1 1 auto;height:8px;border-radius:999px;background:rgba(255,255,255,.12)"><span style="{{ t.bar }}"></span></span>
+                      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:{{ t.pctColor }};width:38px;flex:0 0 38px;text-align:right">{{ t.pct }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="position:relative;margin-top:24px;background:#F7F8F3;color:#1C221E;padding:16px 18px 22px 38px;border-radius:2px;box-shadow:0 12px 30px rgba(10,14,11,.32)">
+                  <div style="position:absolute;left:24px;top:0;bottom:0;width:1px;background:rgba(158,92,52,.4)"></div>
+                  <div style="position:absolute;left:27px;top:0;bottom:0;width:1px;background:rgba(158,92,52,.18)"></div>
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.16em;color:#6B766C">LINER NOTE</div>
+                  <p style="font-size:13px;line-height:26px;margin:12px 0 0;text-wrap:pretty;background-image:repeating-linear-gradient(180deg,transparent 0 25px,rgba(28,34,30,.14) 25px 26px)">{{ ab.review }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="flex:0 0 auto">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-bottom:12px">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;color:#1C221E">04 — ARTIST POPUP</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;color:#8A948B">FULL SHEET</span>
+        </div>
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" width="{{ dw }}" height="{{ dh }}" hint-size="402px,874px">
+          <div style="{{ artistShell }}">
+            <div style="{{ artistWash }}"></div>
+            <div style="position:relative;display:flex;flex-direction:column;min-height:100%">
+              <div style="position:sticky;top:0;z-index:6;padding:58px 18px 12px;display:flex;align-items:center;gap:12px;background:{{ ar.stickyBg }};backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.14)">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;color:rgba(255,255,255,.62)">ARTIST DETAIL</span>
+                <span style="margin-left:auto;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-family:'IBM Plex Mono',monospace;font-size:13px">✕</span>
+              </div>
+              <div style="padding:20px 18px 40px">
+                <div style="display:flex;gap:15px;align-items:center">
+                  <div style="{{ ar.avatar }}">{{ ar.initials }}</div>
+                  <div style="flex:1 1 auto;min-width:0">
+                    <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:rgba(255,255,255,.62)">{{ ar.albumsLine }}</div>
+                    <div style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 118,'wght' 700;font-size:24px;line-height:1.02;color:#fff;text-transform:uppercase;margin-top:7px">{{ ar.name }}</div>
+                  </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.16);margin-top:20px">
+                  <sc-for list="{{ ar.facts }}" as="f" hint-placeholder-count="4">
+                    <div style="background:rgba(12,16,13,.42);padding:12px 13px">
+                      <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.14em;color:rgba(255,255,255,.58)">{{ f.label }}</div>
+                      <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:#fff;margin-top:4px">{{ f.value }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="margin-top:24px">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:rgba(255,255,255,.6)">MINUTES BY MONTH</span>
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;color:#D8B08C;border:1px solid rgba(216,176,140,.45);border-radius:999px;padding:5px 10px">{{ ar.year }} ▾</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:5px;margin-top:10px">
+                    <span style="display:flex;align-items:center;gap:7px;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.1em;color:rgba(255,255,255,.78)"><span style="width:16px;height:3px;border-radius:2px;background:#D8B08C"></span>MINUTES (LEFT)</span>
+                    <span style="display:flex;align-items:center;gap:7px;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.1em;color:rgba(255,255,255,.5)"><span style="width:16px;height:0;border-top:2px dashed rgba(255,255,255,.55)"></span>% OF ALL LISTENING (RIGHT)</span>
+                  </div>
+                  <svg viewBox="0 0 366 190" style="width:100%;height:auto;display:block;margin-top:10px" role="img" aria-label="{{ ar.chartAria }}">
+                    <sc-for list="{{ ar.grid }}" as="g" hint-placeholder-count="4">
+                      <line x1="30" x2="330" y1="{{ g.y }}" y2="{{ g.y }}" stroke="rgba(255,255,255,.13)" stroke-width="1"></line>
+                    </sc-for>
+                    <polyline points="{{ ar.sharePts }}" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.6" stroke-dasharray="5 4" stroke-linejoin="round"></polyline>
+                    <polyline points="{{ ar.minPts }}" fill="none" stroke="#D8B08C" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"></polyline>
+                    <sc-for list="{{ ar.dots }}" as="d" hint-placeholder-count="12">
+                      <circle cx="{{ d.x }}" cy="{{ d.y }}" r="2.6" fill="#D8B08C"></circle>
+                    </sc-for>
+                    <sc-for list="{{ ar.labels }}" as="l" hint-placeholder-count="18">
+                      <text x="{{ l.x }}" y="{{ l.y }}" fill="{{ l.fill }}" font-size="8" font-family="IBM Plex Mono, monospace" text-anchor="{{ l.anchor }}">{{ l.t }}</text>
+                    </sc-for>
+                  </svg>
+                </div>
+
+                <div style="margin-top:22px">
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:rgba(255,255,255,.6);padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.24)">MINUTES BY YEAR</div>
+                  <div style="display:flex;align-items:flex-end;gap:6px;height:80px;margin-top:12px">
+                    <sc-for list="{{ ar.yearBars }}" as="b" hint-placeholder-count="8">
+                      <div style="flex:1 1 0;display:flex;flex-direction:column;justify-content:flex-end;height:100%">
+                        <span style="{{ b.bar }}"></span>
+                        <span style="{{ b.lab }}">{{ b.year }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+
+                <div style="margin-top:22px">
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.24)">
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:rgba(255,255,255,.6)">TOP SONGS</span>
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.1em;color:rgba(255,255,255,.4)">PLAYS</span>
+                  </div>
+                  <sc-for list="{{ ar.songs }}" as="t" hint-placeholder-count="5">
+                    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.12)">
+                      <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(255,255,255,.55);width:16px;flex:0 0 16px">{{ t.rank }}</span>
+                      <div style="{{ t.art }}"><div style="{{ t.artMark }}"></div></div>
+                      <span style="flex:1 1 auto;min-width:0"><span style="display:block;color:#fff;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.title }}</span><span style="display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;color:rgba(255,255,255,.5);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.album }}</span></span>
+                      <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#D8B08C;width:32px;flex:0 0 32px;text-align:right">{{ t.plays }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="margin-top:22px;background:rgba(247,248,243,.95);color:#1C221E;padding:16px 16px 8px;border-radius:2px">
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.16em;color:#6B766C">RATED IN MY LIBRARY</div>
+                  <sc-for list="{{ ar.rated }}" as="r" hint-placeholder-count="2">
+                    <div style="display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid #DDE2D8">
+                      <span style="{{ r.thumb }}"></span>
+                      <span style="flex:1 1 auto;min-width:0"><span style="display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;color:#6B766C;margin-top:2px">{{ r.sub }}</span></span>
+                      <span style="{{ r.score }}">{{ r.rating }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </div>
+        </x-import>
+      </div>
+    </div>
+
+    <div style="max-width:820px;margin:52px auto 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px">
+      <sc-for list="{{ notes }}" as="n" hint-placeholder-count="3">
+        <div style="border-left:2px solid #9E5C34;padding-left:14px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:#6B766C;text-transform:uppercase">{{ n.label }}</div>
+          <div style="font-size:13px;line-height:1.65;color:#4E574F;margin-top:7px;text-wrap:pretty">{{ n.body }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180,&quot;height&quot;:1200}}">
+const ALBUMS = [
+  { id:1, name:"Paper Radio", artist:"Nyx Bellamy", release:"2024-04-12", len:"43:18", rating:9.5, rated:"2024-05-02", mins:1840, c1:"#254742", c2:"#7E5A2E", top3:[["Shortwave","4:12"],["Antenna Song","3:48"],["Paper Radio","6:02"]] },
+  { id:2, name:"Salt Cathedral", artist:"Marielle Voss", release:"2019-09-27", len:"51:04", rating:9.0, rated:"2020-01-18", mins:1425, c1:"#2C3A4A", c2:"#6B4A55", top3:[["Tidewater","5:31"],["The Nave","7:14"],["Bell Weather","4:05"]] },
+  { id:3, name:"Nightschool", artist:"The Aviary Practice", release:"2018-02-09", len:"38:47", rating:9.0, rated:"2021-06-30", mins:1610, c1:"#3A2E4A", c2:"#2F5148", top3:[["Second Period","3:22"],["Corridor Light","4:47"],["Homeroom","3:01"]] },
+  { id:4, name:"Wintering", artist:"Halve the Distance", release:"2021-11-05", len:"41:20", rating:8.5, rated:"2022-03-14", mins:980, c1:"#2E4A45", c2:"#54463A", top3:[["Cold Frame","4:40"],["Hedgerow","5:12"],["February Light","3:55"]] },
+  { id:5, name:"Almanac", artist:"Sable Ito", release:"2025-03-21", len:"47:55", rating:8.0, rated:"2025-04-08", mins:720, c1:"#3F4230", c2:"#6E4630", top3:[["Thaw Index","5:02"],["Twelve Fields","4:18"],["Almanac","6:40"]] },
+  { id:6, name:"Fluorescent Hours", artist:"The Kilner Set", release:"2023-06-16", len:"36:12", rating:7.5, rated:"2023-08-01", mins:540, c1:"#334A55", c2:"#5B4A2E", top3:[["Night Shift","3:38"],["Break Room","4:02"],["Clock Out","3:19"]] },
+  { id:7, name:"Two Rivers Deep", artist:"Cormac Hale", release:"2015-08-04", len:"54:30", rating:8.0, rated:"2019-11-22", mins:1120, c1:"#2B4033", c2:"#5A4A2C", top3:[["Ferrymen","6:22"],["Low Water","5:08"],["Two Rivers","7:45"]] },
+  { id:8, name:"Long Grass", artist:"Emmeline Kord", release:"2020-05-29", len:"44:09", rating:8.5, rated:"2021-02-11", mins:860, c1:"#3D4A2C", c2:"#2E4652", top3:[["Meadow Rule","4:31"],["Kestrel","3:56"],["Long Grass","5:44"]] },
+  { id:9, name:"Static Bloom", artist:"Junipero Ash", release:"2022-10-07", len:"39:33", rating:7.0, rated:"2022-12-19", mins:410, c1:"#4A3340", c2:"#2F4A4A", top3:[["Carrier","4:09"],["Bloom","3:47"],["Grey Card","4:55"]] },
+  { id:10, name:"Coastal Shelf", artist:"Rue Mercier", release:"2023-01-20", len:"46:41", rating:7.5, rated:"2024-02-03", mins:495, c1:"#26454E", c2:"#5E4A38", top3:[["Shelf Life","5:20"],["Breakwater","4:38"],["Sea Fret","6:11"]] },
+  { id:11, name:"Low Country", artist:"Odell Frame", release:"2017-03-15", len:"48:22", rating:6.5, rated:"2020-08-09", mins:290, c1:"#3E3A2C", c2:"#4A2F33", top3:[["Levee","4:44"],["Delta Bell","5:29"],["Backwater","3:58"]] },
+  { id:12, name:"Blue Ceramic", artist:"Tomo Vance", release:"2024-08-30", len:"33:58", rating:6.0, rated:"2025-01-27", mins:180, c1:"#2F3E52", c2:"#4E4A3A", top3:[["Kiln","3:12"],["Glaze","4:01"],["Blue Ceramic","3:44"]] },
+  { id:13, name:"Hollow Point Green", artist:"Fenn & Marlowe", release:"2016-07-12", len:"42:15", rating:5.5, rated:"2019-05-14", mins:150, c1:"#3A4632", c2:"#4A3628", top3:[["Green Room","4:22"],["Hollow Point","5:03"],["Marlowe's Turn","3:37"]] },
+  { id:14, name:"Rope Ladder", artist:"Perch", release:"2021-04-02", len:"29:44", rating:4.5, rated:"2022-07-05", mins:95, c1:"#42383A", c2:"#33484A", top3:[["Rung One","2:58"],["Ladder","3:26"],["Down","2:41"]] }
+];
+const TOP5 = [1,2,3,4,5];
+const YEAR_MINUTES = { 2019:4820, 2020:7310, 2021:9240, 2022:8130, 2023:11470, 2024:12960, 2025:10420, 2026:6180 };
+const MARKS = ["circle","band","split","corner"];
+const MONTH_NAMES = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+const STAT_YEARS = Object.keys(YEAR_MINUTES).map(Number).sort((a,b)=>a-b);
+const TODAY = "2026-08-27";
+const PER_PAGE = 6;
+const BIG = 196;
+
+const TRACKLISTS = {
+  1:["Dial Tone","Shortwave","Static Room","Antenna Song","Ham Radio Hymn","Paper Radio","Sign Off"],
+  2:["Ambry","Tidewater","Transept","The Nave","Salt Air","Bell Weather","Vespers"],
+  3:["Homeroom","Second Period","Locker Song","Corridor Light","Detention","Late Bus"],
+  4:["Frostwork","Cold Frame","Woodsmoke","Hedgerow","February Light","Thaw Line"],
+  5:["Sowing Table","Thaw Index","Twelve Fields","Long Range","Frost Date","Almanac"],
+  6:["Badge","Night Shift","Vending Machine","Break Room","Overtime","Clock Out"],
+  7:["Oarlock","Ferrymen","Slack Tide","Low Water","Confluence","Two Rivers","Downstream"],
+  8:["Verge","Meadow Rule","Hayfield","Kestrel","Fallow","Long Grass"],
+  9:["Signal Garden","Carrier","Noise Floor","Bloom","Pollen","Grey Card"],
+  10:["Groyne","Shelf Life","Spring Tide","Breakwater","Harbour Light","Sea Fret"],
+  11:["Silt","Levee","Cypress","Delta Bell","Flood Stage","Backwater"],
+  12:["Slip","Kiln","Bisque","Glaze","Wheel","Blue Ceramic"],
+  13:["Backline","Green Room","Fenn's Waltz","Hollow Point","Curtain","Marlowe's Turn"],
+  14:["Knot","Rung One","Reach","Ladder","Drop","Down"]
+};
+const REVIEWS = {
+  1:"Recorded in a shed with the door open, and you can hear the weather changing behind every take. The title track earns its six minutes twice over.",
+  2:"Reverb as architecture — the room is the second instrument. Loses a half point for the two interludes that go nowhere in particular."
+};
+const H = str => { let h = 2166136261; for (let i=0;i<str.length;i++) { h ^= str.charCodeAt(i); h = Math.imul(h,16777619); } return Math.abs(h); };
+const secs = len => { const [m,s] = len.split(":").map(Number); return m*60+(s||0); };
+const trackPlays = t => 5 + H("p"+t) % 96;
+
+const ARTISTS = Object.values(ALBUMS.reduce((m,a) => {
+  (m[a.artist] = m[a.artist] || { name:a.artist, albums:[], c1:a.c1, c2:a.c2 }).albums.push(a);
+  return m;
+}, {}));
+ARTISTS.forEach(ar => {
+  ar.initials = ar.name.replace(/^The /,"").split(/[\s&]+/).filter(Boolean).slice(0,2).map(w => w[0]).join("");
+});
+const ARTIST_BY_NAME = {}; ARTISTS.forEach(a => { ARTIST_BY_NAME[a.name] = a; });
+
+const dailyYear = y => {
+  const last = y === 2026 ? TODAY : y+"-12-31";
+  const out = [];
+  for (let m=0;m<12;m++) {
+    const dim = new Date(Date.UTC(y,m+1,0)).getUTCDate();
+    for (let d=1;d<=dim;d++) {
+      const iso = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+      if (iso > last) { out.push({ iso, mins:null, month:m }); continue; }
+      const n = H(iso) % 1000;
+      out.push({ iso, month:m, mins:(n % 100 < 21) ? 0 : Math.round(5 + Math.pow(n/1000,1.7) * 235) });
+    }
+  }
+  return out;
+};
+const quantiles = vals => { const v = vals.slice().sort((a,b)=>a-b); return [0.2,0.4,0.6,0.8].map(p => v[Math.min(v.length-1, Math.floor(p*v.length))]); };
+const discovery = (y, mode) => MONTH_NAMES.map((_,m) => {
+  const seed = H(mode+y+"disc"+m);
+  if (y === 2026 && m > 7) return { nw:0, rp:0 };
+  return mode === "artists" ? { nw:1 + seed % 7, rp:5 + (seed >> 4) % 15 } : { nw:4 + seed % 24, rp:24 + (seed >> 4) % 72 };
+});
+
+class Component extends DCLogic {
+  state = {
+    hero:0, page:0, sortKey:"rating", sortDir:"desc", filtersOpen:false,
+    statYear:2026, songMetric:"plays", discMode:"artists", menuOpen:false
+  };
+
+  fmt(n) { return n.toLocaleString("en-US"); }
+  rate(v) { return v.toFixed(1); }
+  dateShort(s) { return new Date(s + "T00:00:00").toLocaleDateString("en-US",{month:"short",year:"numeric"}); }
+  dateDay(s) { return new Date(s + "T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}); }
+  markStyle(a, size) {
+    const kind = MARKS[a.id % MARKS.length], c = a.c2;
+    if (kind === "circle") return `position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:${size*0.46}%;aspect-ratio:1;border-radius:50%;background:${c};box-shadow:0 0 0 1px rgba(255,255,255,.14)`;
+    if (kind === "band") return `position:absolute;left:0;right:0;top:52%;height:${size*0.16}%;background:${c}`;
+    if (kind === "split") return `position:absolute;right:0;top:0;bottom:0;width:38%;background:${c}`;
+    return `position:absolute;right:10%;bottom:14%;width:${size*0.34}%;aspect-ratio:1;background:${c};transform:rotate(45deg)`;
+  }
+  chip(on) {
+    return `padding:8px 12px;border:1px solid ${on ? "#9E5C34" : "#B9C1B3"};background:${on ? "#9E5C34" : "#F4F5F0"};color:${on ? "#F8F4EF" : "#4E574F"};border-radius:2px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;white-space:nowrap;min-height:36px`;
+  }
+  tab(label, icon, on) {
+    return {
+      label, icon,
+      style:`flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 4px;border-radius:8px;background:${on ? "rgba(158,92,52,.12)" : "transparent"};color:${on ? "#9E5C34" : "#7A8479"};font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase`
+    };
+  }
+
+  sorted() {
+    const s = this.state, dir = s.sortDir === "asc" ? 1 : -1, key = s.sortKey;
+    return ALBUMS.slice().sort((a,b) => key === "rating" ? (a.rating-b.rating)*dir
+      : key === "minutes" ? (a.mins-b.mins)*dir
+      : key === "release" ? (a.release < b.release ? -1 : 1)*dir
+      : (a.rated < b.rated ? -1 : 1)*dir);
+  }
+
+  renderVals() {
+    const s = this.state, statYear = s.statYear;
+    const rows = this.sorted();
+    const heroAlbum = ALBUMS.find(a => a.id === TOP5[s.hero]) || ALBUMS[0];
+    const pageCount = Math.ceil(rows.length / PER_PAGE);
+    const page = Math.min(s.page, pageCount-1);
+
+    const days = dailyYear(statYear);
+    const live = days.filter(d => d.mins !== null);
+    const nz = live.filter(d => d.mins > 0).map(d => d.mins);
+    const qs = nz.length ? quantiles(nz) : [1,2,3,4];
+    const shades = ["#E9DFD2","#DCBFA2","#C7936C","#A96A3E","#874C23"];
+    const bucket = m => m <= qs[0] ? 0 : m <= qs[1] ? 1 : m <= qs[2] ? 2 : m <= qs[3] ? 3 : 4;
+    const firstDow = new Date(Date.UTC(statYear,0,1)).getUTCDay();
+    const busiest = live.reduce((b,d) => (d.mins > (b ? b.mins : -1) ? d : b), null);
+
+    const yearAlbums = ALBUMS.filter(a => +a.rated.slice(0,4) <= statYear);
+    const seed = statYear % 7 + 3;
+    const scale = (a,i) => Math.round(a.mins * (0.22 + ((a.id*seed + i) % 9)/22));
+    const board = yearAlbums.map((a,i) => ({ a, m:scale(a,i) })).sort((x,y) => y.m - x.m);
+    const artistMap = {};
+    board.forEach(({a,m}) => { artistMap[a.artist] = (artistMap[a.artist]||0) + m; });
+    const artistList = Object.entries(artistMap).sort((a,b) => b[1]-a[1]);
+    const artistMax = artistList.length ? artistList[0][1] : 1;
+    const chartMax = Math.max(...Object.values(YEAR_MINUTES));
+
+    const songPool = board.slice(0,8).flatMap(({a}) => a.top3.map(t => [t[0], a.artist, t[1], a]));
+    const songs = songPool.slice(0,6);
+    const peek = songPool.slice(0,3);
+    const disc = discovery(statYear, s.discMode);
+    const discMax = Math.max(...disc.map(d => d.nw + d.rp), 1);
+
+    const rangeVis = (label, lo, hi, min, max, fmt) => {
+      const pct = v => ((v-min)/(max-min))*100;
+      const thumb = v => `position:absolute;top:50%;left:${pct(v)}%;transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;background:#F4F5F0;border:2px solid #9E5C34;box-shadow:0 2px 4px rgba(24,32,26,.24)`;
+      return {
+        label, readout: `${fmt(lo)} – ${fmt(hi)}`,
+        fill:`position:absolute;top:50%;transform:translateY(-50%);height:4px;border-radius:2px;background:#9E5C34;left:${pct(lo)}%;width:${pct(hi)-pct(lo)}%`,
+        lo:thumb(lo), hi:thumb(hi)
+      };
+    };
+
+    const A = ALBUMS[0];
+    const alist = TRACKLISTS[A.id];
+    const top3n = A.top3.map(t => t[0]);
+    const wts = alist.map(t => (0.5 + (H("w"+A.name+t) % 100)/100) * (top3n.includes(t) ? 2.4 : 1));
+    const wsum = wts.reduce((x,y)=>x+y,0);
+    const pcts = wts.map(w => (w/wsum)*100);
+    const pMax = Math.max(...pcts);
+    const badgeStyle = accent => `display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;background:${accent?"rgba(216,176,140,.22)":"rgba(255,255,255,.1)"};border:1px solid ${accent?"rgba(216,176,140,.65)":"rgba(255,255,255,.3)"};color:${accent?"#F2DDC6":"rgba(255,255,255,.86)"}`;
+
+    const AR = ARTIST_BY_NAME["Marielle Voss"];
+    const arYear = 2024;
+    const arLifetime = AR.albums.reduce((t,a)=>t+a.mins,0);
+    const arFirst = AR.albums.map(a => a.rated).sort()[0];
+    const arFirstYear = +arFirst.slice(0,4);
+    const arActive = STAT_YEARS.filter(y => y >= arFirstYear);
+    const arRaw = arActive.map(y => 0.3 + (H(AR.name+"y"+y) % 1000)/1000);
+    const arRawSum = arRaw.reduce((x,y)=>x+y,0) || 1;
+    const arYearTotals = {};
+    arActive.forEach((y,i) => { arYearTotals[y] = Math.round(arLifetime * arRaw[i] / arRawSum); });
+    const arYearMins = y => arYearTotals[y] || 0;
+    const arYearTotal = arYearMins(arYear);
+    const arStartM = arYear === arFirstYear ? +arFirst.slice(5,7) - 1 : 0;
+    const arEndM = arYear === 2026 ? 7 : 11;
+    const arMWts = MONTH_NAMES.map((_,m) => (m < arStartM || m > arEndM) ? 0 : 0.25 + (H(AR.name+arYear+"m"+m)%1000)/1000);
+    const arMSum = arMWts.reduce((x,y)=>x+y,0) || 1;
+    const arMonths = arMWts.map(w => Math.round(arYearTotal * w / arMSum));
+    const arShare = arMonths.map(v => Math.min(100, (v / Math.max(1, Math.round(YEAR_MINUTES[arYear]/12))) * 100));
+    const arMax = Math.ceil(Math.max(...arMonths)/20)*20 || 20;
+    const AX = i => 30 + i*(300/11), AY = v => 152 - (v/arMax)*130, AYS = p => 152 - (p/100)*130;
+    const arSongs = AR.albums.flatMap(a => TRACKLISTS[a.id].map(t => ({ title:t, album:a.name, plays:trackPlays(t), al:a })))
+      .sort((x,y)=>y.plays-x.plays).slice(0,5);
+    const arYearMax = Math.max(...arActive.map(arYearMins), 1);
+
+    return {
+      dw:402, dh:874,
+
+      sheetShell:`position:relative;min-height:100%;background:${A.c1};overflow:hidden`,
+      sheetWash:`position:absolute;inset:0;background:radial-gradient(120% 55% at 78% 0%, ${A.c2} 0%, transparent 62%), linear-gradient(180deg, rgba(255,255,255,.06), rgba(10,14,11,.5))`,
+      ab:{
+        stickyBg:`${A.c1}E8`, name:A.name, artist:A.artist.toUpperCase(), rating:this.rate(A.rating), review:REVIEWS[A.id],
+        sleeve:`position:relative;width:130px;height:130px;flex:0 0 130px;overflow:hidden;background:linear-gradient(152deg,${A.c1} 0%,${A.c1} 46%,${A.c2} 100%);box-shadow:0 12px 28px rgba(10,14,11,.45)`,
+        mark:this.markStyle(A, 68),
+        badges:[
+          { icon:"★", label:"All-time top 5 · No.1", style:badgeStyle(true) },
+          { icon:"◆", label:"Top album of 2024", style:badgeStyle(false) }
+        ],
+        facts:[
+          { label:"RELEASED", value:this.dateShort(A.release) },
+          { label:"FIRST LISTENED", value:this.dateShort("2024-04-20") },
+          { label:"LENGTH", value:A.len },
+          { label:"LIFETIME MINUTES", value:this.fmt(A.mins) }
+        ],
+        trackShare: alist.map((t,i) => ({
+          no:String(i+1).padStart(2,"0"), title:t, pct:pcts[i].toFixed(1)+"%",
+          pctColor: pcts[i] === pMax ? "#D8B08C" : "rgba(255,255,255,.62)",
+          bar:`position:absolute;left:0;top:0;bottom:0;width:${pcts[i].toFixed(1)}%;border-radius:999px;background:linear-gradient(90deg,rgba(216,176,140,.35),${pcts[i]===pMax?"#E8C79F":"#D8B08C"});box-shadow:0 0 0 1px rgba(255,255,255,.1)`
+        }))
+      },
+
+      artistShell:`position:relative;min-height:100%;background:${AR.c1};overflow:hidden`,
+      artistWash:`position:absolute;inset:0;background:radial-gradient(120% 55% at 78% 0%, ${AR.c2} 0%, transparent 62%), linear-gradient(180deg, rgba(255,255,255,.06), rgba(10,14,11,.5))`,
+      ar:{
+        stickyBg:`${AR.c1}E8`, name:AR.name, initials:AR.initials, year:String(arYear),
+        albumsLine:`${AR.albums.length} RATED RECORD${AR.albums.length>1?"S":""} IN THE INDEX`,
+        avatar:`width:76px;height:76px;flex:0 0 76px;border-radius:50%;background:linear-gradient(152deg,${AR.c1},${AR.c2});box-shadow:0 12px 28px rgba(10,14,11,.45),inset 0 0 0 1px rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 700;font-size:24px;color:rgba(255,255,255,.9)`,
+        chartAria:`Minutes per month for ${AR.name} in ${arYear}`,
+        facts:[
+          { label:"LIFETIME MINUTES", value:this.fmt(arLifetime) },
+          { label:"FIRST LISTENED", value:this.dateShort("2020-01-30") },
+          { label:`MINUTES IN ${arYear}`, value:this.fmt(arYearTotal) },
+          { label:"MEAN SCORE", value:(AR.albums.reduce((t,a)=>t+a.rating,0)/AR.albums.length).toFixed(1) }
+        ],
+        grid:[0,1,2,3].map(i => ({ y: 22 + i*43 })),
+        minPts: arMonths.map((v,i) => `${AX(i).toFixed(1)},${AY(v).toFixed(1)}`).join(" "),
+        sharePts: arShare.map((v,i) => `${AX(i).toFixed(1)},${AYS(v).toFixed(1)}`).join(" "),
+        dots: arMonths.map((v,i) => ({ x:+AX(i).toFixed(1), y:+AY(v).toFixed(1) })),
+        labels:[
+          ...[0,0.5,1].map(f => ({ x:26, y:156 - f*130, t:String(Math.round(arMax*f)), fill:"rgba(255,255,255,.55)", anchor:"end" })),
+          ...[0,50,100].map(p => ({ x:334, y:156 - (p/100)*130, t:p+"%", fill:"rgba(255,255,255,.34)", anchor:"start" })),
+          ...MONTH_NAMES.map((n,i) => ({ x:+AX(i).toFixed(1), y:174, t:n[0], fill:"rgba(255,255,255,.5)", anchor:"middle" }))
+        ],
+        yearBars: arActive.map(y => {
+          const v = arYearMins(y), on = y === arYear;
+          return {
+            year:String(y).slice(2),
+            bar:`display:block;height:${Math.max(3, Math.round((v/arYearMax)*58))}px;border-radius:2px 2px 0 0;background:${on?"#D8B08C":"rgba(255,255,255,.28)"}`,
+            lab:`display:block;font-family:'IBM Plex Mono',monospace;font-size:8px;color:${on?"#D8B08C":"rgba(255,255,255,.45)"};padding-top:5px;text-align:center`
+          };
+        }),
+        songs: arSongs.map((t,i) => ({
+          rank:String(i+1).padStart(2,"0"), title:t.title, album:t.album, plays:String(t.plays),
+          art:`position:relative;width:32px;height:32px;flex:0 0 32px;overflow:hidden;background:linear-gradient(150deg,${t.al.c1},${t.al.c2});box-shadow:0 2px 8px rgba(10,14,11,.3)`,
+          artMark:this.markStyle(t.al, 38)
+        })),
+        rated: AR.albums.slice().sort((x,y)=>y.rating-x.rating).map(a => ({
+          name:a.name, sub:`${a.release.slice(0,4)} · RATED ${this.dateShort(a.rated).toUpperCase()}`,
+          thumb:`width:36px;height:36px;flex:0 0 36px;background:linear-gradient(150deg,${a.c1},${a.c2})`,
+          score:`font-family:'IBM Plex Mono',monospace;font-size:16px;color:#1C221E;border-bottom:2px solid ${a.c2};padding-bottom:1px`,
+          rating:this.rate(a.rating)
+        }))
+      },
+
+      stageStyle:`position:relative;height:${Math.round(BIG*1.3)}px;user-select:none`,
+      navBtn:"width:40px;height:40px;flex:0 0 40px;border:1px solid #1C221E;background:transparent;border-radius:50%;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:13px",
+      hero:{ name:heroAlbum.name, artist:heroAlbum.artist, meta:`${heroAlbum.release.slice(0,4)} · ${heroAlbum.len} · ${this.rate(heroAlbum.rating)} / 10` },
+      wheel: TOP5.map((id,i) => {
+        const a = ALBUMS.find(x => x.id === id) || ALBUMS[0];
+        const n = TOP5.length;
+        let k = i - s.hero; if (k > n/2) k -= n; if (k < -n/2) k += n;
+        const abs = Math.abs(k);
+        const size = BIG * (abs === 0 ? 1 : abs === 1 ? 0.7 : 0.5);
+        const step = BIG * 0.52;
+        return {
+          rating:this.rate(a.rating), year:a.release.slice(0,4), aria:`Show ${a.name} by ${a.artist}`,
+          stage:`position:absolute;left:50%;top:0;transform:translateX(-50%) translateX(${(k*step).toFixed(1)}px) translateY(${abs*20}px) rotate(${k*7}deg);transition:transform 420ms cubic-bezier(.22,.7,.2,1);z-index:${10-abs};opacity:${abs>2?0:1};pointer-events:${abs>2?"none":"auto"}`,
+          sleeveBtn:`position:relative;display:block;width:${size.toFixed(0)}px;height:${size.toFixed(0)}px;padding:0;border:0;background:none;cursor:pointer;filter:${abs===0?"none":`saturate(.72) brightness(${abs===1?.82:.66})`};transition:filter 420ms ease`,
+          sleeveBg:`position:relative;width:100%;height:100%;overflow:hidden;background:linear-gradient(152deg,${a.c1} 0%,${a.c1} 46%,${a.c2} 100%);box-shadow:0 ${abs===0?20:10}px ${abs===0?40:22}px rgba(24,32,26,${abs===0?.34:.2})`,
+          mark:this.markStyle(a, 100),
+          stamp:`position:absolute;bottom:-13px;right:-11px;background:#9E5C34;color:#F8F4EF;font-family:'IBM Plex Mono',monospace;font-size:${abs===0?16:12}px;padding:${abs===0?"7px 10px":"5px 8px"};box-shadow:0 6px 16px rgba(24,32,26,.28);opacity:${abs===0?1:0}`,
+          go:() => this.setState({ hero:i })
+        };
+      }),
+      dots: TOP5.map((id,i) => ({
+        aria:`Show album ${i+1}`,
+        style:`width:${i===s.hero?20:8}px;height:8px;border-radius:4px;border:0;padding:0;cursor:pointer;background:${i===s.hero?"#9E5C34":"#BCC5B8"};transition:width 220ms ease`,
+        go:() => this.setState({ hero:i })
+      })),
+
+      countLine:`${ALBUMS.length} CARDS`,
+      filterLabel: s.filtersOpen ? "FILTERS ▴" : "FILTERS ▾",
+      filterBtn:this.chip(s.filtersOpen),
+      filtersOpen:s.filtersOpen,
+      toggleFilters:() => this.setState(p => ({ filtersOpen:!p.filtersOpen })),
+      ranges:[
+        rangeVis("Release year", 2015, 2026, 2015, 2026, v => String(v)),
+        rangeVis("Rated in", 2019, 2026, 2019, 2026, v => String(v)),
+        rangeVis("Rating", 4.5, 9.5, 0, 10, v => v.toFixed(1))
+      ],
+      sorts:[{k:"rating",label:"SCORE"},{k:"release",label:"RELEASED"},{k:"rated",label:"RATED"},{k:"minutes",label:"MINUTES"}].map(o => {
+        const on = s.sortKey === o.k;
+        return {
+          label: on ? `${o.label} ${s.sortDir === "desc" ? "↓" : "↑"}` : o.label,
+          on: on ? "true" : "false", style:this.chip(on),
+          go:() => this.setState(p => p.sortKey === o.k ? { sortDir: p.sortDir === "desc" ? "asc" : "desc", page:0 } : { sortKey:o.k, sortDir:"desc", page:0 })
+        };
+      }),
+      rows: rows.slice(page*PER_PAGE, page*PER_PAGE+PER_PAGE).map((a,i) => ({
+        idx:String(page*PER_PAGE+i+1).padStart(2,"0"),
+        name:a.name, artist:a.artist, rating:this.rate(a.rating),
+        meta:`${a.release.slice(0,4)} · ${this.fmt(a.mins)} MIN · RATED ${this.dateShort(a.rated).toUpperCase()}`,
+        style:`display:flex;align-items:center;gap:11px;width:100%;min-height:64px;padding:11px 8px;background:${i%2?"#EBEEE6":"transparent"};border:0;border-bottom:1px solid #DDE2D8;border-left:3px solid ${a.c2};cursor:pointer;color:inherit;transition:background 160ms ease`,
+        thumb:`position:relative;width:48px;height:48px;flex:0 0 48px;overflow:hidden;background:linear-gradient(150deg,${a.c1},${a.c2});box-shadow:0 2px 6px rgba(24,32,26,.18)`,
+        thumbMark:this.markStyle(a, 54),
+        score:`font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:500;color:#1C221E;border-bottom:2px solid ${a.c2};padding-bottom:1px`,
+        open:() => {}
+      })),
+      pageLine:`${page*PER_PAGE+1}–${Math.min(rows.length, page*PER_PAGE+PER_PAGE)} OF ${rows.length}`,
+      pages: Array.from({length:pageCount}, (_,i) => ({
+        label:String(i+1), on: i === page ? "true" : "false",
+        style:`min-width:36px;min-height:36px;padding:6px 9px;border:1px solid ${i===page?"#9E5C34":"#B9C1B3"};background:${i===page?"#9E5C34":"transparent"};color:${i===page?"#F8F4EF":"#4E574F"};border-radius:2px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px`,
+        go:() => this.setState({ page:i })
+      })),
+      prevStyle:`min-width:36px;min-height:36px;border:1px solid ${page===0?"#DDE2D8":"#B9C1B3"};background:transparent;color:${page===0?"#C2CABE":"#4E574F"};border-radius:2px;cursor:${page===0?"default":"pointer"};font-family:'IBM Plex Mono',monospace;font-size:11px`,
+      nextStyle:`min-width:36px;min-height:36px;border:1px solid ${page>=pageCount-1?"#DDE2D8":"#B9C1B3"};background:transparent;color:${page>=pageCount-1?"#C2CABE":"#4E574F"};border-radius:2px;cursor:${page>=pageCount-1?"default":"pointer"};font-family:'IBM Plex Mono',monospace;font-size:11px`,
+      pagePrev:() => this.setState(p => ({ page: Math.max(0, Math.min(p.page, pageCount-1) - 1) })),
+      pageNext:() => this.setState(p => ({ page: Math.min(pageCount-1, Math.min(p.page, pageCount-1) + 1) })),
+
+      tabsA:[this.tab("Library","▤",true), this.tab("Stats","▦",false), this.tab("Admin","✎",false)],
+      tabsB:[this.tab("Library","▤",false), this.tab("Stats","▦",true), this.tab("Admin","✎",false)],
+
+      statYear:String(statYear),
+      statYears: STAT_YEARS.slice().reverse().map(y => ({
+        label:String(y), on: y === statYear ? "true" : "false", style:this.chip(y === statYear),
+        go:() => this.setState({ statYear:y })
+      })),
+      statCards:[
+        {label:`Minutes in ${statYear}`, value:this.fmt(YEAR_MINUTES[statYear]||0), note:`${Math.round((YEAR_MINUTES[statYear]||0)/60)} hours`},
+        {label:"Days listening", value:String(live.filter(d => d.mins > 0).length), note:"this year"},
+        {label:"Albums rated", value:String(ALBUMS.filter(a => a.rated.slice(0,4) === String(statYear)).length), note:"cards filed"},
+        {label:"Mean score", value:(ALBUMS.reduce((t,a)=>t+a.rating,0)/ALBUMS.length).toFixed(2), note:"whole index"}
+      ].map((c,i) => ({ ...c, style:`background:${i%2?"#F0F2EB":"#F4F5F0"};padding:13px 14px 14px` })),
+      chart: STAT_YEARS.map(y => {
+        const on = y === statYear;
+        return {
+          year:String(y).slice(2), aria:`${y}: ${YEAR_MINUTES[y]} minutes`,
+          barStyle:`display:block;height:${Math.max(6, Math.round((YEAR_MINUTES[y]/chartMax)*100))}%;background:${on?"#9E5C34":"#B6BFB2"};transition:background 200ms ease`,
+          labStyle:`font-family:'IBM Plex Mono',monospace;font-size:9px;color:${on?"#1C221E":"#6B766C"};padding-top:6px;text-align:center`,
+          go:() => this.setState({ statYear:y })
+        };
+      }),
+
+      heatCells: Array.from({length:firstDow}, () => ({ style:"width:8px;height:8px;border-radius:2px;background:transparent" }))
+        .concat(days.map(d => ({
+          style:`width:8px;height:8px;border-radius:2px;background:${d.mins === null || d.mins === 0 ? "transparent" : shades[bucket(d.mins)]};box-shadow:${d.mins === 0 ? "inset 0 0 0 1px #D3D9CD" : "none"}`
+        }))),
+      heatMonthLabels: MONTH_NAMES.map((n,m) => ({
+        label:n.slice(0,1),
+        style:`flex:${days.filter(d => d.month === m).length/7} 1 0;font-family:'IBM Plex Mono',monospace;font-size:8px;color:#8A948B`
+      })),
+      heatLegend: shades.map(c => ({ style:`width:8px;height:8px;border-radius:2px;background:${c}` })),
+      heatSummary:`BUSIEST DAY ${busiest ? this.dateDay(busiest.iso).toUpperCase() + " · " + busiest.mins + " MIN" : "—"} · YOUR OWN QUANTILES`,
+
+      menuOpen:s.menuOpen, menuOpenAria: s.menuOpen ? "true" : "false",
+      toggleMenu:() => this.setState(p => ({ menuOpen:!p.menuOpen })),
+      burger1:`display:block;width:20px;height:1.5px;background:#1C221E;transition:transform 200ms ease;transform:${s.menuOpen?"translateY(4.5px) rotate(45deg)":"none"}`,
+      burger2:`display:block;width:20px;height:1.5px;background:#1C221E;opacity:${s.menuOpen?0:1};transition:opacity 160ms ease`,
+      burger3:`display:block;width:${s.menuOpen?20:14}px;height:1.5px;background:#9E5C34;transition:transform 200ms ease,width 200ms ease;transform:${s.menuOpen?"translateY(-4.5px) rotate(-45deg)":"none"}`,
+      menuItems:[["Home",""],["Courses",""],["Design",""],["Music — Library","SHELF"],["Music — Stats","YOU ARE HERE"],["Photos",""],["Admin","PRIVATE"]].map(([label,note],i) => {
+        const on = label === "Music — Stats";
+        return {
+          label, note,
+          rowStyle:`display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:44px;padding:10px 0;border-bottom:1px solid ${i===6?"transparent":"#DDE2D8"}`,
+          labelStyle:`font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:${on?"#9E5C34":"#1C221E"};border-bottom:${on?"1px solid #9E5C34":"none"};padding-bottom:1px`
+        };
+      }),
+
+      albumCount:`${board.length} RATED`,
+      tileScroll:"max-height:236px;overflow-y:auto;overscroll-behavior:contain;mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),transparent);-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),transparent)",
+      albumBoard: board.map(({a,m},i) => ({
+        rank:String(i+1).padStart(2,"0"), name:a.name, artist:a.artist, mins:this.fmt(m),
+        thumb:`position:relative;width:28px;height:28px;flex:0 0 28px;overflow:hidden;background:linear-gradient(150deg,${a.c1},${a.c2})`,
+        thumbMark:this.markStyle(a, 34)
+      })),
+
+      artistBoard: artistList.slice(0,5).map(([name,m],i) => {
+        const a = ARTIST_BY_NAME[name] || { initials:"?", c1:"#2B3A33", c2:"#6B4A2E" };
+        return {
+          rank:String(i+1).padStart(2,"0"), name, mins:this.fmt(m), initials:a.initials,
+          avatar:`width:26px;height:26px;flex:0 0 26px;border-radius:50%;background:linear-gradient(150deg,${a.c1},${a.c2});display:flex;align-items:center;justify-content:center;font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 110,'wght' 700;font-size:10px;color:rgba(255,255,255,.9)`,
+          bar:`position:absolute;left:0;top:0;bottom:0;width:${Math.round((m/artistMax)*100)}%;background:#9E5C34`
+        };
+      }),
+
+      songMetrics:[["plays","PLAYS"],["minutes","MIN"]].map(([v,label]) => ({
+        label, on: s.songMetric === v ? "true" : "false",
+        style:`padding:7px 10px;border:0;border-right:1px solid ${s.songMetric===v?"#1C221E":"#C7CEC1"};background:${s.songMetric===v?"#1C221E":"#EDEFE8"};color:${s.songMetric===v?"#F4F5F0":"#4E574F"};cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;min-height:32px`,
+        go:() => this.setState({ songMetric:v })
+      })),
+      topSongs: songs.map((t,i) => {
+        const plays = trackPlays(t[0]);
+        return {
+          rank:String(i+1).padStart(2,"0"), title:t[0], artist:t[1],
+          art:`position:relative;width:32px;height:32px;flex:0 0 32px;overflow:hidden;background:linear-gradient(150deg,${t[3].c1},${t[3].c2})`,
+          artMark:this.markStyle(t[3], 38),
+          metric: s.songMetric === "plays" ? String(plays) : this.fmt(Math.round(plays * secs(t[2])/60)),
+          unit: s.songMetric === "plays" ? "PLAYS" : "MIN"
+        };
+      }),
+      playlistPeek: peek.map((t,i) => ({
+        rank:String(i+1).padStart(2,"0"), title:t[0], artist:t[1], len:t[2],
+        art:`position:relative;width:30px;height:30px;flex:0 0 30px;overflow:hidden;background:linear-gradient(150deg,${t[3].c1},${t[3].c2})`,
+        artMark:this.markStyle(t[3], 36)
+      })),
+
+      discModes:[["artists","ARTISTS"],["tracks","TRACKS"]].map(([v,label]) => ({
+        label, on: s.discMode === v ? "true" : "false",
+        style:`padding:7px 10px;border:0;border-right:1px solid ${s.discMode===v?"#1C221E":"#C7CEC1"};background:${s.discMode===v?"#1C221E":"#EDEFE8"};color:${s.discMode===v?"#F4F5F0":"#4E574F"};cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;min-height:32px`,
+        go:() => this.setState({ discMode:v })
+      })),
+      discBars: disc.map((d,i) => ({
+        month: MONTH_NAMES[i][0],
+        newStyle:`display:block;height:${Math.round((d.nw/discMax)*100)}%;background:#9E5C34;border-radius:2px 2px 0 0;transition:height 200ms ease`,
+        repStyle:`display:block;height:${Math.round((d.rp/discMax)*100)}%;background:#B6BFB2;transition:height 200ms ease`
+      })),
+
+      notes:[
+        { label:"Thumb reach", body:"Sort and year chips scroll horizontally at the top of each list; pagination, tabs and every tap target sit at 36–48px minimum." },
+        { label:"The wheel", body:"The desktop carousel comes across intact — fanned sleeves, rotation, copper score stamp — just scaled to 196px with the arrows and title stacked underneath." },
+        { label:"Dense panels", body:"Calendar and discovery charts keep their full year; the calendar scrolls sideways inside its card so the page itself never does." },
+        { label:"Popups as sheets", body:"Both detail views become full-height sheets over the record's own colour — facts go to a 2×2 grid, the dual-axis chart keeps both lines, and the liner note keeps its ruled paper." }
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

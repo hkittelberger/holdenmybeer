@@ -10,6 +10,10 @@
 
 begin;
 
+-- Neon pooler does not honour a search_path startup option; set it here so
+-- unqualified table names resolve regardless of how psql connected.
+set search_path = public;
+
 -- Primary album artists (the artist object nested under track.album.artists[0])
 insert into artists (id, uri, name, last_refreshed)
 select distinct on (raw->'track'->'album'->'artists'->0->>'id')

@@ -14,6 +14,10 @@
 
 begin;
 
+-- Neon pooler does not honour a search_path startup option; set it here so
+-- unqualified table names resolve regardless of how psql connected.
+set search_path = public;
+
 alter table plays rename to plays_legacy_live;
 alter index plays_pkey rename to plays_legacy_live_pkey;
 alter table plays_legacy_live

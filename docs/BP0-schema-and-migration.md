@@ -131,8 +131,11 @@ Disable the schedule until BP7. Loses listening history for the duration
 (recently-played only backfills 50 plays). Only acceptable if the build is
 very short.
 
-**Recommendation: Option A.** Need confirmation that creating a Neon branch
-is fine, or a pointer to which connection string dev should use.
+**RESOLVED — Option A.** Neon branch `music-ranker-dev` created and is now
+`DATABASE_URL` in `.env`; the primary (cron) connection string moved to
+`DATABASE_URL_CRON`. Migrations 002–005 will run against `music-ranker-dev`.
+`plays_legacy_live` is kept until **BP7** (dropped only after the primary
+migration + switch-back).
 
 ## Logger changes (deferred to BP3/BP7, listed here for review)
 
@@ -147,12 +150,15 @@ is fine, or a pointer to which connection string dev should use.
   (BP3). `.github/workflows/log-plays.yml` itself is **not touched on this
   branch** — the workflow edit happens as part of the BP7 merge.
 
-## Open questions for review
+## Review outcome (2026-08-27) — all resolved
 
-1. Neon dev branch OK? Which `DATABASE_URL` should local dev / preview use?
-2. `album_ratings` shape acceptable (esp. `top_songs text[]` of track URIs,
-   `showcase_rank` for the curated Top 5)?
-3. Keep `plays_legacy_live` until BP3, or drop as soon as 003 verifies?
-4. Rollup timezone: everything uses `America/New_York`. Confirmed.
-5. Should the metadata upsert-from-`raw` live in the logger (Option A above)
-   or stay a separate hourly script step? Recommending: in the logger.
+1. **Neon:** Option A. `DATABASE_URL` → `music-ranker-dev`, `DATABASE_URL_CRON`
+   → primary. ✅
+2. **`album_ratings` shape:** accepted. It stores only curator input. Badges
+   ("Top Album of Year", "All-Time Top 5") and lifetime minutes are **not**
+   stored — they're `ORDER BY … LIMIT` queries over the rollup tables /
+   computed in the frontend. ✅
+3. **`plays_legacy_live`:** keep until **BP7**, drop after the primary
+   migration and switch back to the primary branch. ✅
+4. **Timezone:** `America/New_York` everywhere. ✅
+5. **Metadata upsert-from-`raw`:** lives in the logger (`src/index.ts`). ✅
