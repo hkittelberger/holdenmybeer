@@ -99,6 +99,60 @@ All forms use `use:enhance`; the rating form keeps its bound values on save
 - Profile "Save" → `settings.spotify_profile_url` intact.
 - `album_ratings` row count unchanged at 14 (the 14 SEED rows).
 
+## Post-review fixes (2026-08-28)
+
+- **"Save links" was blanking the other rows.** `use:enhance`'s default
+  native form-reset cleared the bound inputs; the state was only re-seeded
+  from `data` on first mount. Fixed: `keepValues` (`reset: false`) on the
+  wheel / playlists / profile forms + an `$effect` that re-seeds `links`
+  and `profileUrl` from `data` after every `invalidateAll`.
+
+- **Playlist tile showed my top-50, not the linked playlist's tracks.**
+  Investigated: Spotify's Nov-2024 API change means a Development-Mode app
+  **cannot read playlist track contents** with any token — `/v1/playlists/
+  {id}/tracks` returns 403 for both Client Credentials and the logger's
+  user token; `/v1/playlists/{id}` returns metadata but omits `tracks`.
+  The playlist **name** IS readable.
+  - `migrations/011_year_playlist_tracks.sql` — `year_playlists` gets
+    `playlist_name` + `tracks_refreshed`; new `year_playlist_tracks`
+    snapshot table (FK `on delete cascade`).
+  - `savePlaylists` fetches the playlist on save: stores the name, stores
+    tracks *if Spotify returns any* (it won't, today), and returns a
+    per-year warning explaining the tile falls back to my top-50.
+  - Stats `PlaylistPanel` now heads the tile with the real playlist name
+    ("Desert Island '26") + "Open in Spotify" link, and lists my top-50 of
+    that year underneath ("My top 50 of 2026" kicker). If the app ever
+    gets Extended Access, the next "Save links" populates the real
+    tracklist and the tile switches to it automatically.
+
+## Post-review fixes (round 2, 2026-08-28)
+
+- **Filing / editing a rating now collapses the editor** back to the bare
+  search box with a one-line "Filed/Saved/Removed "<album>" ✓ — search for
+  the next one" banner, instead of leaving the populated form open.
+- **Real cover art everywhere.** `Sleeve.svelte` gained a `cover` prop —
+  when set it renders the image, else the generated mark (with an
+  `onerror` fallback). Wired at the catalogue table rows, the carousel,
+  and the album popup. The covers were always in `albums.cover_url`; the
+  catalogue just never used them. `spotify.ts` now stores the 640 px image
+  (was 300); the one 300 px row from an earlier admin add was upgraded.
+- **Discovery chart hover.** The hovered bar segment stays lit while the
+  rest dim to 45 %, its month total turns copper, and it gets a 1.5 px
+  inset outline — matched to the tooltip.
+
+## Answering "can I get playlist tracks later?"
+
+Yes — the block is the app being in **Development Mode**. Request
+promotion in the Spotify dashboard (app → Settings → the quota-extension /
+"extended access" request form; describe the app, link the site, confirm
+brand-guideline compliance). Approval lifts the 25-user cap and restores
+`/v1/playlists/{id}/tracks` for **user-created** playlists (Spotify-owned /
+editorial / algorithmic playlists stay blocked for everyone post-Nov-2024).
+Nothing to change in code afterward — the next "Save links" snapshots the
+real tracklist and `PlaylistPanel` switches to it. May also want to add
+`playlist-read-private` to the logger's OAuth scope if any target playlist
+is private (public ones need no scope).
+
 ## Known follow-ups
 
 - SEED ratings (`scripts/seed-ratings.sql`, all `review_notes` start
@@ -109,7 +163,13 @@ All forms use `use:enhance`; the rating form keeps its bound values on save
   a later cleanup job.
 - Full tracklist autofill (top-song pickers, exact length) only exercised
   once the Spotify quota window clears; the degraded path is what's tested.
-- BP7: add `SPOTIFY_CLIENT_ID` / `SPOTIFY_CLIENT_SECRET` Cloudflare secrets.
+- BP7: add `SPOTIFY_CLIENT_ID` / `SPOTIFY_CLIENT_SECRET` Cloudflare secrets
+  (`cd web && npx wrangler secret put SPOTIFY_CLIENT_ID` etc. — same values
+  as the logger app; nothing new to register). Without them the admin
+  album lookup returns "Spotify credentials not configured".
+- Real playlist tracklists need Spotify **Extended Access** for the app
+  (dashboard request form) — not blocked on us. The snapshot path is ready.
+- Apply `migrations/011` to primary at BP7 (dev already has it).
 
 ## Deploy
 

@@ -168,7 +168,13 @@
 				<MetricToggle options={['plays', 'minutes']} bind:value={songMetric} label="Metric" />
 			{/snippet}
 		</RankBoard>
-		<PlaylistPanel year={data.year} songs={data.songs} url={data.yearPlaylistUrl} />
+		<PlaylistPanel
+			year={data.year}
+			songs={data.songs}
+			playlistTracks={data.playlistTracks}
+			playlistName={data.yearPlaylistName}
+			url={data.yearPlaylistUrl}
+		/>
 	</div>
 
 	<!-- listening calendar -->

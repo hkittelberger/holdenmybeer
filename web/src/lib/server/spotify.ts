@@ -102,11 +102,11 @@ export function toDate(date: string | null, precision: string | null): string | 
 	return date.length === 4 ? `${date}-01-01` : date;
 }
 
-const midImage = (images: Img[]): string | null => {
+const bestImage = (images: Img[]): string | null => {
 	if (!images.length) return null;
-	// Spotify returns largest-first; the 300px middle one is plenty for a card.
-	const sorted = [...images].sort((a, b) => (a.width ?? 0) - (b.width ?? 0));
-	return (sorted[1] ?? sorted[sorted.length - 1]).url;
+	// keep the largest (usually 640px) — matches what the live logger stores
+	// from `raw`, and the carousel hero renders it near full size
+	return [...images].sort((a, b) => (b.width ?? 0) - (a.width ?? 0))[0].url;
 };
 
 const hitFrom = (a: AlbumObj): AlbumSearchHit => ({
@@ -114,7 +114,7 @@ const hitFrom = (a: AlbumObj): AlbumSearchHit => ({
 	name: a.name,
 	artist: a.artists[0]?.name ?? '—',
 	artist_id: a.artists[0]?.id ?? '',
-	cover_url: midImage(a.images),
+	cover_url: bestImage(a.images),
 	release_date: toDate(a.release_date, a.release_date_precision),
 	total_tracks: a.total_tracks
 });
@@ -127,6 +127,62 @@ export async function searchAlbums(query: string, limit = 8): Promise<AlbumSearc
 		`/search?type=album&limit=${limit}&q=${encodeURIComponent(q)}`
 	);
 	return (data.albums?.items ?? []).map(hitFrom);
+}
+
+export interface PlaylistSnapshot {
+	name: string;
+	tracks: {
+		track_name: string;
+		artist_name: string | null;
+		duration_ms: number | null;
+		spotify_url: string | null;
+		cover_url: string | null;
+	}[];
+}
+
+/** Playlist id from an open.spotify.com URL or a bare/`spotify:` id. */
+export function playlistId(input: string): string | null {
+	const s = input.trim();
+	const m = s.match(/playlist[/:]([A-Za-z0-9]+)/);
+	if (m) return m[1];
+	return /^[A-Za-z0-9]+$/.test(s) ? s : null;
+}
+
+/**
+ * `/v1/playlists/{id}` — for the Stats "public playlist" tile.
+ *
+ * NOTE (Spotify Nov-2024 API change): an app in Development Mode gets the
+ * playlist *name* here but NO `tracks` — `/playlists/{id}/tracks` 403s for
+ * every token type. `.tracks` therefore comes back `[]` until the app is
+ * granted Extended access, at which point this starts returning the real
+ * list and the tile switches to it with no code change.
+ */
+export async function getPlaylist(id: string): Promise<PlaylistSnapshot> {
+	type Item = {
+		track: {
+			name: string;
+			duration_ms: number | null;
+			artists: { name: string }[] | null;
+			external_urls: { spotify?: string } | null;
+			album: { images: Img[] } | null;
+		} | null;
+	};
+	const fields =
+		'name,tracks.items(track(name,duration_ms,artists(name),external_urls,album(images)))';
+	const data = await apiGet<{ name: string; tracks: { items: Item[] } }>(
+		`/playlists/${id}?fields=${encodeURIComponent(fields)}`
+	);
+	const tracks = (data.tracks?.items ?? [])
+		.map((it) => it.track)
+		.filter((t): t is NonNullable<Item['track']> => !!t && !!t.name)
+		.map((t) => ({
+			track_name: t.name,
+			artist_name: (t.artists ?? []).map((a) => a.name).join(', ') || null,
+			duration_ms: t.duration_ms,
+			spotify_url: t.external_urls?.spotify ?? null,
+			cover_url: bestImage(t.album?.images ?? [])
+		}));
+	return { name: data.name, tracks };
 }
 
 /** `/v1/albums/{id}` — full record incl. tracklist, for autofill + track rows. */

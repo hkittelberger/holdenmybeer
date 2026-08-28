@@ -288,7 +288,7 @@
 									{String(pageNum * perPage + i + 1).padStart(data.albums.length > 99 ? 3 : 2, '0')}
 								</span>
 								<span class="w-12 shrink-0 shadow-[0_4px_12px_rgba(24,32,26,.14)]">
-									<Sleeve album={a} />
+									<Sleeve album={a} cover={a.cover_url} />
 								</span>
 								<span class="min-w-0">
 									<span

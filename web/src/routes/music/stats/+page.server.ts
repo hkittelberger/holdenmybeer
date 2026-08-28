@@ -35,6 +35,14 @@ export interface CalendarDay {
 	day: string;
 	minutes: number;
 }
+export interface PlaylistTrack {
+	position: number;
+	track_name: string;
+	artist_name: string | null;
+	duration_ms: number | null;
+	spotify_url: string | null;
+	cover_url: string | null;
+}
 export interface DiscoveryMonth {
 	month: number;
 	artist_new: number;
@@ -69,7 +77,8 @@ export const load: PageServerLoad = async ({ url }) => {
 			calR,
 			discoveryR,
 			settingsR,
-			playlistR
+			playlistR,
+			playlistTracksR
 		] = await Promise.all([
 			pool.query<{ year: string; minutes: string }>(
 				`select extract(year from day)::text as year, round(sum(minutes))::text as minutes
@@ -161,8 +170,20 @@ export const load: PageServerLoad = async ({ url }) => {
 				[year]
 			),
 			pool.query<{ key: string; value: string }>(`select key, value from settings`),
-			pool.query<{ spotify_url: string }>(
-				`select spotify_url from year_playlists where year = $1`,
+			pool.query<{ spotify_url: string; playlist_name: string | null }>(
+				`select spotify_url, playlist_name from year_playlists where year = $1`,
+				[year]
+			),
+			pool.query<{
+				position: number;
+				track_name: string;
+				artist_name: string | null;
+				duration_ms: number | null;
+				spotify_url: string | null;
+				cover_url: string | null;
+			}>(
+				`select position, track_name, artist_name, duration_ms, spotify_url, cover_url
+				 from year_playlist_tracks where year = $1 order by position`,
 				[year]
 			)
 		]);
@@ -246,7 +267,9 @@ export const load: PageServerLoad = async ({ url }) => {
 			},
 			discovery: [...discByMonth.values()],
 			spotifyProfileUrl: settings.spotify_profile_url ?? null,
-			yearPlaylistUrl: playlistR.rows[0]?.spotify_url ?? null
+			yearPlaylistUrl: playlistR.rows[0]?.spotify_url ?? null,
+			yearPlaylistName: playlistR.rows[0]?.playlist_name ?? null,
+			playlistTracks: playlistTracksR.rows as PlaylistTrack[]
 		};
 	});
 };

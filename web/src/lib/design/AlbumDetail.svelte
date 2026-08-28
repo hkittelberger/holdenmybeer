@@ -56,7 +56,7 @@
 				<div
 					class="h-[104px] w-[104px] shrink-0 overflow-hidden shadow-[0_12px_30px_rgba(10,14,11,.35)] sm:h-[152px] sm:w-[152px]"
 				>
-					<Sleeve album={album} />
+					<Sleeve album={album} cover={album.cover_url} />
 				</div>
 				<div class="min-w-0 flex-1">
 					<p class="truncate text-sm text-white/55">{album.artist}</p>

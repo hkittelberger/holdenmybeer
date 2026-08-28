@@ -1,24 +1,71 @@
 <script lang="ts">
 	import Sleeve from './Sleeve.svelte';
 	import { mmss } from './tokens';
-	import type { SongRow } from '../../routes/music/stats/+page.server';
+	import type { PlaylistTrack, SongRow } from '../../routes/music/stats/+page.server';
 
 	let {
 		year,
 		songs,
+		playlistTracks = [],
+		playlistName = null,
 		url = null,
 		show = 20
-	}: { year: number; songs: SongRow[]; url?: string | null; show?: number } = $props();
+	}: {
+		year: number;
+		songs: SongRow[];
+		playlistTracks?: PlaylistTrack[];
+		playlistName?: string | null;
+		url?: string | null;
+		show?: number;
+	} = $props();
 
-	const rows = $derived(songs.slice(0, show));
+	// When the linked playlist has been snapshotted, show its real tracks;
+	// otherwise fall back to my top-50 plays of the year.
+	const fromPlaylist = $derived(playlistTracks.length > 0);
+
+	type Row = {
+		key: string;
+		name: string;
+		artist: string | null;
+		duration_ms: number | null;
+		cover_url: string | null;
+		accent_1: string | null;
+		accent_2: string | null;
+	};
+	const allRows = $derived<Row[]>(
+		fromPlaylist
+			? playlistTracks.map((t) => ({
+					key: `p${t.position}`,
+					name: t.track_name,
+					artist: t.artist_name,
+					duration_ms: t.duration_ms,
+					cover_url: t.cover_url,
+					accent_1: null,
+					accent_2: null
+				}))
+			: songs.map((s) => ({
+					key: s.uri,
+					name: s.name,
+					artist: s.artist,
+					duration_ms: s.duration_ms,
+					cover_url: s.cover_url,
+					accent_1: s.accent_1,
+					accent_2: s.accent_2
+				}))
+	);
+	const rows = $derived(allRows.slice(0, show));
+	const heading = $derived(playlistName ?? `Top ${Math.min(allRows.length, 50)} songs of ${year}`);
+	const kicker = $derived(
+		fromPlaylist ? 'Public playlist' : playlistName ? `My top ${Math.min(allRows.length, 50)} of ${year}` : 'My most-played'
+	);
 </script>
 
 <div class="noscroll flex h-full flex-col overflow-hidden rounded-[3px] bg-ink text-[#d8ded1]">
 	<div class="flex items-start justify-between border-b border-white/12 px-5 pt-4 pb-3">
-		<div>
-			<p class="font-mono text-[10px] tracking-[0.16em] text-white/40 u-caps">Public playlist</p>
-			<h3 class="font-display mt-0.5 text-[15px] font-bold tracking-[0.06em] u-caps">
-				Top {songs.length >= 50 ? 50 : songs.length} songs of {year}
+		<div class="min-w-0">
+			<p class="font-mono text-[10px] tracking-[0.16em] text-white/40 u-caps">{kicker}</p>
+			<h3 class="font-display mt-0.5 truncate text-[15px] font-bold tracking-[0.06em] u-caps">
+				{heading}
 			</h3>
 		</div>
 		{#if url}
@@ -26,12 +73,12 @@
 				href={url}
 				target="_blank"
 				rel="noopener"
-				class="font-mono text-[10px] tracking-[0.12em] text-copper-light underline decoration-copper-light/40 underline-offset-4 u-caps hover:decoration-copper-light"
+				class="shrink-0 font-mono text-[10px] tracking-[0.12em] text-copper-light underline decoration-copper-light/40 underline-offset-4 u-caps hover:decoration-copper-light"
 			>
 				Open in Spotify ↗
 			</a>
 		{:else}
-			<span class="font-mono text-[10px] tracking-[0.12em] text-white/25 italic u-caps">
+			<span class="shrink-0 font-mono text-[10px] tracking-[0.12em] text-white/25 italic u-caps">
 				no playlist linked
 			</span>
 		{/if}
@@ -42,7 +89,7 @@
 			<span>#</span><span></span><span>Title</span><span>Time</span>
 		</div>
 		<ul>
-			{#each rows as s, i (s.uri)}
+			{#each rows as s, i (s.key)}
 				<li
 					class="grid grid-cols-[1.75rem_2rem_1fr_auto] items-center gap-3 border-t border-white/8 px-5 py-2"
 				>
@@ -51,7 +98,7 @@
 						{#if s.cover_url}
 							<img src={s.cover_url} alt="" class="h-full w-full object-cover" loading="lazy" />
 						{:else}
-							<Sleeve album={{ id: s.uri, accent_1: s.accent_1, accent_2: s.accent_2 }} />
+							<Sleeve album={{ id: s.key, accent_1: s.accent_1, accent_2: s.accent_2 }} />
 						{/if}
 					</span>
 					<span class="min-w-0">
@@ -64,9 +111,9 @@
 		</ul>
 	</div>
 
-	{#if songs.length > show}
+	{#if allRows.length > show}
 		<p class="border-t border-white/12 px-5 py-2.5 font-mono text-[9px] tracking-[0.12em] text-white/30 u-caps">
-			Showing {show} of {songs.length >= 50 ? 50 : songs.length}{url ? ' — full list on Spotify' : ''}
+			Showing {show} of {allRows.length}{fromPlaylist && url ? ' — full list on Spotify' : ''}
 		</p>
 	{/if}
 </div>

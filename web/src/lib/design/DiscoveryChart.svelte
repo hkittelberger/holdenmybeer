@@ -15,37 +15,59 @@
 	);
 	const max = $derived(Math.max(1, ...rows.map((r) => r.nw + r.rp)));
 
+	type Seg = 'nw' | 'rp';
 	let tip = $state<{ x: number; y: number; text: string } | null>(null);
-	function show(e: MouseEvent, label: string, n: number) {
-		tip = { x: e.clientX, y: e.clientY, text: `${label}: ${fmt(n)}` };
+	let hover = $state<{ month: number; seg: Seg } | null>(null);
+
+	function enter(e: MouseEvent, month: number, seg: Seg, n: number) {
+		hover = { month, seg };
+		const kind = seg === 'nw' ? 'New' : 'Repeat';
+		tip = { x: e.clientX, y: e.clientY, text: `${kind} ${mode} in ${MONTHS[month - 1]}: ${fmt(n)}` };
 	}
+	function move(e: MouseEvent) {
+		if (tip) tip = { ...tip, x: e.clientX, y: e.clientY };
+	}
+	function leave() {
+		tip = null;
+		hover = null;
+	}
+	const isHot = (month: number, seg: Seg) => hover?.month === month && hover.seg === seg;
+	const dimmed = (month: number, seg: Seg) => hover !== null && !isHot(month, seg);
 </script>
 
 <div class="flex gap-1.5" style="height:210px">
 	{#each rows as r (r.month)}
 		{@const total = r.nw + r.rp}
 		<div class="flex flex-1 flex-col items-center">
-			<span class="mb-1 font-mono text-[9px] text-ink-faint">{total > 0 ? fmt(total) : ''}</span>
+			<span
+				class="mb-1 font-mono text-[9px] transition-colors {hover?.month === r.month
+					? 'text-copper'
+					: 'text-ink-faint'}">{total > 0 ? fmt(total) : ''}</span
+			>
 			<div class="flex w-full flex-1 items-end">
 				<div class="flex w-full flex-col" style="height:max(2px, {(total / max) * 100}%)">
 					{#if r.nw > 0}
 						<button
-							class="w-full bg-copper"
-							style="flex:{r.nw}"
+							class="w-full bg-copper transition-[filter,opacity] duration-150"
+							style="flex:{r.nw}; {isHot(r.month, 'nw')
+								? 'filter:brightness(1.12); box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.6)'
+								: ''} {dimmed(r.month, 'nw') ? 'opacity:.45' : ''}"
 							aria-label={`${MONTHS[r.month - 1]}: ${r.nw} new`}
-							onmouseenter={(e) => show(e, `New ${mode} in ${MONTHS[r.month - 1]}`, r.nw)}
-							onmousemove={(e) => tip && show(e, `New ${mode} in ${MONTHS[r.month - 1]}`, r.nw)}
-							onmouseleave={() => (tip = null)}
+							onmouseenter={(e) => enter(e, r.month, 'nw', r.nw)}
+							onmousemove={move}
+							onmouseleave={leave}
 						></button>
 					{/if}
 					{#if r.rp > 0}
 						<button
-							class="w-full bg-bar-inactive"
-							style="flex:{r.rp}"
+							class="w-full bg-bar-inactive transition-[filter,opacity] duration-150"
+							style="flex:{r.rp}; {isHot(r.month, 'rp')
+								? 'filter:brightness(1.08); box-shadow:inset 0 0 0 1.5px rgba(24,32,26,.4)'
+								: ''} {dimmed(r.month, 'rp') ? 'opacity:.45' : ''}"
 							aria-label={`${MONTHS[r.month - 1]}: ${r.rp} repeat`}
-							onmouseenter={(e) => show(e, `Repeat ${mode} in ${MONTHS[r.month - 1]}`, r.rp)}
-							onmousemove={(e) => tip && show(e, `Repeat ${mode} in ${MONTHS[r.month - 1]}`, r.rp)}
-							onmouseleave={() => (tip = null)}
+							onmouseenter={(e) => enter(e, r.month, 'rp', r.rp)}
+							onmousemove={move}
+							onmouseleave={leave}
 						></button>
 					{/if}
 				</div>

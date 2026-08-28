@@ -6,6 +6,7 @@
  */
 import type { Pool } from '@neondatabase/serverless';
 import type { AlbumFull } from '$lib/spotify-types';
+import { getPlaylist, playlistId } from './spotify';
 
 /**
  * Make sure a picked Spotify album (+ its primary artist + tracklist) exists
@@ -141,34 +142,81 @@ export async function setShowcase(pool: Pool, orderedIds: string[]): Promise<voi
 	}
 }
 
-/** Upsert (non-empty url) or clear (empty url) per-year playlist links. */
+/**
+ * Upsert (non-empty url) or clear (empty url) per-year playlist links, and
+ * snapshot each linked playlist's tracks into `year_playlist_tracks` so the
+ * public Stats tile never has to call Spotify. A snapshot fetch that fails
+ * (bad URL, quota lock) doesn't fail the save — the link is still stored and
+ * the tile falls back to my top-50 until the next successful re-save.
+ *
+ * Returns per-year notes for the ones whose track fetch didn't land.
+ */
 export async function savePlaylists(
 	pool: Pool,
 	entries: { year: number; url: string }[]
-): Promise<void> {
-	const client = await pool.connect();
-	try {
-		await client.query('begin');
-		for (const { year, url } of entries) {
-			const trimmed = url.trim();
-			if (trimmed) {
-				await client.query(
-					`insert into year_playlists (year, spotify_url, updated_at)
-					 values ($1, $2, now())
-					 on conflict (year) do update set spotify_url = excluded.spotify_url, updated_at = now()`,
-					[year, trimmed]
-				);
-			} else {
-				await client.query(`delete from year_playlists where year = $1`, [year]);
-			}
+): Promise<{ warnings: string[] }> {
+	const warnings: string[] = [];
+
+	for (const { year, url } of entries) {
+		const trimmed = url.trim();
+
+		if (!trimmed) {
+			await pool.query(`delete from year_playlists where year = $1`, [year]); // cascades tracks
+			continue;
 		}
-		await client.query('commit');
-	} catch (e) {
-		await client.query('rollback');
-		throw e;
-	} finally {
-		client.release();
+
+		await pool.query(
+			`insert into year_playlists (year, spotify_url, updated_at)
+			 values ($1, $2, now())
+			 on conflict (year) do update set spotify_url = excluded.spotify_url, updated_at = now()`,
+			[year, trimmed]
+		);
+
+		const pid = playlistId(trimmed);
+		if (!pid) {
+			warnings.push(`${year}: not a playlist URL — link saved, tracks not fetched`);
+			continue;
+		}
+
+		try {
+			const snap = await getPlaylist(pid);
+			const client = await pool.connect();
+			try {
+				await client.query('begin');
+				await client.query(
+					`update year_playlists set playlist_name = $2, tracks_refreshed = now() where year = $1`,
+					[year, snap.name || null]
+				);
+				await client.query(`delete from year_playlist_tracks where year = $1`, [year]);
+				let pos = 0;
+				for (const t of snap.tracks) {
+					pos += 1;
+					await client.query(
+						`insert into year_playlist_tracks
+						   (year, position, track_name, artist_name, duration_ms, spotify_url, cover_url)
+						 values ($1, $2, $3, $4, $5, $6, $7)`,
+						[year, pos, t.track_name, t.artist_name, t.duration_ms, t.spotify_url, t.cover_url]
+					);
+				}
+				await client.query('commit');
+			} catch (e) {
+				await client.query('rollback');
+				throw e;
+			} finally {
+				client.release();
+			}
+			// Spotify (Nov-2024 API change) won't return playlist *contents* to an
+			// app without Extended Access — only the name comes back. The tile
+			// then shows my top-50 of the year instead, with the link intact.
+			if (snap.tracks.length === 0) {
+				warnings.push(`${year}: link saved — Spotify won't share this playlist's tracks, so the tile shows my top 50`);
+			}
+		} catch {
+			warnings.push(`${year}: link saved, but Spotify was unreachable — the tile shows my top 50`);
+		}
 	}
+
+	return { warnings };
 }
 
 export async function saveSetting(pool: Pool, key: string, value: string): Promise<void> {

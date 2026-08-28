@@ -6,7 +6,13 @@
 	import type { PageProps } from './$types';
 	import type { RatedAlbum } from './+page.server';
 
-	type FormMsg = { scope?: string; saved?: boolean; deleted?: boolean; error?: string };
+	type FormMsg = {
+		scope?: string;
+		saved?: boolean;
+		deleted?: boolean;
+		error?: string;
+		warnings?: string[];
+	};
 
 	let { data, form }: PageProps = $props();
 
@@ -33,6 +39,7 @@
 
 	function runSearch() {
 		clearTimeout(debounce);
+		justFiled = null;
 		const q = query.trim();
 		if (q.length < 2) {
 			results = [];
@@ -116,6 +123,7 @@
 
 	// pick an already-rated album straight from the list (no Spotify round trip)
 	function editRated(a: RatedAlbum) {
+		justFiled = null;
 		degraded = a.tracks.length === 0;
 		picked = {
 			album: {
@@ -185,12 +193,23 @@
 	}
 
 	// ── yearly playlists ──────────────────────────────────────────────────
-	// svelte-ignore state_referenced_locally -- seeded once; user edits own it
+	// svelte-ignore state_referenced_locally -- re-seeded from data by the $effect below
 	let links = $state(data.playlists.map((p) => ({ ...p })));
-
 	// ── spotify profile ──────────────────────────────────────────────────
-	// svelte-ignore state_referenced_locally -- seeded once; user edits own it
+	// svelte-ignore state_referenced_locally
 	let profileUrl = $state(data.spotifyProfileUrl);
+
+	// after any save, `use:enhance` reloads `data` — pull the persisted values
+	// back into the editable state so the fields reflect what's actually stored
+	let lastCfgSig = $state('');
+	$effect(() => {
+		const sig = JSON.stringify(data.playlists) + '|' + data.spotifyProfileUrl;
+		if (sig !== lastCfgSig) {
+			lastCfgSig = sig;
+			links = data.playlists.map((p) => ({ ...p }));
+			profileUrl = data.spotifyProfileUrl;
+		}
+	});
 
 	const msg = (scope: string): FormMsg | null => {
 		const f = form as FormMsg | null;
@@ -200,6 +219,27 @@
 	// keep the bound form fields intact after a save (don't native-reset)
 	const keepValues = () => async ({ update }: { update: (o?: { reset?: boolean }) => Promise<void> }) =>
 		update({ reset: false });
+
+	// after filing / removing a rating, collapse the editor back to the bare
+	// search box and leave a one-line confirmation above it
+	let justFiled = $state<string | null>(null);
+	const afterRating = (kind: 'save' | 'delete') => () => {
+		const name = picked?.album.name ?? 'album';
+		const verb = kind === 'delete' ? 'Removed' : editingId ? 'Saved' : 'Filed';
+		return async ({
+			result,
+			update
+		}: {
+			result: { type: string };
+			update: (o?: { reset?: boolean }) => Promise<void>;
+		}) => {
+			await update({ reset: false });
+			if (result.type === 'success') {
+				justFiled = `${verb} “${name}”`;
+				clearForm();
+			}
+		};
+	};
 </script>
 
 <div class="mx-auto max-w-[920px] px-[22px] py-10">
@@ -224,6 +264,11 @@
 	<p class="font-mono text-[10px] tracking-[0.1em] text-ink-faint u-caps">Step 1 — look up. Step 2 — rate.</p>
 
 	<div id="album-form" class="mt-4 rounded-[3px] border border-border bg-raised p-5">
+		{#if justFiled && !picked}
+			<p class="mb-3 rounded-sm border border-copper/40 bg-copper-wash px-3 py-2 font-mono text-[11px] tracking-[0.06em] text-copper u-caps">
+				{justFiled} ✓ — search for the next one
+			</p>
+		{/if}
 		<label class="block">
 			<span class="mb-1.5 block font-mono text-[9px] tracking-[0.14em] text-ink-faint u-caps">
 				Search Spotify catalogue
@@ -305,7 +350,7 @@
 				</div>
 			{/if}
 
-			<form method="POST" action="?/saveRating" use:enhance={keepValues} class="mt-4 space-y-4">
+			<form method="POST" action="?/saveRating" use:enhance={afterRating('save')} class="mt-4 space-y-4">
 				<input type="hidden" name="album_id" value={a.id} />
 				{#if picked.fromSpotify}
 					<input type="hidden" name="album_json" value={JSON.stringify(a)} />
@@ -395,7 +440,7 @@
 				<form
 					method="POST"
 					action="?/deleteRating"
-					use:enhance
+					use:enhance={afterRating('delete')}
 					class="mt-3 border-t border-rule pt-3"
 				>
 					<input type="hidden" name="album_id" value={a.id} />
@@ -452,7 +497,7 @@
 		Position 1 sits at the front of the library carousel
 	</p>
 
-	<form method="POST" action="?/saveWheel" use:enhance class="mt-4 rounded-[3px] border border-border bg-raised px-5 py-2.5">
+	<form method="POST" action="?/saveWheel" use:enhance={keepValues} class="mt-4 rounded-[3px] border border-border bg-raised px-5 py-2.5">
 		{#each slots as slot, i (i)}
 			{@const al = slot ? ratedById.get(slot) : null}
 			<div class="flex flex-wrap items-center gap-3 border-b border-rule py-3 last:border-0">
@@ -530,7 +575,7 @@
 		Empty field = Stats page shows the "no playlist linked" state
 	</p>
 
-	<form method="POST" action="?/savePlaylists" use:enhance class="mt-4 rounded-[3px] border border-border bg-raised px-5 py-2.5">
+	<form method="POST" action="?/savePlaylists" use:enhance={keepValues} class="mt-4 rounded-[3px] border border-border bg-raised px-5 py-2.5">
 		{#each links as link (link.year)}
 			<div class="flex flex-wrap items-center gap-3 border-b border-rule py-3 last:border-0">
 				<span class="w-12 font-mono text-[14px]">{link.year}</span>
@@ -557,9 +602,16 @@
 				</button>
 			</div>
 		{/each}
+		{#if msg('playlists')?.warnings?.length}
+			<ul class="py-2 font-mono text-[10px] text-copper">
+				{#each msg('playlists')?.warnings ?? [] as w (w)}<li>· {w}</li>{/each}
+			</ul>
+		{/if}
 		<div class="flex items-center justify-end gap-3 py-3">
 			{#if msg('playlists')?.saved}
-				<span class="font-mono text-[10px] tracking-[0.1em] text-copper u-caps">Saved ✓</span>
+				<span class="font-mono text-[10px] tracking-[0.1em] text-copper u-caps">
+					Saved ✓{#if !msg('playlists')?.warnings?.length} · tracklists pulled from Spotify{/if}
+				</span>
 			{:else if msg('playlists')?.error}
 				<span class="font-mono text-[10px] tracking-[0.1em] text-copper">{msg('playlists')?.error}</span>
 			{/if}
@@ -577,7 +629,7 @@
 		Shown as the "open profile" link on the Stats page
 	</p>
 
-	<form method="POST" action="?/saveProfile" use:enhance class="mt-4 flex flex-wrap items-end gap-3 rounded-[3px] border border-border bg-raised p-5">
+	<form method="POST" action="?/saveProfile" use:enhance={keepValues} class="mt-4 flex flex-wrap items-end gap-3 rounded-[3px] border border-border bg-raised p-5">
 		<label class="block flex-1 basis-[320px]">
 			<span class="mb-1.5 block font-mono text-[9px] tracking-[0.14em] text-ink-faint u-caps">Profile URL</span>
 			<input

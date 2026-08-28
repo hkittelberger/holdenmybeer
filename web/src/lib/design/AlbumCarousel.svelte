@@ -106,7 +106,7 @@
 						? '0 26px 52px rgba(24,32,26,.34)'
 						: '0 12px 30px rgba(10,14,11,.3)'}"
 				>
-					<Sleeve album={a} year={yearOf(a)} />
+					<Sleeve album={a} cover={a.cover_url} year={yearOf(a)} />
 					{#if d === 0}
 						<span
 							class="absolute -bottom-3 right-0 translate-x-3 bg-copper px-3 py-2 font-mono text-lg font-medium text-copper-text"

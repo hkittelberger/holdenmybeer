@@ -220,12 +220,13 @@ export const actions: Actions = {
 			const m = k.match(/^url_(\d{4})$/);
 			if (m) entries.push({ year: Number(m[1]), url: String(v) });
 		}
+		let warnings: string[] = [];
 		try {
-			await withPool((pool) => savePlaylists(pool, entries));
+			warnings = (await withPool((pool) => savePlaylists(pool, entries))).warnings;
 		} catch (e) {
 			return fail(500, { scope: 'playlists', error: `Save failed: ${(e as Error).message}` });
 		}
-		return { scope: 'playlists', saved: true };
+		return { scope: 'playlists', saved: true, warnings };
 	},
 
 	saveProfile: async ({ request, cookies }) => {
