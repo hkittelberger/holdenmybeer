@@ -61,16 +61,33 @@ deletes its own rows on re-run and must not reach `main`.
 
 ## Post-review fixes (2026-08-28)
 
-- **Rows / carousel hero weren't opening the detail panel** — the open/close
-  state was derived from `?open=` via `replaceState`, which didn't update
+Round 1:
+- **Rows / carousel hero weren't opening the detail panel** — open state
+  was derived from `?open=` via `replaceState`, which didn't update
   `page.url` reactively on the deployed build. Now a plain `$state` drives
-  rendering; the URL is still synced for deep-links. Verified with a real
-  click test (desktop + mobile → dialog opens).
-- **Mobile rows didn't show the score** — it was inside the `{#if !mobile}`
-  block. Moved out; mobile rows now show the copper-underlined score in
-  their own column, meta line tightened to one line.
-- Mobile detail sheet: smaller sleeve, 2-col fact grid, score wraps under
-  the title instead of colliding with it.
+  rendering (URL still synced for deep-links). The carousel *also* had a
+  `setPointerCapture` on the drag container that swallowed the child
+  buttons' clicks on desktop — removed; drag now just watches the delta.
+- **Mobile rows didn't show the score** — was inside `{#if !mobile}`. Moved
+  to its own column, meta line tightened to one line.
+
+Round 2 (this pass):
+- Nav wordmark + links and both section titles enlarged (H1 scale).
+- Carousel: bigger sleeves (`--hw` up to 336px), even ±1/±2 spacing
+  (dx bug — `d*mag` gave ±2 double distance and clipped off-screen; now
+  `sign(d)*mag`), less dead vertical space, arrows in fixed grid columns so
+  title length can't move them, hero title wraps.
+- Carousel clicks: left/right flanks step the wheel like the arrows, centre
+  opens the popup — on desktop too.
+- Sort control: **selected sort gets a copper filled box**, not copper text
+  (matches the hi-fi).
+- Detail popup: long / single-word titles wrap (`break-words` + panel
+  `overflow-x-hidden`) — no more horizontal scroll or stretched cover.
+- Fact grid split into a 3-col row + a 2-col row so the bottom two cells
+  fill the full width.
+- Table: removed the per-row 3px accent rule (read as one continuous line
+  with the real dark extracted colours); header cells now share the exact
+  row grid + padding so columns line up with their sort headers.
 
 ## Known gaps (not bugs)
 

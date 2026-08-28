@@ -44,13 +44,13 @@
 <div class="flex min-h-screen flex-col">
 	<header class="sticky top-0 z-30 border-b-2 border-ink bg-paper/95 backdrop-blur-sm">
 		<nav class="mx-auto flex max-w-[1180px] items-center justify-between px-[22px] py-4">
-			<a href="/" class="font-mono text-[13px] font-semibold tracking-[0.22em] text-ink u-caps">
+			<a href="/" class="font-mono text-[16px] font-semibold tracking-[0.2em] text-ink u-caps">
 				HoldenMyBeer
 			</a>
 
 			<!-- desktop nav -->
 			<ul
-				class="hidden items-center gap-5 font-mono text-[11px] tracking-[0.14em] u-caps md:flex"
+				class="hidden items-center gap-6 font-mono text-[13px] tracking-[0.13em] u-caps md:flex"
 			>
 				{#each sections as s (s.href)}
 					<li class="relative">
@@ -124,7 +124,7 @@
 		</nav>
 
 		{#if navOpen}
-			<ul class="border-t border-rule bg-paper px-[22px] py-3 font-mono text-xs tracking-[0.12em] u-caps md:hidden">
+			<ul class="border-t border-rule bg-paper px-[22px] py-3 font-mono text-[13px] tracking-[0.12em] u-caps md:hidden">
 				{#each sections as s (s.href)}
 					<li>
 						<a

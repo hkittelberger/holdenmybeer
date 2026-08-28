@@ -7,7 +7,7 @@
 	import AlbumDetail from '$lib/design/AlbumDetail.svelte';
 	import Sleeve from '$lib/design/Sleeve.svelte';
 	import RangeSlider from '$lib/design/RangeSlider.svelte';
-	import { rate, fmt, dateShort, accents } from '$lib/design/tokens';
+	import { rate, fmt, dateShort } from '$lib/design/tokens';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -158,7 +158,7 @@
 	{/if}
 
 	<!-- ── Section B — catalogue ─────────────────────────────────────── -->
-	<div class="mt-[78px]">
+	<div class="mt-8 sm:mt-10">
 		<SectionHeader
 			kicker="Section B — Full Catalogue"
 			title="Everything rated"
@@ -248,21 +248,24 @@
 				</button>
 			</div>
 		{:else}
+			{@const rowGrid = mobile
+				? 'grid-cols-[2rem_3rem_minmax(0,1fr)_auto]'
+				: 'grid-cols-[2.5rem_3.25rem_minmax(0,1fr)_6.5rem_6.5rem_6.5rem_4.5rem]'}
 			<div class="mt-5">
 				{#if !mobile}
 					<div
-						class="grid grid-cols-[3rem_3.5rem_1fr_7rem_7rem_7rem_5rem] items-center gap-4 border-b border-ink pb-2 font-mono text-[10px] tracking-[0.12em] text-ink-faint u-caps"
+						class="grid {rowGrid} items-center gap-4 border-b border-ink pb-2 pr-3 font-mono text-[10px] tracking-[0.12em] text-ink-faint u-caps"
 					>
 						<span></span>
 						<span></span>
-						<span>Album / Artist</span>
+						<span class="pl-1">Album / Artist</span>
 						{#each sortCols as c (c.k)}
 							<button
 								onclick={() => setSort(c.k)}
 								aria-pressed={sortKey === c.k}
-								class="{c.k === 'rating' ? 'text-right' : 'text-left'} {sortKey === c.k
-									? 'text-copper'
-									: 'hover:text-copper'}"
+								class="-my-1 rounded-sm py-1 {c.k === 'rating' ? 'justify-self-end -mr-1.5 pr-1.5 pl-1.5' : 'justify-self-start -ml-1.5 pr-1.5 pl-1.5'} {sortKey === c.k
+									? 'bg-copper text-copper-text'
+									: 'text-ink-faint hover:text-copper'}"
 							>
 								{c.label}{arrow(c.k)}
 							</button>
@@ -272,19 +275,15 @@
 
 				<ul>
 					{#each pageRows as a, i (a.id)}
-						{@const c1 = accents(a)[0]}
 						<li class="odd:bg-transparent even:bg-zebra">
 							<button
 								onclick={() => open(a.id)}
-								class="grid w-full items-center gap-4 py-3 pr-3 text-left transition-colors duration-150 hover:bg-rowhover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-copper {mobile
-									? 'grid-cols-[2rem_3rem_1fr_auto]'
-									: 'grid-cols-[3rem_3.5rem_1fr_7rem_7rem_7rem_5rem]'}"
-								style="box-shadow: inset 3px 0 0 {c1}"
+								class="grid w-full {rowGrid} items-center gap-4 py-3 pr-3 text-left transition-colors duration-150 hover:bg-rowhover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-copper"
 							>
 								<span class="pl-3 font-mono text-[11px] text-ink-faintest">
 									{String(pageNum * perPage + i + 1).padStart(data.albums.length > 99 ? 3 : 2, '0')}
 								</span>
-								<span class="w-14 shrink-0 shadow-[0_4px_12px_rgba(24,32,26,.14)]">
+								<span class="w-12 shrink-0 shadow-[0_4px_12px_rgba(24,32,26,.14)]">
 									<Sleeve album={a} />
 								</span>
 								<span class="min-w-0">

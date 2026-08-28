@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Sleeve from './Sleeve.svelte';
-	import { rate, hmmss } from './tokens';
+	import { rate, hmmss, noOrphan } from './tokens';
 	import type { CatalogueAlbum } from '../../routes/music/+page.server';
 
 	let {
@@ -16,19 +16,23 @@
 		hero = (hero + d + n) % n;
 	}
 
-	// horizontal drag on the whole band
+	// Horizontal drag on the band. We DON'T capture the pointer (that would
+	// swallow the child buttons' click events on desktop); we just watch the
+	// delta and, if it's a real drag, step the wheel and suppress the click.
 	let downX = 0;
-	let dragging = false;
+	let dragged = false;
 	function pointerDown(e: PointerEvent) {
 		downX = e.clientX;
-		dragging = true;
-		(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+		dragged = false;
+	}
+	function pointerMove(e: PointerEvent) {
+		if (e.buttons !== 1) return;
+		if (Math.abs(e.clientX - downX) > 8) dragged = true;
 	}
 	function pointerUp(e: PointerEvent) {
-		if (!dragging) return;
-		dragging = false;
+		if (!dragged) return;
 		const dx = e.clientX - downX;
-		if (Math.abs(dx) > 45) move(dx < 0 ? 1 : -1);
+		if (Math.abs(dx) > 40) move(dx < 0 ? 1 : -1);
 	}
 
 	// offset in [-2..2] relative to hero, wrapping
@@ -38,26 +42,44 @@
 		if (d < -n / 2) d += n;
 		return d;
 	}
-	// dx is a fraction of the hero sleeve's own width (see CSS var --hw)
+	// dx / rot are per-level *magnitudes*; the sign comes from the offset.
+	// dx is a fraction (×100) of the hero sleeve's own width (--hw). Tuned so
+	// each sleeve clears the previous one — paper shows between them.
+	const DX = [0, 90, 158, 196];
+	const ROT = [0, 7, 15, 19];
 	const layout = (d: number) => {
-		const a = Math.abs(d);
+		const a = Math.min(3, Math.abs(d));
+		const sign = Math.sign(d);
 		if (a === 0) return { dx: 0, s: 1, r: 0, f: 'none', z: 30, o: 1 };
 		if (a === 1)
-			return { dx: d * 30, s: 0.72, r: d * 7, f: 'saturate(.72) brightness(.82)', z: 20, o: 1 };
-		if (a === 2) return { dx: d * 60, s: 0.5, r: d * 13, f: 'brightness(.66)', z: 10, o: 1 };
-		return { dx: d * 90, s: 0.4, r: d * 16, f: 'brightness(.5)', z: 0, o: 0 };
+			return {
+				dx: sign * DX[1],
+				s: 0.72,
+				r: sign * ROT[1],
+				f: 'saturate(.72) brightness(.84)',
+				z: 20,
+				o: 1
+			};
+		if (a === 2)
+			return { dx: sign * DX[2], s: 0.52, r: sign * ROT[2], f: 'brightness(.66)', z: 10, o: 1 };
+		return { dx: sign * DX[3], s: 0.42, r: sign * ROT[3], f: 'brightness(.5)', z: 0, o: 0 };
 	};
 
-	function yearOf(a: CatalogueAlbum) {
-		return a.release_date ? a.release_date.slice(0, 4) : '';
+	function clickSleeve(d: number, id: string, i: number) {
+		if (dragged) return;
+		if (d === 0) onopen(id);
+		else move(d > 0 ? 1 : -1);
 	}
+
+	const yearOf = (a: CatalogueAlbum) => (a.release_date ? a.release_date.slice(0, 4) : '');
 </script>
 
 <div class="select-none">
 	<div
 		class="relative mx-auto"
-		style="--hw:clamp(200px, 46vw, 306px); height:calc(var(--hw) + 40px); max-width:min(820px, 94vw)"
+		style="--hw:clamp(160px, 26vw, 312px); height:calc(var(--hw) + 12px); max-width:min(1040px, 98vw)"
 		onpointerdown={pointerDown}
+		onpointermove={pointerMove}
 		onpointerup={pointerUp}
 		role="group"
 		aria-roledescription="carousel"
@@ -75,12 +97,14 @@
 					pointer-events:{L.o === 0 ? 'none' : 'auto'};
 				"
 				aria-hidden={L.o === 0}
-				aria-label={d === 0 ? `Open ${a.name}` : `Show ${a.name}`}
-				onclick={() => (d === 0 ? onopen(a.id) : (hero = i))}
+				aria-label={d === 0 ? `Open ${a.name}` : d < 0 ? 'Previous record' : 'Next record'}
+				onclick={() => clickSleeve(d, a.id, i)}
 			>
 				<div
 					class="relative"
-					style="box-shadow:{d === 0 ? '0 26px 52px rgba(24,32,26,.34)' : '0 12px 30px rgba(10,14,11,.3)'}"
+					style="box-shadow:{d === 0
+						? '0 26px 52px rgba(24,32,26,.34)'
+						: '0 12px 30px rgba(10,14,11,.3)'}"
 				>
 					<Sleeve album={a} year={yearOf(a)} />
 					{#if d === 0}
@@ -96,32 +120,37 @@
 	</div>
 
 	{#if heroAlbum}
-		<div class="mt-8 flex items-center justify-center gap-8">
+		<!-- arrows anchor to the TOP of this block (a fixed distance below the
+		     carousel); the title grows downward without moving them. -->
+		<div class="mx-auto mt-7 grid max-w-[560px] grid-cols-[44px_1fr_44px] items-start gap-4">
 			<button
 				aria-label="Previous"
 				onclick={() => move(-1)}
-				class="grid size-11 place-items-center rounded-full border border-ink-faint text-ink hover:border-copper hover:text-copper"
+				class="mt-1 grid size-11 place-items-center justify-self-start rounded-full border border-ink-faint text-ink hover:border-copper hover:text-copper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copper"
 			>
 				←
 			</button>
-			<div class="text-center">
-				<p class="font-display text-[clamp(20px,2.6vw,28px)] font-bold text-ink u-caps" style="font-variation-settings:'wdth' 116">
-					{heroAlbum.name}
+			<div class="min-w-0 text-center">
+				<p
+					class="font-display text-[clamp(20px,2.8vw,30px)] leading-tight font-bold break-words text-balance text-ink u-caps"
+					style="font-variation-settings:'wdth' 115"
+				>
+					{noOrphan(heroAlbum.name)}
 				</p>
-				<p class="mt-0.5 text-ink-muted">{heroAlbum.artist}</p>
-				<p class="mt-2 font-mono text-[11px] tracking-[0.1em] text-ink-faint u-caps">
+				<p class="mt-0.5 truncate text-ink-muted">{heroAlbum.artist}</p>
+				<p class="mt-1.5 font-mono text-[11px] tracking-[0.1em] text-ink-faint u-caps">
 					{yearOf(heroAlbum)} · {hmmss(heroAlbum.length_ms)} · Rated {rate(heroAlbum.rating)}
 				</p>
 			</div>
 			<button
 				aria-label="Next"
 				onclick={() => move(1)}
-				class="grid size-11 place-items-center rounded-full border border-ink-faint text-ink hover:border-copper hover:text-copper"
+				class="mt-1 grid size-11 place-items-center justify-self-end rounded-full border border-ink-faint text-ink hover:border-copper hover:text-copper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copper"
 			>
 				→
 			</button>
 		</div>
-		<div class="mt-4 flex justify-center gap-2">
+		<div class="mt-3 flex justify-center gap-2">
 			{#each albums as a, i (a.id)}
 				<button
 					aria-label={`Go to ${a.name}`}

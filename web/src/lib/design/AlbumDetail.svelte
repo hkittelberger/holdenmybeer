@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Sleeve from './Sleeve.svelte';
-	import { rate, fmt, dateLong, mmss, accents } from './tokens';
+	import { rate, fmt, dateLong, mmss, accents, noOrphan } from './tokens';
 	import type { CatalogueAlbum } from '../../routes/music/+page.server';
 
 	let { album, onclose }: { album: CatalogueAlbum; onclose: () => void } = $props();
@@ -32,7 +32,7 @@
 		role="dialog"
 		aria-modal="true"
 		aria-label={`${album.name} detail`}
-		class="noscroll absolute inset-y-0 right-0 w-full max-w-[560px] overflow-y-auto text-[#e6ebe2] shadow-[-24px_0_60px_rgba(16,22,18,.4)]"
+		class="noscroll absolute inset-y-0 right-0 w-full max-w-[640px] overflow-x-hidden overflow-y-auto text-[#e6ebe2] shadow-[-24px_0_60px_rgba(16,22,18,.4)]"
 		style="
 			background:
 				radial-gradient(120% 60% at 100% 0%, color-mix(in oklab, {c2} 60%, transparent) 0%, transparent 55%),
@@ -52,17 +52,19 @@
 				</button>
 			</div>
 
-			<div class="mt-6 flex gap-4 sm:gap-5">
-				<div class="w-[92px] shrink-0 shadow-[0_12px_30px_rgba(10,14,11,.35)] sm:w-[128px]">
+			<div class="mt-6 flex gap-4 sm:gap-6">
+				<div
+					class="h-[104px] w-[104px] shrink-0 overflow-hidden shadow-[0_12px_30px_rgba(10,14,11,.35)] sm:h-[152px] sm:w-[152px]"
+				>
 					<Sleeve album={album} />
 				</div>
 				<div class="min-w-0 flex-1">
-					<p class="text-sm text-white/55">{album.artist}</p>
+					<p class="truncate text-sm text-white/55">{album.artist}</p>
 					<h2
-						class="font-display mt-1 text-[clamp(24px,7vw,38px)] leading-[0.95] font-bold u-caps"
-						style="font-variation-settings:'wdth' 114"
+						class="font-display mt-1 text-[clamp(20px,4.4vw,28px)] leading-[1.02] font-bold text-balance break-words u-caps"
+						style="font-variation-settings:'wdth' 108"
 					>
-						{album.name}
+						{noOrphan(album.name)}
 					</h2>
 					<div class="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1">
 						<span class="font-mono text-[clamp(28px,8vw,40px)] leading-none font-medium">
@@ -91,24 +93,23 @@
 				</div>
 			{/if}
 
-			<dl
-				class="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-[3px] bg-white/10 text-sm sm:grid-cols-3"
-			>
-				{#each [['Released', dateLong(album.release_date)], ['First listened', dateLong(album.first_listened)], ['Length', mmss(album.length_ms)]] as [k, v] (k)}
-					<div class="bg-[#12160f]/60 p-3">
-						<dt class="font-mono text-[9px] tracking-[0.14em] text-white/40 u-caps">{k}</dt>
-						<dd class="mt-1 font-mono">{v}</dd>
-					</div>
-				{/each}
+			{#snippet fact(k: string, v: string)}
 				<div class="bg-[#12160f]/60 p-3">
-					<dt class="font-mono text-[9px] tracking-[0.14em] text-white/40 u-caps">Lifetime minutes</dt>
-					<dd class="mt-1 font-mono">{fmt(album.lifetime_minutes)}</dd>
+					<p class="font-mono text-[9px] tracking-[0.14em] text-white/40 u-caps">{k}</p>
+					<p class="mt-1 font-mono">{v}</p>
 				</div>
-				<div class="bg-[#12160f]/60 p-3">
-					<dt class="font-mono text-[9px] tracking-[0.14em] text-white/40 u-caps">Plays ≈</dt>
-					<dd class="mt-1 font-mono">{fmt(album.plays)}</dd>
+			{/snippet}
+			<div class="mt-6 space-y-px overflow-hidden rounded-[3px] bg-white/10 text-sm">
+				<div class="grid grid-cols-3 gap-px">
+					{@render fact('Released', dateLong(album.release_date))}
+					{@render fact('First listened', dateLong(album.first_listened))}
+					{@render fact('Length', mmss(album.length_ms))}
 				</div>
-			</dl>
+				<div class="grid grid-cols-2 gap-px">
+					{@render fact('Lifetime minutes', fmt(album.lifetime_minutes))}
+					{@render fact('Plays ≈', fmt(album.plays))}
+				</div>
+			</div>
 
 			{#if topThree.length}
 				<p class="mt-7 font-mono text-[10px] tracking-[0.14em] text-white/40 u-caps">

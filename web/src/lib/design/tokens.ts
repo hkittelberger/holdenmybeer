@@ -34,6 +34,22 @@ export function markFor(a: AlbumColors): Mark {
 	return MARKS[hashInt(a.id) % MARKS.length];
 }
 
+/**
+ * Keep the last word (or last two, if the last is tiny) glued to the
+ * previous one with a non-breaking space, so a wrapped title never ends
+ * with a lonely fragment on its own line.
+ */
+export function noOrphan(s: string): string {
+	const w = s.trim().split(/\s+/);
+	if (w.length < 3) return s;
+	// bind the last 2 words (or 3 when the very last is tiny) with NBSP so a
+	// wrapped title never drops a lonely fragment onto its own line.
+	const bind = w[w.length - 1].length <= 3 && w.length >= 4 ? 3 : 2;
+	const head = w.slice(0, -bind).join(' ');
+	const tail = w.slice(-bind).join(' ');
+	return head ? head + ' ' + tail : tail;
+}
+
 export const fmt = (n: number): string => n.toLocaleString('en-US');
 export const rate = (n: number): string => n.toFixed(1);
 export const dateShort = (s: string | null): string =>
