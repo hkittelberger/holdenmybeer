@@ -34,7 +34,9 @@ create table albums (
   last_refreshed    timestamptz,
   accent_1          text,                    -- dominant cover colour (hex), see BP4
   accent_2          text,                    -- secondary cover colour (hex)
-  colors_refreshed  timestamptz
+  colors_refreshed  timestamptz,
+  total_tracks      integer,                 -- from the album metadata
+  total_duration_ms integer                  -- NULL until a BP2 album-endpoint pass
 );
 
 create table tracks (

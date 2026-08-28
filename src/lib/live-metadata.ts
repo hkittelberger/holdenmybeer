@@ -45,7 +45,7 @@ export async function upsertLiveMetadataFromRaw(client: Client): Promise<void> {
   `);
 
   await client.query(/* sql */ `
-    insert into albums (id, uri, name, release_date, cover_url, primary_artist_id, last_refreshed)
+    insert into albums (id, uri, name, release_date, cover_url, primary_artist_id, total_tracks, last_refreshed)
     select distinct on (raw->'track'->'album'->>'id')
       raw->'track'->'album'->>'id',
       raw->'track'->'album'->>'uri',
@@ -57,6 +57,7 @@ export async function upsertLiveMetadataFromRaw(client: Client): Promise<void> {
       end,
       raw->'track'->'album'->'images'->0->>'url',
       raw->'track'->'album'->'artists'->0->>'id',
+      (raw->'track'->'album'->>'total_tracks')::int,
       null::timestamptz
     from _new_live
     where raw->'track'->'album'->>'id' is not null

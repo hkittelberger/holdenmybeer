@@ -31,7 +31,20 @@ Fonts, reduced-motion guard).
 | Migration | Change |
 |---|---|
 | `007_rating_scale_and_accents.sql` | rating is **0–10 in ½-point steps** (design shows "9.5 OUT OF 10"), not 0–5 — `numeric(3,1)` + check. Added `albums.accent_1 / accent_2 / colors_refreshed`. |
-| `008_track_numbers.sql` | `tracks.track_number / disc_number` — the share-of-listening list renders in album order. Backfilled from `raw` for live; BP2 fills the rest. |
+| `008_track_numbers.sql` | `tracks.track_number / disc_number` — the share list renders in album order. Backfilled from `raw` for live; BP2 fills the rest. |
+| `009_album_totals.sql` | `albums.total_tracks` (from metadata, backfilled from `raw`) + `albums.total_duration_ms` (NULL until a BP2 album-endpoint pass). |
+
+### "Full plays ≈" and album LENGTH (post-review)
+
+The popup's plays figure is now **≈ lifetime minutes ÷ album runtime** (how
+many times through the record), not a raw event count. Album runtime is the
+album's real duration when every track is resolved; otherwise it's
+extrapolated from `resolved-avg-duration × total_tracks` and shown with a
+`≈`. Exact once BP2 finishes.
+
+The **"Share of my plays on this record"** bars are weighted by **play
+count**, not minutes — 9 plays of a 2-min song vs 1 play of a 10-min song
+reads 90 % / 10 %.
 
 Both also folded into `002` / `004` for a fresh branch. `live-metadata.ts`
 and `resolve-metadata.ts` updated to write the new track columns.

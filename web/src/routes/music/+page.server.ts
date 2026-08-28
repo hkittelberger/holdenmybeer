@@ -7,8 +7,8 @@ export interface CatalogueTrack {
 	duration_ms: number;
 	disc_number: number | null;
 	track_number: number | null;
-	minutes: number;
-	pct: number; // share of this album's listening time
+	plays: number;
+	pct: number; // this track's share of the album's total plays
 }
 
 export interface CatalogueAlbum {
@@ -24,9 +24,10 @@ export interface CatalogueAlbum {
 	review_notes: string | null;
 	showcase_rank: number | null;
 	lifetime_minutes: number;
-	plays: number;
+	plays: number; // ≈ lifetime minutes ÷ album runtime
 	first_listened: string | null;
-	length_ms: number;
+	length_ms: number; // album runtime (real when fully resolved, else estimated)
+	length_estimated: boolean;
 	top_songs: string[];
 	tracks: CatalogueTrack[];
 	badges: string[];
@@ -50,17 +51,18 @@ export const load: PageServerLoad = async () => {
 			review_notes: string | null;
 			showcase_rank: number | null;
 			top_songs: string[] | null;
+			total_tracks: number | null;
+			total_duration_ms: number | null;
 			lifetime_minutes: string;
-			plays: string;
 			first_listened: string | null;
 		}>(`
 			select
 				al.id, al.name, ar.name as artist, al.cover_url, al.accent_1, al.accent_2,
+				al.total_tracks, al.total_duration_ms,
 				to_char(al.release_date, 'YYYY-MM-DD') as release_date,
 				r.rating::text, to_char(r.date_rated, 'YYYY-MM-DD') as date_rated,
 				r.review_notes, r.showcase_rank, r.top_songs,
 				coalesce(round(sum(${MIN}) filter (where ${COUNTED})), 0)::text as lifetime_minutes,
-				count(*) filter (where ${COUNTED})::text as plays,
 				to_char(min(p.played_at at time zone 'America/New_York') filter (where ${COUNTED}), 'YYYY-MM-DD') as first_listened
 			from album_ratings r
 			join albums al on al.id = r.album_id
@@ -77,10 +79,10 @@ export const load: PageServerLoad = async () => {
 			duration_ms: number | null;
 			disc_number: number | null;
 			track_number: number | null;
-			minutes: string;
+			plays: string;
 		}>(`
 			select t.album_id, t.uri, t.name, t.duration_ms, t.disc_number, t.track_number,
-				coalesce(round(sum(${MIN}) filter (where ${COUNTED}), 1), 0)::text as minutes
+				count(p.*) filter (where ${COUNTED})::text as plays
 			from tracks t
 			join album_ratings r on r.album_id = t.album_id
 			left join plays p on p.track_uri = t.uri
@@ -98,7 +100,7 @@ export const load: PageServerLoad = async () => {
 				duration_ms: t.duration_ms ?? 0,
 				disc_number: t.disc_number,
 				track_number: t.track_number,
-				minutes: Number(t.minutes),
+				plays: Number(t.plays),
 				pct: 0
 			});
 			byAlbum.set(t.album_id, arr);
@@ -123,8 +125,29 @@ export const load: PageServerLoad = async () => {
 					(x.disc_number ?? 1) - (y.disc_number ?? 1) ||
 					(x.track_number ?? 999) - (y.track_number ?? 999)
 			);
-			const albumMinutes = tracks.reduce((s, t) => s + t.minutes, 0) || 1;
-			for (const t of tracks) t.pct = (t.minutes / albumMinutes) * 100;
+
+			// per-track share of *plays*, not minutes
+			const totalPlays = tracks.reduce((s, t) => s + t.plays, 0) || 1;
+			for (const t of tracks) t.pct = (t.plays / totalPlays) * 100;
+
+			// album runtime: exact from the album metadata when we have it, else
+			// the sum of resolved tracks, else extrapolate from the resolved
+			// average × the album's total track count.
+			const resolved = tracks.length;
+			const resolvedMs = tracks.reduce((s, t) => s + t.duration_ms, 0);
+			const totalTracks = a.total_tracks ?? resolved;
+			let lengthMs = a.total_duration_ms ?? 0;
+			let estimated = false;
+			if (!lengthMs) {
+				if (resolved > 0 && resolved >= totalTracks) lengthMs = resolvedMs;
+				else if (resolved > 0) {
+					lengthMs = Math.round((resolvedMs / resolved) * totalTracks);
+					estimated = true;
+				}
+			}
+
+			const lifetimeMinutes = Number(a.lifetime_minutes);
+			const plays = lengthMs > 0 ? Math.max(1, Math.round(lifetimeMinutes / (lengthMs / 60000))) : 0;
 
 			const badges: string[] = [];
 			if (a.showcase_rank && a.showcase_rank <= 5) badges.push(`All-time top 5 · No.${a.showcase_rank}`);
@@ -142,10 +165,11 @@ export const load: PageServerLoad = async () => {
 				date_rated: a.date_rated,
 				review_notes: a.review_notes,
 				showcase_rank: a.showcase_rank,
-				lifetime_minutes: Number(a.lifetime_minutes),
-				plays: Number(a.plays),
+				lifetime_minutes: lifetimeMinutes,
+				plays,
 				first_listened: a.first_listened,
-				length_ms: tracks.reduce((s, t) => s + t.duration_ms, 0),
+				length_ms: lengthMs,
+				length_estimated: estimated,
 				top_songs: a.top_songs ?? [],
 				tracks,
 				badges

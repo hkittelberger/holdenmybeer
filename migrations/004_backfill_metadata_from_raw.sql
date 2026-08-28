@@ -40,7 +40,7 @@ where source = 'live' and raw->'track'->'artists'->0->>'id' is not null
 on conflict (id) do nothing;
 
 -- Albums
-insert into albums (id, uri, name, release_date, cover_url, primary_artist_id, last_refreshed)
+insert into albums (id, uri, name, release_date, cover_url, primary_artist_id, total_tracks, last_refreshed)
 select distinct on (raw->'track'->'album'->>'id')
   raw->'track'->'album'->>'id',
   raw->'track'->'album'->>'uri',
@@ -52,6 +52,7 @@ select distinct on (raw->'track'->'album'->>'id')
   end,
   raw->'track'->'album'->'images'->0->>'url',
   raw->'track'->'album'->'artists'->0->>'id',
+  (raw->'track'->'album'->>'total_tracks')::int,
   null::timestamptz
 from plays
 where source = 'live' and raw->'track'->'album'->>'id' is not null

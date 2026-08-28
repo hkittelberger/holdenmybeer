@@ -122,7 +122,7 @@
 	{#if heroAlbum}
 		<!-- arrows anchor to the TOP of this block (a fixed distance below the
 		     carousel); the title grows downward without moving them. -->
-		<div class="mx-auto mt-7 grid max-w-[560px] grid-cols-[44px_1fr_44px] items-start gap-4">
+		<div class="mx-auto mt-7 grid max-w-[600px] grid-cols-[44px_1fr_44px] items-start gap-9">
 			<button
 				aria-label="Previous"
 				onclick={() => move(-1)}

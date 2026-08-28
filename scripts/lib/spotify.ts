@@ -150,6 +150,7 @@ export interface SpotifyAlbum {
   images: SpotifyImage[];
   release_date: string | null;
   release_date_precision: "day" | "month" | "year" | null;
+  total_tracks: number | null;
   artists: SpotifyArtistRef[];
 }
 export interface SpotifyTrack {

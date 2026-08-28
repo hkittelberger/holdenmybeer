@@ -103,11 +103,11 @@
 				<div class="grid grid-cols-3 gap-px">
 					{@render fact('Released', dateLong(album.release_date))}
 					{@render fact('First listened', dateLong(album.first_listened))}
-					{@render fact('Length', mmss(album.length_ms))}
+					{@render fact('Length', (album.length_estimated ? '≈ ' : '') + mmss(album.length_ms))}
 				</div>
 				<div class="grid grid-cols-2 gap-px">
 					{@render fact('Lifetime minutes', fmt(album.lifetime_minutes))}
-					{@render fact('Plays ≈', fmt(album.plays))}
+					{@render fact('Full plays ≈', fmt(album.plays))}
 				</div>
 			</div>
 
@@ -135,7 +135,7 @@
 			{#if album.tracks.length > 1}
 				<div class="mt-7 flex items-baseline justify-between">
 					<p class="font-mono text-[10px] tracking-[0.14em] text-white/40 u-caps">
-						Share of my time with this record
+						Share of my plays on this record
 					</p>
 					<p class="font-mono text-[9px] tracking-[0.12em] text-white/30 u-caps">Track order ↓</p>
 				</div>
