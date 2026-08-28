@@ -11,6 +11,7 @@
 	import DiscoveryChart from '$lib/design/DiscoveryChart.svelte';
 	import PlaylistPanel from '$lib/design/PlaylistPanel.svelte';
 	import ArtistDetail from '$lib/design/ArtistDetail.svelte';
+	import AlbumDetailById from '$lib/design/AlbumDetailById.svelte';
 	import { fmt, mmss } from '$lib/design/tokens';
 	import type { PageProps } from './$types';
 
@@ -25,6 +26,7 @@
 	let songMetric = $state<'plays' | 'minutes'>('plays');
 	let discoveryMode = $state<'artists' | 'tracks'>('tracks');
 	let openArtist = $state<string | null>(null);
+	let openAlbum = $state<string | null>(null);
 
 	const artistItems = $derived(
 		data.artists.map((a) => ({
@@ -46,15 +48,19 @@
 		}))
 	);
 	const songItems = $derived(
-		data.songs.map((s) => ({
-			key: s.uri,
-			primary: s.name,
-			secondary: [s.artist, s.duration_ms ? mmss(s.duration_ms) : null].filter(Boolean).join(' · '),
-			cover_url: s.cover_url,
-			accent_1: s.accent_1,
-			accent_2: s.accent_2,
-			value: songMetric === 'plays' ? s.plays : s.minutes
-		}))
+		data.songs
+			.map((s) => ({
+				key: s.uri,
+				primary: s.name,
+				secondary: [s.artist, s.duration_ms ? mmss(s.duration_ms) : null]
+					.filter(Boolean)
+					.join(' · '),
+				cover_url: s.cover_url,
+				accent_1: s.accent_1,
+				accent_2: s.accent_2,
+				value: songMetric === 'plays' ? s.plays : s.minutes
+			}))
+			.sort((a, b) => b.value - a.value)
 	);
 
 	const disc = $derived(
@@ -97,19 +103,19 @@
 		{/if}
 	</div>
 
-	<div class="-mt-4 border-b-2 border-ink pb-4">
+	<div class="-mt-2">
 		<YearChips years={data.years} selected={data.year} onselect={setYear} />
 	</div>
 
 	<!-- stat tiles -->
-	<div class="mt-6 grid gap-4 sm:grid-cols-3">
+	<div class="mt-8 grid gap-6 sm:grid-cols-3">
 		<StatTile
 			label="Minutes in {data.year}"
 			value={fmt(data.totals.minutes)}
 			note="{fmt(data.totals.hours)} hours of listening"
 		/>
 		<StatTile
-			label="Albums rated"
+			label="Albums rated {data.year}"
 			value={fmt(data.totals.albumsRated)}
 			note="cards filed this year"
 		/>
@@ -136,6 +142,7 @@
 			items={artistItems}
 			visual="monogram"
 			showBar
+			valueSuffix="min"
 			onselect={(it) => (openArtist = it.key)}
 			emptyNote="Artist minutes fill in as the catalogue metadata resolves."
 		/>
@@ -143,6 +150,8 @@
 			title="By album — {data.year}"
 			items={albumItems}
 			visual="cover"
+			valueSuffix="min"
+			onselect={(it) => (openAlbum = it.key)}
 			emptyNote="Album minutes fill in as the catalogue metadata resolves."
 		/>
 	</div>
@@ -211,4 +220,7 @@
 		year={data.year}
 		onclose={() => (openArtist = null)}
 	/>
+{/if}
+{#if openAlbum}
+	<AlbumDetailById id={openAlbum} onclose={() => (openAlbum = null)} />
 {/if}

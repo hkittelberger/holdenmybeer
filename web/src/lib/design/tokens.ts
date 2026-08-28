@@ -19,10 +19,19 @@ export interface AlbumColors {
 	accent_2: string | null;
 }
 
-const FALLBACK: [string, string] = ['#254742', '#7e5a2e'];
+/** Muted, varied placeholder pair keyed off the id — used when the real
+ *  cover colours aren't resolved yet, so unresolved sleeves still differ. */
+function placeholderPair(id: string): [string, string] {
+	const h = hashInt(id);
+	const hue1 = h % 360;
+	const hue2 = (hue1 + 30 + ((h >> 8) % 60)) % 360;
+	return [`hsl(${hue1} 22% 26%)`, `hsl(${hue2} 26% 44%)`];
+}
 
 export function accents(a: AlbumColors): [string, string] {
-	return [a.accent_1 || FALLBACK[0], a.accent_2 || FALLBACK[1]];
+	if (a.accent_1 && a.accent_2) return [a.accent_1, a.accent_2];
+	const [p1, p2] = placeholderPair(a.id || 'x');
+	return [a.accent_1 || p1, a.accent_2 || p2];
 }
 
 export function sleeveGradient(a: AlbumColors): string {

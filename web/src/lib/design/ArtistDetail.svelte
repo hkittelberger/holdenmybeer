@@ -38,15 +38,23 @@
 			.catch(() => (loading = false));
 	});
 
-	const MO = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+	const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 	const W = 520;
-	const H = 150;
-	const maxMin = $derived(Math.max(1, ...(data?.monthly.map((m) => m.minutes) ?? [1])));
-	const px = (i: number) => 8 + (i / 11) * (W - 16);
-	const pyMin = (v: number) => H - 8 - (v / maxMin) * (H - 20);
-	const pyPct = (v: number) => H - 8 - (v / 100) * (H - 20);
+	const H = 158;
+	const PADL = 34;
+	const PADR = 30;
+	const PADT = 10;
+	const PADB = 16;
+	const maxMin = $derived(
+		Math.max(1, ...(data?.monthly.map((m) => Math.ceil(m.minutes / 10) * 10) ?? [1]))
+	);
+	const px = (i: number) => PADL + (i / 11) * (W - PADL - PADR);
+	const pyMin = (v: number) => H - PADB - (v / maxMin) * (H - PADT - PADB);
+	const pyPct = (v: number) => H - PADB - (v / 100) * (H - PADT - PADB);
 	const linePath = (fn: (m: { minutes: number; pctOfMonth: number }) => number) =>
 		(data?.monthly ?? []).map((m, i) => `${i ? 'L' : 'M'}${px(i)},${fn(m)}`).join(' ');
+
+	let chartTip = $state<{ x: number; y: number; text: string } | null>(null);
 
 	function keydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') onclose();
@@ -97,7 +105,7 @@
 				<div class="mt-8 h-40 animate-pulse rounded bg-white/5"></div>
 			{:else if data}
 				<div class="mt-6 grid grid-cols-3 gap-px overflow-hidden rounded-[3px] bg-white/10 text-sm">
-					{#each [['Lifetime minutes', fmt(data.lifetimeMinutes)], ['First listened', dateLong(data.firstListened)], [`Minutes in ${year}`, fmt(data.yearMinutes)]] as [k, v] (k)}
+					{#each [['Lifetime minutes', fmt(data.lifetimeMinutes)], ['First listened', dateLong(data.firstListened)], [`Minutes in ${chartYear}`, fmt(data.yearMinutes)]] as [k, v] (k)}
 						<div class="bg-[#12160f]/50 p-3">
 							<p class="font-mono text-[9px] tracking-[0.14em] text-white/40 u-caps">{k}</p>
 							<p class="mt-1 font-mono">{v}</p>
@@ -118,23 +126,57 @@
 					>
 				</div>
 
-				<svg viewBox="0 0 {W} {H}" class="mt-2 w-full" class:opacity-40={loading}>
-					{#each [0.25, 0.5, 0.75] as g (g)}
-						<line x1="8" x2={W - 8} y1={8 + g * (H - 20)} y2={8 + g * (H - 20)} stroke="rgba(255,255,255,.08)" />
+				<svg viewBox="0 0 {W} {H}" class="mt-2 w-full overflow-visible" class:opacity-40={loading}>
+					<!-- gridlines + left (minutes) / right (%) axis ticks -->
+					{#each [0, 0.5, 1] as g (g)}
+						{@const y = H - PADB - g * (H - PADT - PADB)}
+						<line x1={PADL} x2={W - PADR} y1={y} y2={y} stroke="rgba(255,255,255,.09)" />
+						<text x={PADL - 5} {y} dy="3" text-anchor="end" font-size="8" fill="rgba(255,255,255,.4)" font-family="monospace">
+							{Math.round(g * maxMin)}
+						</text>
+						<text x={W - PADR + 5} {y} dy="3" text-anchor="start" font-size="8" fill="rgba(255,255,255,.3)" font-family="monospace">
+							{Math.round(g * 100)}%
+						</text>
 					{/each}
-					<path d={linePath((m) => pyPct(m.pctOfMonth))} fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5" stroke-dasharray="3 3" />
+					<path d={linePath((m) => pyPct(m.pctOfMonth))} fill="none" stroke="rgba(255,255,255,.38)" stroke-width="1.5" stroke-dasharray="3 3" />
 					<path d={linePath((m) => pyMin(m.minutes))} fill="none" stroke="var(--color-copper-light)" stroke-width="2" />
 					{#each data.monthly as m, i (m.month)}
-						<circle cx={px(i)} cy={pyMin(m.minutes)} r="2.5" fill="var(--color-copper-light)" />
+						<circle cx={px(i)} cy={pyPct(m.pctOfMonth)} r="2" fill="rgba(255,255,255,.4)" />
+						<circle cx={px(i)} cy={pyMin(m.minutes)} r="3" fill="var(--color-copper-light)" />
+						<circle
+							cx={px(i)}
+							cy={pyMin(m.minutes)}
+							r="10"
+							fill="transparent"
+							style="cursor:pointer"
+							onmouseenter={(e) =>
+								(chartTip = {
+									x: e.clientX,
+									y: e.clientY,
+									text: `${MONTHS[i]} · ${fmt(m.minutes)} min · ${m.pctOfMonth.toFixed(1)}%`
+								})}
+							onmousemove={(e) => chartTip && (chartTip = { ...chartTip, x: e.clientX, y: e.clientY })}
+							onmouseleave={() => (chartTip = null)}
+							role="img"
+							aria-label={`${MONTHS[i]}: ${m.minutes} minutes, ${m.pctOfMonth.toFixed(1)}%`}
+						/>
 					{/each}
 				</svg>
-				<div class="flex justify-between px-1 font-mono text-[8px] text-white/30">
-					{#each MO as mo, i (i)}<span>{mo}</span>{/each}
+				<div class="flex justify-between font-mono text-[8px] text-white/30" style="padding-left:{PADL}px; padding-right:{PADR}px">
+					{#each MONTHS as mo, i (i)}<span>{mo[0]}</span>{/each}
 				</div>
+				{#if chartTip}
+					<div
+						class="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-[calc(100%+8px)] rounded-sm bg-ink px-2 py-1 font-mono text-[10px] whitespace-nowrap text-paper"
+						style="left:{chartTip.x}px; top:{chartTip.y}px"
+					>
+						{chartTip.text}
+					</div>
+				{/if}
 
 				<p class="mt-7 font-mono text-[10px] tracking-[0.14em] text-white/40 u-caps">Minutes by year</p>
 				<div class="mt-2">
-					<BarChart data={byYearBars} selected={year} height={110} />
+					<BarChart data={byYearBars} selected={chartYear} height={110} />
 				</div>
 
 				{#if data.topSongs.length}

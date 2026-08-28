@@ -48,6 +48,26 @@ blank — per the handoff.
   (~9 % of 2026 minutes) — Slayyyter #1 etc. will re-rank once BP2 runs
   and you `npm run rollups`. Don't trust these yet.
 
+## Post-review fixes (2026-08-28)
+
+- Top-songs board **re-sorts** when the plays/minutes toggle flips.
+- Song / album placeholder art is now **varied** (per-id hue) instead of
+  one shared gradient — real covers still need BP2; artist photos need
+  BP2 phase 2 (monogram fallback until then).
+- Artist-modal month chart got a **left (minutes) + right (%) axis** and
+  **hover tooltips on every month dot** (minutes · %).
+- **By-album rows open the full album popup** (`/music/album/[id]` +
+  `AlbumDetailById`, reusing the BP4 detail component).
+- Discovery chart: **monthly total above each bar**, **hover a segment**
+  for the new / repeat count, and **new (copper) now stacks on top** of
+  repeat.
+- Year selector is a **connected segmented control**, no rule between it
+  and the header; stat tiles lost their panel fill (copper rule only).
+- Every board uses one value style: **big number, unit stacked below**
+  (`min` / `plays` / `minutes`).
+- Artist modal's "Minutes in <year>" tile now follows the **in-modal year
+  picker**, not the page year.
+
 ## Known follow-ups
 
 - Bar-chart top clearance and heatmap weekday labels are slightly tight —

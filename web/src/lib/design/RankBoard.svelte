@@ -72,10 +72,13 @@
 				></span>
 			</span>
 		{/if}
-		<span class="text-right font-mono text-[13px] text-ink">
-			{fmt(it.value)}{#if valueSuffix}<span
-					class="ml-1 text-[9px] text-ink-faintest u-caps">{valueSuffix}</span
-				>{/if}
+		<span class="flex w-12 flex-col items-end leading-none">
+			<span class="font-mono text-[17px] font-medium text-ink">{fmt(it.value)}</span>
+			{#if valueSuffix}
+				<span class="mt-0.5 font-mono text-[8px] tracking-[0.1em] text-ink-faintest u-caps"
+					>{valueSuffix}</span
+				>
+			{/if}
 		</span>
 	</span>
 {/snippet}
