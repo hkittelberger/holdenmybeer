@@ -1,0 +1,39 @@
+<script lang="ts">
+	import { sleeveGradient, markFor, accents, type AlbumColors } from './tokens';
+
+	let {
+		album,
+		year = null,
+		class: klass = ''
+	}: { album: AlbumColors; year?: number | string | null; class?: string } = $props();
+
+	const mark = $derived(markFor(album));
+	const c2 = $derived(accents(album)[1]);
+</script>
+
+<div
+	class="relative aspect-square w-full overflow-hidden {klass}"
+	style="background:{sleeveGradient(album)}"
+>
+	{#if mark === 'circle'}
+		<span
+			class="absolute left-1/2 top-[44%] aspect-square w-[46%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+			style="background:{c2};box-shadow:0 0 0 1px rgba(255,255,255,.14)"
+		></span>
+	{:else if mark === 'band'}
+		<span class="absolute inset-x-0 top-[52%] h-[16%]" style="background:{c2}"></span>
+	{:else if mark === 'split'}
+		<span class="absolute inset-y-0 right-0 w-[38%]" style="background:{c2}"></span>
+	{:else}
+		<span
+			class="absolute bottom-[14%] right-[10%] aspect-square w-[34%] rotate-45"
+			style="background:{c2}"
+		></span>
+	{/if}
+
+	{#if year != null}
+		<span class="absolute bottom-2 left-2 font-mono text-[10px] tracking-widest text-white/55"
+			>{year}</span
+		>
+	{/if}
+</div>
