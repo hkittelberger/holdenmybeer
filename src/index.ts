@@ -1,15 +1,26 @@
 import { writeFile } from "node:fs/promises";
 import { Client } from "pg";
+import { upsertLiveMetadataFromRaw } from "./lib/live-metadata.js";
 
 interface SpotifyPlayItem {
   played_at: string;
   track: {
+    type?: string;
     id: string;
+    uri: string;
     name: string;
     duration_ms: number;
-    artists: { name: string }[];
-    album: { name: string } | null;
-  };
+    artists: { id?: string; uri?: string; name: string }[];
+    album: {
+      id?: string;
+      uri?: string;
+      name: string;
+      images?: { url: string }[];
+      release_date?: string;
+      release_date_precision?: string;
+      artists?: { id?: string; uri?: string; name: string }[];
+    } | null;
+  } | null;
 }
 
 function requireEnv(name: string): string {
@@ -100,28 +111,44 @@ async function getLastPlayedAtMs(client: Client): Promise<number | undefined> {
 }
 
 // Every insert goes through ON CONFLICT DO NOTHING — the unique
-// (track_id, played_at) constraint is the entire dedupe mechanism. See
+// (track_uri, played_at) constraint is the entire dedupe mechanism. See
 // CLAUDE.md "Data model" for why no application-level "have I seen this"
 // check is layered on top.
+//
+// Canonical schema: full `track_uri` (spotify:track:…) is the join key,
+// `ms_played` is NULL for live rows (the field doesn't exist in
+// recently-played), `source = 'live'`. The whole item is kept in `raw` and
+// the metadata tables are populated from it after the insert.
 async function insertPlays(
   client: Client,
   items: SpotifyPlayItem[],
-): Promise<{ inserted: number; skipped: number }> {
+): Promise<{ inserted: number; skipped: number; skippedNonTrack: number }> {
   let inserted = 0;
   let skipped = 0;
+  let skippedNonTrack = 0;
 
   for (const item of items) {
+    const track = item.track;
+    // recently-played is track-only today, but guard anyway so a podcast /
+    // video / local-file row can never land in `plays`.
+    if (!track || track.type !== "track" || !track.uri) {
+      skippedNonTrack++;
+      continue;
+    }
+
     const result = await client.query(
-      `insert into plays (track_id, track_name, artist_names, album_name, played_at, duration_ms, raw)
-       values ($1, $2, $3, $4, $5, $6, $7)
-       on conflict (track_id, played_at) do nothing`,
+      `insert into plays
+         (track_uri, track_name, album_uri, album_name, played_at,
+          duration_ms, ms_played, source, raw)
+       values ($1, $2, $3, $4, $5, $6, null, 'live', $7)
+       on conflict (track_uri, played_at) do nothing`,
       [
-        item.track.id,
-        item.track.name,
-        item.track.artists.map((a) => a.name).join(", "),
-        item.track.album?.name ?? null,
+        track.uri,
+        track.name,
+        track.album?.uri ?? null,
+        track.album?.name ?? null,
         item.played_at,
-        item.track.duration_ms,
+        track.duration_ms,
         JSON.stringify(item),
       ],
     );
@@ -132,7 +159,7 @@ async function insertPlays(
     }
   }
 
-  return { inserted, skipped };
+  return { inserted, skipped, skippedNonTrack };
 }
 
 async function run(): Promise<number> {
@@ -174,12 +201,30 @@ async function run(): Promise<number> {
       );
     }
 
+    let inserted: number;
+    let skipped: number;
+    let skippedNonTrack: number;
     try {
-      const { inserted, skipped } = await insertPlays(client, items);
+      ({ inserted, skipped, skippedNonTrack } = await insertPlays(client, items));
       console.log(
-        `Fetched ${items.length} item(s): inserted ${inserted}, skipped ${skipped} duplicate(s).`,
+        `Fetched ${items.length} item(s): inserted ${inserted}, skipped ${skipped} duplicate(s)` +
+          (skippedNonTrack ? `, ${skippedNonTrack} non-track item(s)` : "") +
+          ".",
       );
+    } catch (err) {
+      console.error("Database call failed:", err);
+      return 1;
+    }
 
+    // Metadata upsert from `raw`. Best-effort: the plays are already
+    // committed and must not be lost if this fails.
+    try {
+      await upsertLiveMetadataFromRaw(client);
+    } catch (err) {
+      console.error("Live metadata upsert failed (plays are safe):", err);
+    }
+
+    try {
       await writeFile(
         "status.json",
         JSON.stringify(
@@ -195,7 +240,7 @@ async function run(): Promise<number> {
       );
       return 0;
     } catch (err) {
-      console.error("Database call failed:", err);
+      console.error("Writing status.json failed:", err);
       return 1;
     }
   } finally {

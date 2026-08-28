@@ -58,13 +58,15 @@ where source = 'live' and raw->'track'->'album'->>'id' is not null
 on conflict (id) do nothing;
 
 -- Tracks
-insert into tracks (uri, id, name, album_id, duration_ms, last_refreshed)
+insert into tracks (uri, id, name, album_id, duration_ms, track_number, disc_number, last_refreshed)
 select distinct on (track_uri)
   track_uri,
   raw->'track'->>'id',
   track_name,
   raw->'track'->'album'->>'id',
   (raw->'track'->>'duration_ms')::int,
+  (raw->'track'->>'track_number')::int,
+  (raw->'track'->>'disc_number')::int,
   null::timestamptz
 from plays
 where source = 'live'

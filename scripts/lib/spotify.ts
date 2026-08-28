@@ -45,25 +45,34 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export class NotFoundError extends Error {}
 export class QuotaExceededError extends Error {
-  constructor(public retryAfterSec: number) {
+  retryAfterSec: number;
+  constructor(retryAfterSec: number) {
     super(
       `Spotify 429 QUOTA_EXCEEDED — Retry-After ${retryAfterSec}s ` +
-        `(~${(retryAfterSec / 3600).toFixed(1)}h). This is a rolling/daily quota lock, ` +
-        `not a burst limit. Stop, wait it out, and re-run at --rps 3 or lower. ` +
-        `The script is resumable.`,
+        `(~${(retryAfterSec / 3600).toFixed(1)}h). This is a rolling/daily quota lock. ` +
+        `Stop until it clears, then re-run — the script is resumable and picks up ` +
+        `where it left off. Consider a lower --rps.`,
     );
+    this.retryAfterSec = retryAfterSec;
   }
 }
 
 /**
- * Minimum spacing between request *starts*, process-wide. Spotify's rolling
- * window is ~180 req/min; default here is deliberately well under that.
- * Tune via setRps().
+ * Process-wide request pacing. Spotify's limit is undocumented and this
+ * app's quota is small, so the limiter is deliberately one-directional:
+ * it starts at the requested rate and only ever *slows down* — every 429
+ * multiplies the gap and it never speeds back up within a run. Combined
+ * with low concurrency this keeps us far under the rolling window and can't
+ * spiral into the escalating-ban behaviour that a naive retry loop causes.
  */
-let minGapMs = 1000 / 3; // 3 req/s
+let minGapMs = 500; // 2 req/s default
 let nextSlot = 0;
+let backoffs = 0;
 export function setRps(rps: number): void {
-  minGapMs = 1000 / Math.max(0.2, rps);
+  minGapMs = 1000 / Math.max(0.1, rps);
+}
+export function throttleState(): { reqPerSec: number; backoffs: number } {
+  return { reqPerSec: Math.round((1000 / minGapMs) * 10) / 10, backoffs };
 }
 async function rateGate(): Promise<void> {
   const now = Date.now();
@@ -71,16 +80,24 @@ async function rateGate(): Promise<void> {
   nextSlot = Math.max(now, nextSlot) + minGapMs;
   if (wait > 0) await sleep(wait);
 }
+function slowDown(): void {
+  backoffs++;
+  minGapMs = Math.min(minGapMs * 1.8, 10_000); // floor of 0.1 req/s
+  console.warn(
+    `[throttle] 429 seen — slowing to ${throttleState().reqPerSec} req/s (backoff #${backoffs})`,
+  );
+}
 
-// A single mid-run 429 (brief burst) is worth a short wait; a long
-// Retry-After means the quota is spent — bail instead of sleeping for hours.
-const MAX_429_WAIT_SEC = 120;
+// A short Retry-After is a rolling-window blip (wait it out, and slow down).
+// Anything longer means the quota is spent for the day — bail, don't sleep.
+const MAX_429_WAIT_SEC = 90;
 
 /**
- * GET an API path (e.g. `/tracks/{id}`). Rate-gated. Handles token refresh,
- * brief 429s (honours Retry-After up to MAX_429_WAIT_SEC), and 5xx with
- * capped exponential backoff. Throws NotFoundError on 404, QuotaExceededError
- * on a long 429.
+ * GET an API path (e.g. `/tracks/{id}`). Rate-gated, one-directional backoff.
+ * Handles token refresh, brief 429s (honours Retry-After up to
+ * MAX_429_WAIT_SEC and permanently slows the limiter), and 5xx with capped
+ * exponential backoff. Throws NotFoundError on 404, QuotaExceededError on a
+ * long 429.
  */
 export async function apiGet<T>(path: string, attempt = 0): Promise<T> {
   await rateGate();
@@ -96,6 +113,7 @@ export async function apiGet<T>(path: string, attempt = 0): Promise<T> {
   if (res.status === 429) {
     const retryAfter = Number(res.headers.get("Retry-After") ?? "2");
     if (retryAfter > MAX_429_WAIT_SEC) throw new QuotaExceededError(retryAfter);
+    slowDown();
     await sleep((retryAfter + 1) * 1000);
     return apiGet<T>(path, attempt);
   }
@@ -139,6 +157,8 @@ export interface SpotifyTrack {
   uri: string;
   name: string;
   duration_ms: number;
+  track_number: number | null;
+  disc_number: number | null;
   artists: SpotifyArtistRef[];
   album: SpotifyAlbum;
   is_local: boolean;

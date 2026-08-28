@@ -31,7 +31,10 @@ create table albums (
   release_date      date,
   cover_url         text,
   primary_artist_id text references artists(id),
-  last_refreshed    timestamptz
+  last_refreshed    timestamptz,
+  accent_1          text,                    -- dominant cover colour (hex), see BP4
+  accent_2          text,                    -- secondary cover colour (hex)
+  colors_refreshed  timestamptz
 );
 
 create table tracks (
@@ -40,6 +43,8 @@ create table tracks (
   name           text not null,
   album_id       text references albums(id),
   duration_ms    integer,
+  track_number   integer,
+  disc_number    integer,
   last_refreshed timestamptz
 );
 
@@ -63,7 +68,8 @@ create index albums_primary_artist_id_idx on albums (primary_artist_id);
 
 create table album_ratings (
   album_id      text primary key references albums(id),
-  rating        numeric(2,1) not null check (rating >= 0 and rating <= 5),  -- half-point increments
+  rating        numeric(3,1) not null
+                  check (rating >= 0 and rating <= 10 and (rating * 2) = floor(rating * 2)),
   date_rated    date,
   top_songs     text[],          -- ordered list of up to 3 track URIs
   review_notes  text,

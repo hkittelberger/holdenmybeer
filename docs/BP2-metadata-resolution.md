@@ -9,13 +9,20 @@ Spotify's **daily quota lock**: `429 QUOTA_EXCEEDED` with `Retry-After ≈
 85,500 s` (~24 h). Started ~2026-08-27 22:00 UTC → clears **~2026-08-28
 21:45 UTC**. Nothing to do but wait it out, then run once at low rate.
 
-**When the window clears:**
+**When the window clears (~2026-08-28 21:30 UTC):**
 ```
-npm run metadata:resolve -- --rps 3        # ≈ 1 h for 11,071 tracks + artists
+npm run metadata:resolve            # default --rps 2, --concurrency 3  → ~2–3 h
+npm run metadata:resolve -- --rps 1 # extra-safe, ~4–5 h
 ```
-Resumable, idempotent. `--rps 3` keeps well under Spotify's ~180 req/min
-rolling window; the script now also self-throttles and aborts with a clear
-message (exit 2) instead of sleeping for hours if it ever sees a long 429.
+Resumable + idempotent. Guarantees it won't spiral again:
+- process-wide pacing, default 2 req/s (120/min);
+- **one-directional backoff** — every 429 multiplies the gap ×1.8 and it
+  never speeds back up within a run;
+- a short 429 → wait it out + slow down; a 429 with `Retry-After > 90 s`
+  (= the daily lock) → **abort immediately, exit 2, progress saved**. It
+  does not sit and hammer, which is what escalated this run to 24 h.
+- Worst case: a hard daily cap stops it partway → it exits clean, re-run
+  next day, it resumes. No ban escalation.
 
 Current dev-branch metadata = only the 138 tracks / 69 artists that
 migration 004 pulled from live `raw`. Enough that catalogue views aren't
