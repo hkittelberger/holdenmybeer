@@ -1,44 +1,30 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import Wip from '$lib/Wip.svelte';
 	import type { PageProps } from './$types';
 
-	let { data, form }: PageProps = $props();
+	let { form }: PageProps = $props();
 </script>
 
-{#if !data.unlocked}
-	<section class="mx-auto max-w-sm rounded border border-stone-200 bg-white p-6">
-		<h1 class="font-mono text-[11px] tracking-[0.16em] text-stone-500 uppercase">Admin</h1>
-		<p class="mt-1 text-sm text-stone-500">Enter the shared password.</p>
+<div class="mx-auto max-w-[920px] px-[22px] py-16">
+	<section class="mx-auto max-w-sm rounded-[3px] border border-border bg-raised p-6">
+		<h1 class="font-mono text-[11px] tracking-[0.16em] text-ink-faint u-caps">Admin</h1>
+		<p class="mt-1 text-sm text-ink-muted">Enter the shared password.</p>
 		<form method="POST" action="?/login" use:enhance class="mt-4 space-y-3">
 			<input
 				name="password"
 				type="password"
 				autocomplete="current-password"
 				required
-				class="w-full rounded-sm border border-stone-300 bg-stone-50 px-3 py-2 text-sm focus:border-orange-800 focus:outline-2 focus:outline-orange-800"
+				class="w-full rounded-sm border border-border-strong bg-field px-3 py-2.5 text-sm focus-visible:border-copper focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-copper"
 			/>
-			{#if form?.error}<p class="font-mono text-[10px] text-orange-800">{form.error}</p>{/if}
+			{#if form?.error}
+				<p class="font-mono text-[10px] tracking-[0.1em] text-copper u-caps">{form.error}</p>
+			{/if}
 			<button
-				class="w-full rounded-sm bg-stone-900 px-3 py-2 text-sm text-stone-50 hover:bg-orange-800"
+				class="w-full rounded-sm bg-ink px-3 py-2.5 font-mono text-[11px] tracking-[0.14em] text-paper u-caps hover:bg-copper focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-copper"
 			>
 				Unlock
 			</button>
 		</form>
 	</section>
-{:else}
-	<div class="mb-4 flex justify-end">
-		<form method="POST" action="?/logout" use:enhance>
-			<button class="font-mono text-[10px] tracking-widest text-stone-400 uppercase hover:text-orange-800">
-				Lock
-			</button>
-		</form>
-	</div>
-	<Wip
-		title="Curator tools"
-		note="Add / re-rate an album (Spotify search autofill), edit the top-five wheel, set per-year playlist links. Built in BP6."
-	/>
-	<p class="mt-6 text-center text-sm">
-		<a class="text-orange-800 underline underline-offset-4" href="/music/admin/edit">Add / edit an album →</a>
-	</p>
-{/if}
+</div>
