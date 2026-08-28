@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import { replaceState } from '$app/navigation';
 	import { page } from '$app/state';
 	import SectionHeader from '$lib/design/SectionHeader.svelte';
@@ -109,18 +110,29 @@
 		search = '';
 	}
 
-	// open / close detail via ?open=<albumId>
-	const openId = $derived(page.url.searchParams.get('open'));
+	// open / close detail. State drives rendering; the URL is kept in sync
+	// for deep-linking (?open=<albumId>) but is not the source of truth.
+	let openId = $state<string | null>(page.url.searchParams.get('open'));
 	const openAlbum = $derived(data.albums.find((a) => a.id === openId) ?? null);
+
+	function syncUrl(id: string | null) {
+		if (!browser) return;
+		const u = new URL(window.location.href);
+		if (id) u.searchParams.set('open', id);
+		else u.searchParams.delete('open');
+		try {
+			replaceState(u, {});
+		} catch {
+			history.replaceState(history.state, '', u);
+		}
+	}
 	function open(id: string) {
-		const u = new URL(page.url);
-		u.searchParams.set('open', id);
-		replaceState(u, {});
+		openId = id;
+		syncUrl(id);
 	}
 	function close() {
-		const u = new URL(page.url);
-		u.searchParams.delete('open');
-		replaceState(u, {});
+		openId = null;
+		syncUrl(null);
 	}
 
 	const arrow = (k: typeof sortKey) => (sortKey === k ? (sortDir === 'desc' ? ' ↓' : ' ↑') : '');
@@ -264,8 +276,8 @@
 						<li class="odd:bg-transparent even:bg-zebra">
 							<button
 								onclick={() => open(a.id)}
-								class="grid w-full items-center gap-4 py-3 pr-2 text-left transition-colors duration-150 hover:bg-rowhover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-copper {mobile
-									? 'grid-cols-[2.5rem_3.5rem_1fr]'
+								class="grid w-full items-center gap-4 py-3 pr-3 text-left transition-colors duration-150 hover:bg-rowhover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-copper {mobile
+									? 'grid-cols-[2rem_3rem_1fr_auto]'
 									: 'grid-cols-[3rem_3.5rem_1fr_7rem_7rem_7rem_5rem]'}"
 								style="box-shadow: inset 3px 0 0 {c1}"
 							>
@@ -284,8 +296,8 @@
 									</span>
 									<span class="block truncate text-[13px] text-ink-muted">{a.artist}</span>
 									{#if mobile}
-										<span class="mt-0.5 block font-mono text-[10px] text-ink-faintest">
-											{dateShort(a.release_date)} · {dateShort(a.date_rated)} · {fmt(a.lifetime_minutes)} min
+										<span class="mt-0.5 block truncate font-mono text-[10px] text-ink-faintest">
+											{dateShort(a.release_date)} · {dateShort(a.date_rated)} · {fmt(a.lifetime_minutes)}m
 										</span>
 									{/if}
 								</span>
@@ -293,15 +305,15 @@
 									<span class="font-mono text-[12px] text-ink-muted">{dateShort(a.release_date)}</span>
 									<span class="font-mono text-[12px] text-ink-muted">{dateShort(a.date_rated)}</span>
 									<span class="font-mono text-[12px] text-ink-muted">{fmt(a.lifetime_minutes)}</span>
-									<span class="justify-self-end">
-										<span
-											class="font-mono text-xl font-medium text-ink"
-											style="border-bottom:2px solid var(--color-copper); padding-bottom:1px"
-										>
-											{rate(a.rating)}
-										</span>
-									</span>
 								{/if}
+								<span class="justify-self-end">
+									<span
+										class="font-mono {mobile ? 'text-base' : 'text-xl'} font-medium text-ink"
+										style="border-bottom:2px solid var(--color-copper); padding-bottom:1px"
+									>
+										{rate(a.rating)}
+									</span>
+								</span>
 							</button>
 						</li>
 					{/each}

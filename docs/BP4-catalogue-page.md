@@ -59,6 +59,19 @@ album).
 or tell me the album+score list and I'll bulk-update. `scripts/seed-ratings.sql`
 deletes its own rows on re-run and must not reach `main`.
 
+## Post-review fixes (2026-08-28)
+
+- **Rows / carousel hero weren't opening the detail panel** — the open/close
+  state was derived from `?open=` via `replaceState`, which didn't update
+  `page.url` reactively on the deployed build. Now a plain `$state` drives
+  rendering; the URL is still synced for deep-links. Verified with a real
+  click test (desktop + mobile → dialog opens).
+- **Mobile rows didn't show the score** — it was inside the `{#if !mobile}`
+  block. Moved out; mobile rows now show the copper-underlined score in
+  their own column, meta line tightened to one line.
+- Mobile detail sheet: smaller sleeve, 2-col fact grid, score wraps under
+  the title instead of colliding with it.
+
 ## Known gaps (not bugs)
 
 1. **Per-track "share of listening" is thin** — only ~150 tracks are

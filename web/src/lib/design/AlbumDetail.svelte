@@ -52,24 +52,24 @@
 				</button>
 			</div>
 
-			<div class="mt-6 flex gap-5">
-				<div class="w-[128px] shrink-0 shadow-[0_12px_30px_rgba(10,14,11,.35)]">
+			<div class="mt-6 flex gap-4 sm:gap-5">
+				<div class="w-[92px] shrink-0 shadow-[0_12px_30px_rgba(10,14,11,.35)] sm:w-[128px]">
 					<Sleeve album={album} />
 				</div>
-				<div class="min-w-0">
+				<div class="min-w-0 flex-1">
 					<p class="text-sm text-white/55">{album.artist}</p>
 					<h2
-						class="font-display mt-1 text-[clamp(28px,4vw,40px)] leading-[0.95] font-bold u-caps"
-						style="font-variation-settings:'wdth' 116"
+						class="font-display mt-1 text-[clamp(24px,7vw,38px)] leading-[0.95] font-bold u-caps"
+						style="font-variation-settings:'wdth' 114"
 					>
 						{album.name}
 					</h2>
-					<div class="mt-2 flex items-end gap-3">
-						<span class="font-mono text-[clamp(30px,5vw,42px)] leading-none font-medium">
+					<div class="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1">
+						<span class="font-mono text-[clamp(28px,8vw,40px)] leading-none font-medium">
 							{rate(album.rating)}
 						</span>
 						<span class="pb-1 font-mono text-[10px] leading-tight tracking-[0.12em] text-white/50 u-caps">
-							Out of 10<br />Rated {dateLong(album.date_rated)}
+							Out of 10 · Rated {dateLong(album.date_rated)}
 						</span>
 					</div>
 				</div>
@@ -91,14 +91,16 @@
 				</div>
 			{/if}
 
-			<dl class="mt-6 grid grid-cols-3 gap-px overflow-hidden rounded-[3px] bg-white/10 text-sm">
+			<dl
+				class="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-[3px] bg-white/10 text-sm sm:grid-cols-3"
+			>
 				{#each [['Released', dateLong(album.release_date)], ['First listened', dateLong(album.first_listened)], ['Length', mmss(album.length_ms)]] as [k, v] (k)}
 					<div class="bg-[#12160f]/60 p-3">
 						<dt class="font-mono text-[9px] tracking-[0.14em] text-white/40 u-caps">{k}</dt>
 						<dd class="mt-1 font-mono">{v}</dd>
 					</div>
 				{/each}
-				<div class="col-span-2 bg-[#12160f]/60 p-3">
+				<div class="bg-[#12160f]/60 p-3">
 					<dt class="font-mono text-[9px] tracking-[0.14em] text-white/40 u-caps">Lifetime minutes</dt>
 					<dd class="mt-1 font-mono">{fmt(album.lifetime_minutes)}</dd>
 				</div>
