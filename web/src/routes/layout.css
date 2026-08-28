@@ -1,0 +1,115 @@
+@import 'tailwindcss';
+
+/* ── Design tokens (design-reference/README.md §5) ─────────────────────── */
+@theme {
+	--font-sans: 'Instrument Sans', system-ui, sans-serif;
+	--font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+	--font-display: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
+
+	/* paper / structure */
+	--color-paper: #e4e8df;
+	--color-rule: #dadfd3;
+	--color-sunken: #edefe8;
+	--color-raised: #f4f5f0;
+	--color-field: #fbfcf9;
+	--color-zebra: #ebeee6;
+	--color-rowhover: #dce1d6;
+	--color-rowactive: #d3d9cd;
+	--color-border: #c7cec1;
+	--color-border-strong: #b9c1b3;
+	--color-border-disabled: #dde2d8;
+
+	/* ink */
+	--color-ink: #1c221e;
+	--color-ink-soft: #2e362f;
+	--color-ink-muted: #4e574f;
+	--color-ink-faint: #6b766c;
+	--color-ink-faintest: #8a948b;
+
+	/* copper — the accent */
+	--color-copper: #9e5c34;
+	--color-copper-deep: #7c4526;
+	--color-copper-light: #d8b08c;
+	--color-copper-wash: #f4ede6;
+	--color-copper-text: #f8f4ef;
+
+	/* heat buckets */
+	--color-heat-1: #e9dfd2;
+	--color-heat-2: #dcbfa2;
+	--color-heat-3: #c7936c;
+	--color-heat-4: #a96a3e;
+	--color-heat-5: #874c23;
+	--color-bar-inactive: #b6bfb2;
+
+	--radius-card: 3px;
+
+	--ease-move: cubic-bezier(0.22, 0.7, 0.2, 1);
+}
+
+html,
+body {
+	margin: 0;
+	overflow-x: hidden;
+	background: var(--color-paper);
+}
+body {
+	font-family: var(--font-sans);
+	color: var(--color-ink);
+	-webkit-font-smoothing: antialiased;
+	font-variant-numeric: tabular-nums;
+	/* ledger: a hairline every 34px */
+	background-image: linear-gradient(var(--color-rule) 1px, transparent 1px);
+	background-size: 100% 34px;
+}
+
+::selection {
+	background: var(--color-copper);
+	color: var(--color-raised);
+}
+
+/* hidden internal scrollers with a fade at the end (handoff §5) */
+.noscroll {
+	scrollbar-width: none;
+}
+.noscroll::-webkit-scrollbar {
+	width: 0;
+	height: 0;
+}
+
+@keyframes hm-pulse {
+	0%,
+	100% {
+		opacity: 0.45;
+	}
+	50% {
+		opacity: 0.85;
+	}
+}
+@keyframes hm-slide-in {
+	from {
+		transform: translateX(24px);
+		opacity: 0;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.001ms !important;
+		transition-duration: 0.001ms !important;
+	}
+}
+
+/* utility classes for the display face at specific widths */
+.font-display {
+	font-family: var(--font-display);
+	font-variation-settings: 'wdth' 118;
+}
+.u-caps {
+	text-transform: uppercase;
+}

@@ -32,11 +32,23 @@ jobs:
 
       - run: npm run build
 
-      - run: node dist/index.js
+      - run: node dist/index.js          # insert new plays + metadata upsert from raw
         env:
           SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
           SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
           SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      # Rebuild the rollup tables from the freshly-inserted plays. Decoupled
+      # from the insert on purpose (docs/open-threads.md): `continue-on-error`
+      # means a rollup failure shows red in the Actions UI for visibility but
+      # never fails the job, never rolls back the plays above, and never
+      # blocks the status.json keepalive commit below. The script itself only
+      # touches the four rollup tables, inside its own transaction.
+      - name: Rebuild rollups
+        continue-on-error: true
+        run: node dist/build-rollups.js
+        env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       # Commits status.json back to the repo after every run. This is not

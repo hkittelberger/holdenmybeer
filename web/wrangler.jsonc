@@ -1,0 +1,21 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "holdenmybeer",
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"compatibility_date": "2026-08-01",
+	"compatibility_flags": ["nodejs_compat"],
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare"
+	},
+	"observability": { "enabled": true },
+
+	// Custom domain. Requires the `holdenmybeer.me` zone to be in this
+	// Cloudflare account — on deploy, Cloudflare provisions the DNS record
+	// and TLS cert automatically. Comment these out for the first deploy if
+	// the zone isn't set up yet; the *.workers.dev URL works regardless.
+	"routes": [
+		{ "pattern": "holdenmybeer.me", "custom_domain": true },
+		{ "pattern": "www.holdenmybeer.me", "custom_domain": true }
+	]
+}
