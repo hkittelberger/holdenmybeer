@@ -41,12 +41,12 @@
 </script>
 
 {#snippet rowInner(it: RankItem, i: number)}
-	<span class="font-mono text-[11px] text-ink-faintest">{String(i + 1).padStart(2, '0')}</span>
+	<span class="font-mono text-[12px] text-ink-faintest">{String(i + 1).padStart(2, '0')}</span>
 	<span class="flex justify-center">
 		{#if visual === 'monogram'}
-			<Monogram name={it.primary} src={it.image_url} size={32} />
+			<Monogram name={it.primary} src={it.image_url} size={38} />
 		{:else}
-			<span class="h-8 w-8 overflow-hidden rounded-[2px] shadow-[0_2px_8px_rgba(24,32,26,.14)]">
+			<span class="h-10 w-10 overflow-hidden rounded-[2px] shadow-[0_2px_8px_rgba(24,32,26,.14)]">
 				{#if it.cover_url}
 					<img src={it.cover_url} alt="" class="h-full w-full object-cover" loading="lazy" />
 				{:else}
@@ -58,24 +58,24 @@
 		{/if}
 	</span>
 	<span class="min-w-0">
-		<span class="block truncate text-[14px] text-ink">{it.primary}</span>
+		<span class="block truncate text-[15px] text-ink">{it.primary}</span>
 		{#if it.secondary}
-			<span class="block truncate font-mono text-[11px] text-ink-faint">{it.secondary}</span>
+			<span class="block truncate font-mono text-[12px] text-ink-faint">{it.secondary}</span>
 		{/if}
 	</span>
 	<span class="flex items-center gap-3">
 		{#if showBar}
-			<span class="hidden h-[6px] w-24 overflow-hidden rounded-full bg-border-disabled sm:block">
+			<span class="hidden h-[7px] w-24 overflow-hidden rounded-full bg-border-disabled sm:block">
 				<span
 					class="block h-full rounded-full bg-copper"
 					style="width:{Math.max(4, (it.value / max) * 100)}%"
 				></span>
 			</span>
 		{/if}
-		<span class="flex w-12 flex-col items-end leading-none">
-			<span class="font-mono text-[17px] font-medium text-ink">{fmt(it.value)}</span>
+		<span class="flex w-14 flex-col items-end leading-none">
+			<span class="font-mono text-[20px] font-medium text-ink">{fmt(it.value)}</span>
 			{#if valueSuffix}
-				<span class="mt-0.5 font-mono text-[8px] tracking-[0.1em] text-ink-faintest u-caps"
+				<span class="mt-1 font-mono text-[9px] tracking-[0.1em] text-ink-faintest u-caps"
 					>{valueSuffix}</span
 				>
 			{/if}
@@ -99,20 +99,20 @@
 	{#if items.length === 0}
 		<p class="px-5 py-10 text-center text-[13px] text-ink-muted">{emptyNote}</p>
 	{:else}
-		<div class="noscroll relative max-h-[420px] flex-1 overflow-y-auto">
+		<div class="noscroll relative max-h-[460px] flex-1 overflow-y-auto">
 			<ul>
 				{#each items as it, i (it.key)}
 					<li>
 						{#if onselect}
 							<button
 								onclick={() => onselect(it)}
-								class="grid w-full grid-cols-[1.75rem_2.25rem_1fr_auto] items-center gap-3 px-5 py-2.5 text-left transition-colors hover:bg-rowhover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-copper"
+								class="grid w-full grid-cols-[1.75rem_2.75rem_1fr_auto] items-center gap-3.5 px-5 py-3.5 text-left transition-colors hover:bg-rowhover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-copper"
 							>
 								{@render rowInner(it, i)}
 							</button>
 						{:else}
 							<div
-								class="grid w-full grid-cols-[1.75rem_2.25rem_1fr_auto] items-center gap-3 px-5 py-2.5"
+								class="grid w-full grid-cols-[1.75rem_2.75rem_1fr_auto] items-center gap-3.5 px-5 py-3.5"
 							>
 								{@render rowInner(it, i)}
 							</div>

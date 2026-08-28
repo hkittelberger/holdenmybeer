@@ -68,6 +68,25 @@ blank — per the handoff.
 - Artist modal's "Minutes in <year>" tile now follows the **in-modal year
   picker**, not the page year.
 
+## Post-review fixes — round 2 (2026-08-28)
+
+- Artist modal's year selector is now its **own component** (`YearPills.svelte`)
+  — individual outlined pills for the dark panel, distinct from the light
+  Stats page's connected `YearChips` segmented control.
+- The **minutes-by-year bar chart** in the artist modal is now a year
+  selector too — clicking a bar sets `chartYear` (same as the pills), so
+  the month chart / "Minutes in <year>" tile follow either control.
+- All `RankBoard` rows got **more vertical space** (`py-3.5`, grid
+  `[1.75rem_2.75rem_1fr_auto]`, `max-h-[460px]`) so every element scales
+  up: monogram/cover 38–40px, name 15px, secondary 12px, value 20px.
+- Catalogue pagination bar rebuilt to match the hi-fi: **left** =
+  `<start>–<end> of <total>` + a **Per page** `<select>` (8 / 16 / 24 /
+  48), **right** = `← <page buttons> →`. Mobile keeps a fixed 6/page and
+  hides the dropdown.
+- Re-added the **faint album-colour left edge** on each catalogue row
+  (`box-shadow: inset 3px 0 0 color-mix(... 38%, transparent)`, colour
+  from `accents(a)[0]` — real palette or per-id placeholder pair).
+
 ## Known follow-ups
 
 - Bar-chart top clearance and heatmap weekday labels are slightly tight —

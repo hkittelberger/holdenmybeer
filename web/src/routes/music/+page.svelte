@@ -7,13 +7,13 @@
 	import AlbumDetail from '$lib/design/AlbumDetail.svelte';
 	import Sleeve from '$lib/design/Sleeve.svelte';
 	import RangeSlider from '$lib/design/RangeSlider.svelte';
-	import { rate, fmt, dateShort } from '$lib/design/tokens';
+	import { rate, fmt, dateShort, accents } from '$lib/design/tokens';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	const PER_PAGE_DESKTOP = 8;
-	const PER_PAGE_MOBILE = 6;
+	const PER_PAGE_OPTIONS = [8, 16, 24, 48];
+	let perPageChoice = $state<number>(8);
 
 	let innerWidth = $state(1280);
 	const mobile = $derived(innerWidth < 780);
@@ -83,13 +83,15 @@
 		return out;
 	});
 
-	const perPage = $derived(mobile ? PER_PAGE_MOBILE : PER_PAGE_DESKTOP);
+	const perPage = $derived(mobile ? 6 : perPageChoice);
 	const pageCount = $derived(Math.max(1, Math.ceil(filtered.length / perPage)));
 	const pageRows = $derived(filtered.slice(pageNum * perPage, pageNum * perPage + perPage));
+	const rangeStart = $derived(filtered.length === 0 ? 0 : pageNum * perPage + 1);
+	const rangeEnd = $derived(Math.min(filtered.length, (pageNum + 1) * perPage));
 
 	// reset to page 1 on any query change
 	$effect(() => {
-		void [search, sortKey, sortDir, relLo, relHi, ratLo, ratHi, scoreLo, scoreHi];
+		void [search, sortKey, sortDir, relLo, relHi, ratLo, ratHi, scoreLo, scoreHi, perPageChoice];
 		pageNum = 0;
 	});
 
@@ -275,10 +277,12 @@
 
 				<ul>
 					{#each pageRows as a, i (a.id)}
+						{@const tint = accents(a)[0]}
 						<li class="odd:bg-transparent even:bg-zebra">
 							<button
 								onclick={() => open(a.id)}
 								class="grid w-full {rowGrid} items-center gap-4 py-3 pr-3 text-left transition-colors duration-150 hover:bg-rowhover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-copper"
+								style="box-shadow: inset 3px 0 0 color-mix(in srgb, {tint} 38%, transparent)"
 							>
 								<span class="pl-3 font-mono text-[11px] text-ink-faintest">
 									{String(pageNum * perPage + i + 1).padStart(data.albums.length > 99 ? 3 : 2, '0')}
@@ -318,33 +322,56 @@
 					{/each}
 				</ul>
 
-				{#if pageCount > 1}
-					<div class="mt-6 flex items-center justify-center gap-2 font-mono text-[11px]">
-						<button
-							onclick={() => (pageNum = Math.max(0, pageNum - 1))}
-							disabled={pageNum === 0}
-							class="grid size-9 place-items-center rounded-sm border border-border-strong text-ink-muted disabled:border-border-disabled disabled:text-border-strong"
-							aria-label="Previous page">←</button
-						>
-						{#each Array(pageCount) as _, p (p)}
-							<button
-								onclick={() => (pageNum = p)}
-								aria-current={p === pageNum ? 'page' : undefined}
-								class="grid size-9 place-items-center rounded-sm border {p === pageNum
-									? 'border-copper bg-copper text-copper-text'
-									: 'border-border-strong text-ink-muted hover:border-copper'}"
-							>
-								{p + 1}
-							</button>
-						{/each}
-						<button
-							onclick={() => (pageNum = Math.min(pageCount - 1, pageNum + 1))}
-							disabled={pageNum === pageCount - 1}
-							class="grid size-9 place-items-center rounded-sm border border-border-strong text-ink-muted disabled:border-border-disabled disabled:text-border-strong"
-							aria-label="Next page">→</button
-						>
+				<div
+					class="mt-6 flex flex-col gap-3 border-t border-rule pt-4 font-mono text-[11px] text-ink-muted sm:flex-row sm:items-center sm:justify-between"
+				>
+					<div class="flex items-center gap-4">
+						<span class="tracking-[0.06em] u-caps">
+							{rangeStart}–{rangeEnd} of {filtered.length}
+						</span>
+						{#if !mobile}
+							<label class="flex items-center gap-1.5">
+								<span class="text-[10px] tracking-[0.12em] text-ink-faint u-caps">Per page</span>
+								<select
+									bind:value={perPageChoice}
+									class="rounded-sm border border-border-strong bg-field px-2 py-1 text-[11px] focus-visible:border-copper focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-copper"
+								>
+									{#each PER_PAGE_OPTIONS as n (n)}
+										<option value={n}>{n}</option>
+									{/each}
+								</select>
+							</label>
+						{/if}
 					</div>
-				{/if}
+
+					{#if pageCount > 1}
+						<div class="flex items-center gap-1.5">
+							<button
+								onclick={() => (pageNum = Math.max(0, pageNum - 1))}
+								disabled={pageNum === 0}
+								class="grid size-8 place-items-center rounded-sm border border-border-strong hover:border-copper disabled:border-border-disabled disabled:text-border-strong disabled:hover:border-border-disabled"
+								aria-label="Previous page">←</button
+							>
+							{#each Array(pageCount) as _, p (p)}
+								<button
+									onclick={() => (pageNum = p)}
+									aria-current={p === pageNum ? 'page' : undefined}
+									class="grid size-8 place-items-center rounded-sm border {p === pageNum
+										? 'border-copper bg-copper text-copper-text'
+										: 'border-border-strong hover:border-copper'}"
+								>
+									{p + 1}
+								</button>
+							{/each}
+							<button
+								onclick={() => (pageNum = Math.min(pageCount - 1, pageNum + 1))}
+								disabled={pageNum === pageCount - 1}
+								class="grid size-8 place-items-center rounded-sm border border-border-strong hover:border-copper disabled:border-border-disabled disabled:text-border-strong disabled:hover:border-border-disabled"
+								aria-label="Next page">→</button
+							>
+						</div>
+					{/if}
+				</div>
 			</div>
 		{/if}
 	</div>

@@ -2,7 +2,7 @@
 	import Monogram from './Monogram.svelte';
 	import Sleeve from './Sleeve.svelte';
 	import BarChart from './BarChart.svelte';
-	import YearChips from './YearChips.svelte';
+	import YearPills from './YearPills.svelte';
 	import { rate, fmt, dateLong, noOrphan } from './tokens';
 	import type { ArtistDetail } from '../../routes/music/stats/artist/[id]/+server';
 
@@ -115,7 +115,7 @@
 
 				<div class="mt-7 flex flex-wrap items-center justify-between gap-3">
 					<p class="font-mono text-[10px] tracking-[0.14em] text-white/40 u-caps">Minutes by month</p>
-					<YearChips {years} selected={chartYear} onselect={(y) => (chartYear = y)} label="" />
+					<YearPills {years} selected={chartYear} onselect={(y) => (chartYear = y)} />
 				</div>
 				<div class="mt-2 flex gap-4 font-mono text-[9px] tracking-[0.1em] text-white/45 u-caps">
 					<span class="flex items-center gap-1.5"
@@ -176,7 +176,7 @@
 
 				<p class="mt-7 font-mono text-[10px] tracking-[0.14em] text-white/40 u-caps">Minutes by year</p>
 				<div class="mt-2">
-					<BarChart data={byYearBars} selected={chartYear} height={110} />
+					<BarChart data={byYearBars} selected={chartYear} onselect={(y) => (chartYear = y)} height={110} />
 				</div>
 
 				{#if data.topSongs.length}
