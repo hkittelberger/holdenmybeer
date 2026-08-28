@@ -1,6 +1,7 @@
 import { writeFile } from "node:fs/promises";
 import { Client } from "pg";
 import { upsertLiveMetadataFromRaw } from "./lib/live-metadata.js";
+import { pgConnectionString } from "./lib/pg-conn.js";
 
 interface SpotifyPlayItem {
   played_at: string;
@@ -239,7 +240,7 @@ async function run(): Promise<number> {
   const refreshToken = requireEnv("SPOTIFY_REFRESH_TOKEN");
   const databaseUrl = requireEnv("DATABASE_URL");
 
-  const client = new Client({ connectionString: databaseUrl });
+  const client = new Client({ connectionString: pgConnectionString(databaseUrl) });
 
   try {
     let lastPlayedAtMs: number | undefined;

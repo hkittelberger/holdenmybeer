@@ -19,6 +19,7 @@
  */
 import { Client } from "pg";
 import { upsertLiveMetadataFromRaw } from "../src/lib/live-metadata.ts";
+import { pgConnectionString } from "../src/lib/pg-conn.ts";
 
 const SOURCE = process.env.DATABASE_URL_CRON;
 const TARGET = process.env.DATABASE_URL;
@@ -32,8 +33,8 @@ if (SOURCE === TARGET) {
   process.exit(1);
 }
 
-const src = new Client({ connectionString: SOURCE });
-const dst = new Client({ connectionString: TARGET });
+const src = new Client({ connectionString: pgConnectionString(SOURCE) });
+const dst = new Client({ connectionString: pgConnectionString(TARGET) });
 
 try {
   await src.connect();

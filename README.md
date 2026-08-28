@@ -191,7 +191,7 @@ Run from the repo root; each reads `.env`.
 | Command | What |
 |---|---|
 | `npm run import:history` | one-time: load a Spotify extended-history JSON export into `plays` (`source='export'`, dedupe on `(track_uri, played_at)`) |
-| `npm run metadata:resolve` | backfill `artists`/`albums`/`tracks` from the Spotify API for every distinct track. Rate-limited & resumable — safe to re-run. Do this whenever `plays` gains tracks the metadata tables don't cover, then `npm run rollups`. |
+| `npm run metadata:resolve` | backfill `artists`/`albums`/`tracks` from the Spotify API for every distinct track. Rate-limited & resumable — safe to re-run. Then `npm run rollups`. Add `-- --batch` to use the 50-at-a-time endpoints (≈50× fewer requests) — needs Spotify **Extended Access** (403 in Development Mode). |
 | `node --experimental-strip-types --env-file=.env scripts/extract-cover-colors.ts` | pull the 2-colour accent pair from each album cover (used for generated sleeves / tinting) |
 | `node --experimental-strip-types --env-file=.env scripts/backfill-primary-live.ts` | copy live rows from `DATABASE_URL_CRON` into `DATABASE_URL` (cutover helper; idempotent) |
 | `npm run rollups` | rebuild all four rollup tables — run after any bulk metadata/plays change |
@@ -215,7 +215,8 @@ Run from the repo root; each reads `.env`.
   with real ones via `/music/admin`.
 - Point the GitHub Actions `DATABASE_URL` secret at the canonical Neon
   branch so the hourly cron writes there (site already does).
-- `pg` prints an `sslmode` deprecation warning — cosmetic, Neon behaviour
-  unchanged.
-- Real per-year playlist tracklists on the stats page need Spotify
-  **Extended Access** for the app (dashboard request).
+- **Spotify Extended Access** (dashboard request) unblocks two things: the
+  batch metadata endpoints (`metadata:resolve -- --batch` — a full backfill
+  in one short run instead of weeks of quota-limited daily runs) and real
+  per-year playlist tracklists on the stats page. In Development Mode both
+  return 403.

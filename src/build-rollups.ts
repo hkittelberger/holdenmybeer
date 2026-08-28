@@ -26,6 +26,7 @@
  */
 
 import { Client } from "pg";
+import { pgConnectionString } from "./lib/pg-conn.js";
 
 const REBUILD = /* sql */ `
 set search_path = public;
@@ -118,7 +119,7 @@ async function main(): Promise<number> {
     console.error("DATABASE_URL not set");
     return 1;
   }
-  const client = new Client({ connectionString: url });
+  const client = new Client({ connectionString: pgConnectionString(url) });
   await client.connect();
   try {
     const t0 = Date.now();

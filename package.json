@@ -7,9 +7,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "rollups": "node dist/build-rollups.js",
+    "rollups": "npm run build && node --env-file-if-exists=.env dist/build-rollups.js",
     "dev": "npm run build && node --env-file=.env dist/index.js",
-    "dev:rollups": "npm run build && node --env-file=.env dist/build-rollups.js",
     "import:history": "node --experimental-strip-types --env-file=.env scripts/import-history.ts",
     "metadata:resolve": "node --experimental-strip-types --env-file=.env scripts/resolve-metadata.ts",
     "typecheck:scripts": "tsc -p tsconfig.scripts.json"
