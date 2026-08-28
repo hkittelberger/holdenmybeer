@@ -6,10 +6,7 @@ const MIN = `(case when p.source = 'live' then p.duration_ms else p.ms_played en
 
 /** Full detail for one rated album — same shape the catalogue page uses,
  *  so <AlbumDetail> can render it verbatim. */
-export async function loadAlbumDetail(
-	pool: Pool,
-	id: string
-): Promise<CatalogueAlbum | null> {
+export async function loadAlbumDetail(pool: Pool, id: string): Promise<CatalogueAlbum | null> {
 	const [albumR, tracksR, topYearR] = await Promise.all([
 		pool.query<{
 			id: string;
@@ -114,8 +111,7 @@ export async function loadAlbumDetail(
 	}
 
 	const lifetimeMinutes = Number(a.lifetime_minutes);
-	const plays =
-		lengthMs > 0 ? Math.max(1, Math.round(lifetimeMinutes / (lengthMs / 60000))) : 0;
+	const plays = lengthMs > 0 ? Math.max(1, Math.round(lifetimeMinutes / (lengthMs / 60000))) : 0;
 
 	const badges: string[] = [];
 	if (a.showcase_rank && a.showcase_rank <= 5)

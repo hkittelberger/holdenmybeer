@@ -7,6 +7,8 @@
 	import AlbumDetail from '$lib/design/AlbumDetail.svelte';
 	import Sleeve from '$lib/design/Sleeve.svelte';
 	import RangeSlider from '$lib/design/RangeSlider.svelte';
+	import Seo from '$lib/components/Seo.svelte';
+	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import { rate, fmt, dateShort, accents } from '$lib/design/tokens';
 	import type { PageProps } from './$types';
 
@@ -58,7 +60,12 @@
 	});
 
 	const filtersActive = $derived(
-		relLo > relMin || relHi < relMax || ratLo > ratMin || ratHi < ratMax || scoreLo > 0 || scoreHi < 10
+		relLo > relMin ||
+			relHi < relMax ||
+			ratLo > ratMin ||
+			ratHi < ratMax ||
+			scoreLo > 0 ||
+			scoreHi < 10
 	);
 
 	const filtered = $derived.by(() => {
@@ -148,6 +155,18 @@
 
 <svelte:window bind:innerWidth />
 
+<Seo
+	title="Album Ranking"
+	description="Every album I've rated, on a 0–10 half-point scale — a hand-picked top five, then the full catalogue with review notes, first-listened dates, and per-track listening breakdowns."
+	path="/music"
+/>
+<Breadcrumbs
+	items={[
+		{ label: 'Home', href: '/' },
+		{ label: 'Music', href: '/music' }
+	]}
+/>
+
 <div class="mx-auto max-w-[1180px] px-[22px] py-12">
 	<!-- ── Section A — showcase ──────────────────────────────────────── -->
 	{#if showcase.length}
@@ -170,7 +189,7 @@
 
 		<div class="flex flex-wrap items-end gap-4">
 			<label class="min-w-[240px] flex-1">
-				<span class="font-mono text-[10px] tracking-[0.14em] text-ink-faint u-caps">Search</span>
+				<span class="u-caps font-mono text-[10px] tracking-[0.14em] text-ink-faint">Search</span>
 				<input
 					bind:value={search}
 					placeholder="album or artist"
@@ -178,11 +197,11 @@
 				/>
 			</label>
 			<div>
-				<span class="font-mono text-[10px] tracking-[0.14em] text-ink-faint u-caps">Refine</span>
+				<span class="u-caps font-mono text-[10px] tracking-[0.14em] text-ink-faint">Refine</span>
 				<button
 					onclick={() => (filtersOpen = !filtersOpen)}
 					aria-pressed={filtersOpen}
-					class="mt-1.5 flex items-center gap-1.5 rounded-sm border px-3 py-2.5 font-mono text-[11px] tracking-[0.1em] u-caps {filtersOpen ||
+					class="u-caps mt-1.5 flex items-center gap-1.5 rounded-sm border px-3 py-2.5 font-mono text-[11px] tracking-[0.1em] {filtersOpen ||
 					filtersActive
 						? 'border-copper bg-copper text-copper-text'
 						: 'border-border-strong text-ink-muted hover:border-copper hover:text-copper'}"
@@ -194,7 +213,13 @@
 
 		{#if filtersOpen}
 			<div class="mt-4 grid gap-6 rounded-[3px] border border-border bg-sunken p-5 sm:grid-cols-3">
-				<RangeSlider label="Release year" min={relMin} max={relMax} bind:lo={relLo} bind:hi={relHi} />
+				<RangeSlider
+					label="Release year"
+					min={relMin}
+					max={relMax}
+					bind:lo={relLo}
+					bind:hi={relHi}
+				/>
 				<RangeSlider label="Rated year" min={ratMin} max={ratMax} bind:lo={ratLo} bind:hi={ratHi} />
 				<RangeSlider
 					label="Score"
@@ -210,12 +235,12 @@
 
 		<!-- sort: chips <780, column headers >=780 -->
 		{#if mobile}
-			<div class="noscroll mt-5 -mx-[22px] flex gap-2 overflow-x-auto px-[22px]">
+			<div class="noscroll -mx-[22px] mt-5 flex gap-2 overflow-x-auto px-[22px]">
 				{#each [{ k: 'rating', label: 'Rating' }, ...sortCols.filter((c) => c.k !== 'rating')] as c (c.k)}
 					<button
 						onclick={() => setSort(c.k as typeof sortKey)}
 						aria-pressed={sortKey === c.k}
-						class="shrink-0 rounded-sm border px-3 py-2 font-mono text-[11px] tracking-[0.08em] u-caps {sortKey ===
+						class="u-caps shrink-0 rounded-sm border px-3 py-2 font-mono text-[11px] tracking-[0.08em] {sortKey ===
 						c.k
 							? 'border-copper bg-copper text-copper-text'
 							: 'border-border-strong text-ink-muted'}"
@@ -228,17 +253,25 @@
 
 		<!-- ── table ── -->
 		{#if data.albums.length === 0}
-			<div class="mt-6 rounded-[3px] border border-dashed border-border-strong px-6 py-16 text-center">
-				<p class="font-mono text-[11px] tracking-[0.16em] text-ink-faint u-caps">No card in this drawer</p>
-				<h3 class="font-display mt-2 text-2xl font-bold u-caps">Nothing rated yet</h3>
+			<div
+				class="mt-6 rounded-[3px] border border-dashed border-border-strong px-6 py-16 text-center"
+			>
+				<p class="u-caps font-mono text-[11px] tracking-[0.16em] text-ink-faint">
+					No card in this drawer
+				</p>
+				<h3 class="u-caps mt-2 font-display text-2xl font-bold">Nothing rated yet</h3>
 				<p class="mx-auto mt-2 max-w-sm text-sm text-ink-muted">
 					Rate an album from the admin page and it shows up here.
 				</p>
 			</div>
 		{:else if filtered.length === 0}
-			<div class="mt-6 rounded-[3px] border border-dashed border-border-strong px-6 py-16 text-center">
-				<p class="font-mono text-[11px] tracking-[0.16em] text-ink-faint u-caps">No card in this drawer</p>
-				<h3 class="font-display mt-2 text-2xl font-bold u-caps">Nothing matches</h3>
+			<div
+				class="mt-6 rounded-[3px] border border-dashed border-border-strong px-6 py-16 text-center"
+			>
+				<p class="u-caps font-mono text-[11px] tracking-[0.16em] text-ink-faint">
+					No card in this drawer
+				</p>
+				<h3 class="u-caps mt-2 font-display text-2xl font-bold">Nothing matches</h3>
 				<p class="mx-auto mt-2 max-w-sm text-sm text-ink-muted">
 					No album fits the current search and filters.
 				</p>
@@ -256,7 +289,7 @@
 			<div class="mt-5">
 				{#if !mobile}
 					<div
-						class="grid {rowGrid} items-center gap-4 border-b border-ink pb-2 pr-3 font-mono text-[10px] tracking-[0.12em] text-ink-faint u-caps"
+						class="grid {rowGrid} u-caps items-center gap-4 border-b border-ink pr-3 pb-2 font-mono text-[10px] tracking-[0.12em] text-ink-faint"
 					>
 						<span></span>
 						<span></span>
@@ -265,7 +298,9 @@
 							<button
 								onclick={() => setSort(c.k)}
 								aria-pressed={sortKey === c.k}
-								class="-my-1 rounded-sm py-1 {c.k === 'rating' ? 'justify-self-end -mr-1.5 pr-1.5 pl-1.5' : 'justify-self-start -ml-1.5 pr-1.5 pl-1.5'} {sortKey === c.k
+								class="-my-1 rounded-sm py-1 {c.k === 'rating'
+									? '-mr-1.5 justify-self-end pr-1.5 pl-1.5'
+									: '-ml-1.5 justify-self-start pr-1.5 pl-1.5'} {sortKey === c.k
 									? 'bg-copper text-copper-text'
 									: 'text-ink-faint hover:text-copper'}"
 							>
@@ -288,11 +323,15 @@
 									{String(pageNum * perPage + i + 1).padStart(data.albums.length > 99 ? 3 : 2, '0')}
 								</span>
 								<span class="w-12 shrink-0 shadow-[0_4px_12px_rgba(24,32,26,.14)]">
-									<Sleeve album={a} cover={a.cover_url} />
+									<Sleeve
+										album={a}
+										cover={a.cover_url}
+										alt="{a.name} by {a.artist} — album cover"
+									/>
 								</span>
 								<span class="min-w-0">
 									<span
-										class="font-display block truncate text-[15px] font-semibold tracking-[0.02em] text-ink u-caps"
+										class="u-caps block truncate font-display text-[15px] font-semibold tracking-[0.02em] text-ink"
 										style="font-variation-settings:'wdth' 112"
 									>
 										{a.name}
@@ -300,14 +339,20 @@
 									<span class="block truncate text-[13px] text-ink-muted">{a.artist}</span>
 									{#if mobile}
 										<span class="mt-0.5 block truncate font-mono text-[10px] text-ink-faintest">
-											{dateShort(a.release_date)} · {dateShort(a.date_rated)} · {fmt(a.lifetime_minutes)}m
+											{dateShort(a.release_date)} · {dateShort(a.date_rated)} · {fmt(
+												a.lifetime_minutes
+											)}m
 										</span>
 									{/if}
 								</span>
 								{#if !mobile}
-									<span class="font-mono text-[12px] text-ink-muted">{dateShort(a.release_date)}</span>
-									<span class="font-mono text-[12px] text-ink-muted">{dateShort(a.date_rated)}</span>
-									<span class="font-mono text-[12px] text-ink-muted">{fmt(a.lifetime_minutes)}</span>
+									<span class="font-mono text-[12px] text-ink-muted"
+										>{dateShort(a.release_date)}</span
+									>
+									<span class="font-mono text-[12px] text-ink-muted">{dateShort(a.date_rated)}</span
+									>
+									<span class="font-mono text-[12px] text-ink-muted">{fmt(a.lifetime_minutes)}</span
+									>
 								{/if}
 								<span class="justify-self-end">
 									<span
@@ -326,12 +371,12 @@
 					class="mt-6 flex flex-col gap-3 border-t border-rule pt-4 font-mono text-[11px] text-ink-muted sm:flex-row sm:items-center sm:justify-between"
 				>
 					<div class="flex items-center gap-4">
-						<span class="tracking-[0.06em] u-caps">
+						<span class="u-caps tracking-[0.06em]">
 							{rangeStart}–{rangeEnd} of {filtered.length}
 						</span>
 						{#if !mobile}
 							<label class="flex items-center gap-1.5">
-								<span class="text-[10px] tracking-[0.12em] text-ink-faint u-caps">Per page</span>
+								<span class="u-caps text-[10px] tracking-[0.12em] text-ink-faint">Per page</span>
 								<select
 									bind:value={perPageChoice}
 									class="rounded-sm border border-border-strong bg-field px-2 py-1 text-[11px] focus-visible:border-copper focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-copper"

@@ -38,7 +38,20 @@
 			.catch(() => (loading = false));
 	});
 
-	const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+	const MONTHS = [
+		'Jan',
+		'Feb',
+		'Mar',
+		'Apr',
+		'May',
+		'Jun',
+		'Jul',
+		'Aug',
+		'Sep',
+		'Oct',
+		'Nov',
+		'Dec'
+	];
 	const W = 520;
 	const H = 158;
 	const PADL = 34;
@@ -64,7 +77,10 @@
 <svelte:window onkeydown={keydown} />
 
 <div class="fixed inset-0 z-50">
-	<button aria-label="Close" class="absolute inset-0 bg-ink/45 backdrop-blur-[1px]" onclick={onclose}
+	<button
+		aria-label="Close"
+		class="absolute inset-0 bg-ink/45 backdrop-blur-[1px]"
+		onclick={onclose}
 	></button>
 
 	<div
@@ -76,7 +92,7 @@
 	>
 		<div class="p-7">
 			<div class="flex items-start justify-between">
-				<p class="font-mono text-[11px] tracking-[0.18em] text-white/45 u-caps">Artist detail</p>
+				<p class="u-caps font-mono text-[11px] tracking-[0.18em] text-white/45">Artist detail</p>
 				<button
 					aria-label="Close"
 					onclick={onclose}
@@ -89,11 +105,13 @@
 			<div class="mt-6 flex items-center gap-5">
 				<Monogram name={data?.name ?? '…'} src={data?.image_url} size={84} />
 				<div class="min-w-0">
-					<p class="font-mono text-[10px] tracking-[0.12em] text-white/45 u-caps">
-						{data ? `${data.ratedCount} rated record${data.ratedCount === 1 ? '' : 's'} in the index` : ' '}
+					<p class="u-caps font-mono text-[10px] tracking-[0.12em] text-white/45">
+						{data
+							? `${data.ratedCount} rated record${data.ratedCount === 1 ? '' : 's'} in the index`
+							: ' '}
 					</p>
 					<h2
-						class="font-display mt-1 text-[clamp(24px,4.6vw,34px)] leading-[1.02] font-bold break-words u-caps"
+						class="u-caps mt-1 font-display text-[clamp(24px,4.6vw,34px)] leading-[1.02] font-bold break-words"
 						style="font-variation-settings:'wdth' 110"
 					>
 						{data ? noOrphan(data.name) : 'Loading…'}
@@ -107,22 +125,25 @@
 				<div class="mt-6 grid grid-cols-3 gap-px overflow-hidden rounded-[3px] bg-white/10 text-sm">
 					{#each [['Lifetime minutes', fmt(data.lifetimeMinutes)], ['First listened', dateLong(data.firstListened)], [`Minutes in ${chartYear}`, fmt(data.yearMinutes)]] as [k, v] (k)}
 						<div class="bg-[#12160f]/50 p-3">
-							<p class="font-mono text-[9px] tracking-[0.14em] text-white/40 u-caps">{k}</p>
+							<p class="u-caps font-mono text-[9px] tracking-[0.14em] text-white/40">{k}</p>
 							<p class="mt-1 font-mono">{v}</p>
 						</div>
 					{/each}
 				</div>
 
 				<div class="mt-7 flex flex-wrap items-center justify-between gap-3">
-					<p class="font-mono text-[10px] tracking-[0.14em] text-white/40 u-caps">Minutes by month</p>
+					<p class="u-caps font-mono text-[10px] tracking-[0.14em] text-white/40">
+						Minutes by month
+					</p>
 					<YearPills {years} selected={chartYear} onselect={(y) => (chartYear = y)} />
 				</div>
-				<div class="mt-2 flex gap-4 font-mono text-[9px] tracking-[0.1em] text-white/45 u-caps">
+				<div class="u-caps mt-2 flex gap-4 font-mono text-[9px] tracking-[0.1em] text-white/45">
 					<span class="flex items-center gap-1.5"
 						><span class="h-[2px] w-4 bg-copper-light"></span>Minutes (left)</span
 					>
 					<span class="flex items-center gap-1.5"
-						><span class="h-0 w-4 border-t border-dashed border-white/40"></span>% of all listening (right)</span
+						><span class="h-0 w-4 border-t border-dashed border-white/40"></span>% of all listening
+						(right)</span
 					>
 				</div>
 
@@ -131,15 +152,42 @@
 					{#each [0, 0.5, 1] as g (g)}
 						{@const y = H - PADB - g * (H - PADT - PADB)}
 						<line x1={PADL} x2={W - PADR} y1={y} y2={y} stroke="rgba(255,255,255,.09)" />
-						<text x={PADL - 5} {y} dy="3" text-anchor="end" font-size="8" fill="rgba(255,255,255,.4)" font-family="monospace">
+						<text
+							x={PADL - 5}
+							{y}
+							dy="3"
+							text-anchor="end"
+							font-size="8"
+							fill="rgba(255,255,255,.4)"
+							font-family="monospace"
+						>
 							{Math.round(g * maxMin)}
 						</text>
-						<text x={W - PADR + 5} {y} dy="3" text-anchor="start" font-size="8" fill="rgba(255,255,255,.3)" font-family="monospace">
+						<text
+							x={W - PADR + 5}
+							{y}
+							dy="3"
+							text-anchor="start"
+							font-size="8"
+							fill="rgba(255,255,255,.3)"
+							font-family="monospace"
+						>
 							{Math.round(g * 100)}%
 						</text>
 					{/each}
-					<path d={linePath((m) => pyPct(m.pctOfMonth))} fill="none" stroke="rgba(255,255,255,.38)" stroke-width="1.5" stroke-dasharray="3 3" />
-					<path d={linePath((m) => pyMin(m.minutes))} fill="none" stroke="var(--color-copper-light)" stroke-width="2" />
+					<path
+						d={linePath((m) => pyPct(m.pctOfMonth))}
+						fill="none"
+						stroke="rgba(255,255,255,.38)"
+						stroke-width="1.5"
+						stroke-dasharray="3 3"
+					/>
+					<path
+						d={linePath((m) => pyMin(m.minutes))}
+						fill="none"
+						stroke="var(--color-copper-light)"
+						stroke-width="2"
+					/>
 					{#each data.monthly as m, i (m.month)}
 						<circle cx={px(i)} cy={pyPct(m.pctOfMonth)} r="2" fill="rgba(255,255,255,.4)" />
 						<circle cx={px(i)} cy={pyMin(m.minutes)} r="3" fill="var(--color-copper-light)" />
@@ -155,14 +203,18 @@
 									y: e.clientY,
 									text: `${MONTHS[i]} · ${fmt(m.minutes)} min · ${m.pctOfMonth.toFixed(1)}%`
 								})}
-							onmousemove={(e) => chartTip && (chartTip = { ...chartTip, x: e.clientX, y: e.clientY })}
+							onmousemove={(e) =>
+								chartTip && (chartTip = { ...chartTip, x: e.clientX, y: e.clientY })}
 							onmouseleave={() => (chartTip = null)}
 							role="img"
 							aria-label={`${MONTHS[i]}: ${m.minutes} minutes, ${m.pctOfMonth.toFixed(1)}%`}
 						/>
 					{/each}
 				</svg>
-				<div class="flex justify-between font-mono text-[8px] text-white/30" style="padding-left:{PADL}px; padding-right:{PADR}px">
+				<div
+					class="flex justify-between font-mono text-[8px] text-white/30"
+					style="padding-left:{PADL}px; padding-right:{PADR}px"
+				>
 					{#each MONTHS as mo, i (i)}<span>{mo[0]}</span>{/each}
 				</div>
 				{#if chartTip}
@@ -174,26 +226,43 @@
 					</div>
 				{/if}
 
-				<p class="mt-7 font-mono text-[10px] tracking-[0.14em] text-white/40 u-caps">Minutes by year</p>
+				<p class="u-caps mt-7 font-mono text-[10px] tracking-[0.14em] text-white/40">
+					Minutes by year
+				</p>
 				<div class="mt-2">
-					<BarChart data={byYearBars} selected={chartYear} onselect={(y) => (chartYear = y)} height={110} />
+					<BarChart
+						data={byYearBars}
+						selected={chartYear}
+						onselect={(y) => (chartYear = y)}
+						height={110}
+					/>
 				</div>
 
 				{#if data.topSongs.length}
 					<div class="mt-7 flex items-baseline justify-between">
-						<p class="font-mono text-[10px] tracking-[0.14em] text-white/40 u-caps">Top songs</p>
-						<p class="font-mono text-[9px] tracking-[0.12em] text-white/30 u-caps">Times played</p>
+						<p class="u-caps font-mono text-[10px] tracking-[0.14em] text-white/40">Top songs</p>
+						<p class="u-caps font-mono text-[9px] tracking-[0.12em] text-white/30">Times played</p>
 					</div>
 					<ul class="mt-2">
 						{#each data.topSongs as s, i (s.uri)}
-							<li class="grid grid-cols-[1.5rem_2rem_1fr_auto] items-center gap-3 border-b border-white/8 py-2 last:border-0">
-								<span class="font-mono text-[11px] text-white/30">{String(i + 1).padStart(2, '0')}</span>
+							<li
+								class="grid grid-cols-[1.5rem_2rem_1fr_auto] items-center gap-3 border-b border-white/8 py-2 last:border-0"
+							>
+								<span class="font-mono text-[11px] text-white/30"
+									>{String(i + 1).padStart(2, '0')}</span
+								>
 								<span class="h-8 w-8 overflow-hidden rounded-[2px]">
-									{#if s.cover_url}<img src={s.cover_url} alt="" class="h-full w-full object-cover" />{/if}
+									{#if s.cover_url}<img
+											src={s.cover_url}
+											alt="{s.album ?? s.name} — cover art"
+											class="h-full w-full object-cover"
+										/>{/if}
 								</span>
 								<span class="min-w-0">
 									<span class="block truncate text-[13px]">{s.name}</span>
-									{#if s.album}<span class="block truncate font-mono text-[10px] text-white/40">{s.album}</span>{/if}
+									{#if s.album}<span class="block truncate font-mono text-[10px] text-white/40"
+											>{s.album}</span
+										>{/if}
 								</span>
 								<span class="font-mono text-[13px] text-copper-light">{fmt(s.plays)}</span>
 							</li>
@@ -203,7 +272,9 @@
 
 				{#if data.ratedAlbums.length}
 					<div class="mt-7 bg-white p-5 text-ink">
-						<p class="mb-2 font-mono text-[10px] tracking-[0.14em] text-ink-faint u-caps">Rated in my library</p>
+						<p class="u-caps mb-2 font-mono text-[10px] tracking-[0.14em] text-ink-faint">
+							Rated in my library
+						</p>
 						<ul class="space-y-2">
 							{#each data.ratedAlbums as al (al.id)}
 								<li class="flex items-center gap-3">
@@ -212,13 +283,19 @@
 									</span>
 									<span class="min-w-0 flex-1">
 										<span class="block truncate text-[14px]">{al.name}</span>
-										<span class="font-mono text-[10px] text-ink-faint u-caps">
+										<span class="u-caps font-mono text-[10px] text-ink-faint">
 											{al.release_date?.slice(0, 4) ?? '—'} · Rated {al.date_rated
-												? new Date(al.date_rated + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+												? new Date(al.date_rated + 'T00:00:00').toLocaleDateString('en-US', {
+														month: 'short',
+														year: 'numeric'
+													})
 												: '—'}
 										</span>
 									</span>
-									<span class="font-mono text-lg" style="border-bottom:2px solid var(--color-copper)">
+									<span
+										class="font-mono text-lg"
+										style="border-bottom:2px solid var(--color-copper)"
+									>
 										{rate(al.rating)}
 									</span>
 								</li>

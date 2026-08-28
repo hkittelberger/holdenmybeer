@@ -10,9 +10,9 @@
 <div class="mb-8">
 	<div class="flex items-end justify-between gap-6">
 		<div class="min-w-0">
-			<p class="font-mono text-[12px] tracking-[0.16em] text-ink-faint u-caps">{kicker}</p>
+			<p class="u-caps font-mono text-[12px] tracking-[0.16em] text-ink-faint">{kicker}</p>
 			<h2
-				class="font-display mt-2 max-w-[15ch] text-[clamp(30px,4.6vw,48px)] leading-[0.98] font-bold text-balance text-ink u-caps"
+				class="u-caps mt-2 max-w-[15ch] font-display text-[clamp(30px,4.6vw,48px)] leading-[0.98] font-bold text-balance text-ink"
 				style="font-variation-settings:'wdth' 118"
 			>
 				{title}
@@ -28,7 +28,7 @@
 	</div>
 	<div class="mt-3 h-[2px] bg-ink"></div>
 	{#if aside && asideMono}
-		<p class="mt-2 text-right font-mono text-[10px] tracking-[0.12em] text-ink-faintest u-caps">
+		<p class="u-caps mt-2 text-right font-mono text-[10px] tracking-[0.12em] text-ink-faintest">
 			{aside}
 		</p>
 	{/if}

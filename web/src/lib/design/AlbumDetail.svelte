@@ -42,7 +42,7 @@
 	>
 		<div class="p-7">
 			<div class="flex items-start justify-between">
-				<p class="font-mono text-[11px] tracking-[0.18em] text-white/45 u-caps">Card detail</p>
+				<p class="u-caps font-mono text-[11px] tracking-[0.18em] text-white/45">Card detail</p>
 				<button
 					aria-label="Close"
 					onclick={onclose}
@@ -56,12 +56,16 @@
 				<div
 					class="h-[104px] w-[104px] shrink-0 overflow-hidden shadow-[0_12px_30px_rgba(10,14,11,.35)] sm:h-[152px] sm:w-[152px]"
 				>
-					<Sleeve album={album} cover={album.cover_url} />
+					<Sleeve
+						{album}
+						cover={album.cover_url}
+						alt="{album.name} by {album.artist} — album cover"
+					/>
 				</div>
 				<div class="min-w-0 flex-1">
 					<p class="truncate text-sm text-white/55">{album.artist}</p>
 					<h2
-						class="font-display mt-1 text-[clamp(20px,4.4vw,28px)] leading-[1.02] font-bold text-balance break-words u-caps"
+						class="u-caps mt-1 font-display text-[clamp(20px,4.4vw,28px)] leading-[1.02] font-bold text-balance break-words"
 						style="font-variation-settings:'wdth' 108"
 					>
 						{noOrphan(album.name)}
@@ -70,7 +74,9 @@
 						<span class="font-mono text-[clamp(28px,8vw,40px)] leading-none font-medium">
 							{rate(album.rating)}
 						</span>
-						<span class="pb-1 font-mono text-[10px] leading-tight tracking-[0.12em] text-white/50 u-caps">
+						<span
+							class="u-caps pb-1 font-mono text-[10px] leading-tight tracking-[0.12em] text-white/50"
+						>
 							Out of 10 · Rated {dateLong(album.date_rated)}
 						</span>
 					</div>
@@ -81,8 +87,8 @@
 				<div class="mt-5 flex flex-wrap gap-2">
 					{#each album.badges as b, i (b)}
 						<span
-							class="rounded-full border px-3 py-1 font-mono text-[10px] tracking-[0.1em] u-caps {i === 0 &&
-							b.startsWith('All-time')
+							class="u-caps rounded-full border px-3 py-1 font-mono text-[10px] tracking-[0.1em] {i ===
+								0 && b.startsWith('All-time')
 								? 'border-copper-light/50 bg-copper-light/12 text-copper-light'
 								: 'border-white/20 text-white/70'}"
 						>
@@ -95,7 +101,7 @@
 
 			{#snippet fact(k: string, v: string)}
 				<div class="bg-[#12160f]/60 p-3">
-					<p class="font-mono text-[9px] tracking-[0.14em] text-white/40 u-caps">{k}</p>
+					<p class="u-caps font-mono text-[9px] tracking-[0.14em] text-white/40">{k}</p>
 					<p class="mt-1 font-mono">{v}</p>
 				</div>
 			{/snippet}
@@ -112,13 +118,15 @@
 			</div>
 
 			{#if topThree.length}
-				<p class="mt-7 font-mono text-[10px] tracking-[0.14em] text-white/40 u-caps">
+				<p class="u-caps mt-7 font-mono text-[10px] tracking-[0.14em] text-white/40">
 					My top three from this record
 				</p>
 				<ol class="mt-2">
 					{#each topThree as t, i (t.uri)}
 						<li class="flex items-center gap-3 border-b border-white/10 py-2.5 last:border-0">
-							<span class="font-mono text-[11px] text-white/35">{String(i + 1).padStart(2, '0')}</span>
+							<span class="font-mono text-[11px] text-white/35"
+								>{String(i + 1).padStart(2, '0')}</span
+							>
 							<span class="flex-1">{t.name}</span>
 							<span class="font-mono text-[11px] text-white/45">{mmss(t.duration_ms)}</span>
 						</li>
@@ -127,27 +135,32 @@
 			{/if}
 
 			{#if album.tracks.length <= 1}
-				<p class="mt-7 font-mono text-[10px] tracking-[0.1em] text-white/30 u-caps">
+				<p class="u-caps mt-7 font-mono text-[10px] tracking-[0.1em] text-white/30">
 					Per-track breakdown fills in once the catalogue metadata finishes resolving.
 				</p>
 			{/if}
 
 			{#if album.tracks.length > 1}
 				<div class="mt-7 flex items-baseline justify-between">
-					<p class="font-mono text-[10px] tracking-[0.14em] text-white/40 u-caps">
+					<p class="u-caps font-mono text-[10px] tracking-[0.14em] text-white/40">
 						Share of my plays on this record
 					</p>
-					<p class="font-mono text-[9px] tracking-[0.12em] text-white/30 u-caps">Track order ↓</p>
+					<p class="u-caps font-mono text-[9px] tracking-[0.12em] text-white/30">Track order ↓</p>
 				</div>
 				<ul class="mt-2 space-y-1.5">
 					{#each album.tracks as t, i (t.uri)}
 						<li class="flex items-center gap-3">
-							<span class="w-5 font-mono text-[11px] text-white/30">{String(i + 1).padStart(2, '0')}</span>
+							<span class="w-5 font-mono text-[11px] text-white/30"
+								>{String(i + 1).padStart(2, '0')}</span
+							>
 							<span class="w-[34%] shrink-0 truncate text-[13px]">{t.name}</span>
 							<span class="relative h-2 flex-1 overflow-hidden rounded-full bg-white/10">
 								<span
 									class="absolute inset-y-0 left-0 rounded-full"
-									style="width:{Math.max(2, (t.pct / maxPct) * 100)}%;background:linear-gradient(90deg,{c2},var(--color-copper-light))"
+									style="width:{Math.max(
+										2,
+										(t.pct / maxPct) * 100
+									)}%;background:linear-gradient(90deg,{c2},var(--color-copper-light))"
 								></span>
 							</span>
 							<span
@@ -167,7 +180,9 @@
 					class="mt-7 bg-white text-[15px] text-ink"
 					style="border-left:4px double var(--color-copper); padding:14px 22px 20px"
 				>
-					<p class="mb-2 font-mono text-[10px] tracking-[0.14em] text-ink-faint u-caps">Liner note</p>
+					<p class="u-caps mb-2 font-mono text-[10px] tracking-[0.14em] text-ink-faint">
+						Liner note
+					</p>
 					<p
 						class="leading-[28px]"
 						style="background-image:repeating-linear-gradient(to bottom, transparent 0 27px, #e0dccf 27px 28px); background-position:0 6px"

@@ -91,7 +91,8 @@
 				class="absolute top-1/2 left-1/2 cursor-pointer transition-transform duration-[420ms] focus-visible:outline-[3px] focus-visible:outline-offset-[5px] focus-visible:outline-copper"
 				style="
 					width: var(--hw);
-					transform: translate(-50%,-50%) translateX(calc({L.dx / 100} * var(--hw))) scale({L.s}) rotate({L.r}deg);
+					transform: translate(-50%,-50%) translateX(calc({L.dx /
+					100} * var(--hw))) scale({L.s}) rotate({L.r}deg);
 					filter:{L.f}; z-index:{L.z}; opacity:{L.o};
 					transition-timing-function: cubic-bezier(.22,.7,.2,1);
 					pointer-events:{L.o === 0 ? 'none' : 'auto'};
@@ -106,10 +107,15 @@
 						? '0 26px 52px rgba(24,32,26,.34)'
 						: '0 12px 30px rgba(10,14,11,.3)'}"
 				>
-					<Sleeve album={a} cover={a.cover_url} year={yearOf(a)} />
+					<Sleeve
+						album={a}
+						cover={a.cover_url}
+						alt="{a.name} by {a.artist} — album cover"
+						year={yearOf(a)}
+					/>
 					{#if d === 0}
 						<span
-							class="absolute -bottom-3 right-0 translate-x-3 bg-copper px-3 py-2 font-mono text-lg font-medium text-copper-text"
+							class="absolute right-0 -bottom-3 translate-x-3 bg-copper px-3 py-2 font-mono text-lg font-medium text-copper-text"
 						>
 							{rate(a.rating)}
 						</span>
@@ -132,13 +138,13 @@
 			</button>
 			<div class="min-w-0 text-center">
 				<p
-					class="font-display text-[clamp(20px,2.8vw,30px)] leading-tight font-bold break-words text-balance text-ink u-caps"
+					class="u-caps font-display text-[clamp(20px,2.8vw,30px)] leading-tight font-bold text-balance break-words text-ink"
 					style="font-variation-settings:'wdth' 115"
 				>
 					{noOrphan(heroAlbum.name)}
 				</p>
 				<p class="mt-0.5 truncate text-ink-muted">{heroAlbum.artist}</p>
-				<p class="mt-1.5 font-mono text-[11px] tracking-[0.1em] text-ink-faint u-caps">
+				<p class="u-caps mt-1.5 font-mono text-[11px] tracking-[0.1em] text-ink-faint">
 					{yearOf(heroAlbum)} · {hmmss(heroAlbum.length_ms)} · Rated {rate(heroAlbum.rating)}
 				</p>
 			</div>

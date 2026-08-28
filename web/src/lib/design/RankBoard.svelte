@@ -48,7 +48,12 @@
 		{:else}
 			<span class="h-10 w-10 overflow-hidden rounded-[2px] shadow-[0_2px_8px_rgba(24,32,26,.14)]">
 				{#if it.cover_url}
-					<img src={it.cover_url} alt="" class="h-full w-full object-cover" loading="lazy" />
+					<img
+						src={it.cover_url}
+						alt="{it.primary} — cover art"
+						class="h-full w-full object-cover"
+						loading="lazy"
+					/>
 				{:else}
 					<Sleeve
 						album={{ id: it.key, accent_1: it.accent_1 ?? null, accent_2: it.accent_2 ?? null }}
@@ -75,7 +80,7 @@
 		<span class="flex w-14 flex-col items-end leading-none">
 			<span class="font-mono text-[20px] font-medium text-ink">{fmt(it.value)}</span>
 			{#if valueSuffix}
-				<span class="mt-1 font-mono text-[9px] tracking-[0.1em] text-ink-faintest u-caps"
+				<span class="u-caps mt-1 font-mono text-[9px] tracking-[0.1em] text-ink-faintest"
 					>{valueSuffix}</span
 				>
 			{/if}
@@ -84,13 +89,16 @@
 {/snippet}
 
 <div class="flex h-full flex-col rounded-[3px] border border-border bg-raised">
-	<div class="flex flex-wrap items-baseline justify-between gap-2 border-b border-rule px-5 pt-4 pb-3">
-		<h3 class="font-display text-[15px] font-bold tracking-[0.06em] text-ink u-caps">{title}</h3>
+	<div
+		class="flex flex-wrap items-baseline justify-between gap-2 border-b border-rule px-5 pt-4 pb-3"
+	>
+		<h3 class="u-caps font-display text-[15px] font-bold tracking-[0.06em] text-ink">{title}</h3>
 		<div class="flex items-baseline gap-3">
 			{#if headerExtra}{@render headerExtra()}{/if}
 			{#if items.length}
-				<span class="font-mono text-[10px] tracking-[0.1em] text-ink-faintest u-caps">
-					{items.length} {noun} · scroll
+				<span class="u-caps font-mono text-[10px] tracking-[0.1em] text-ink-faintest">
+					{items.length}
+					{noun} · scroll
 				</span>
 			{/if}
 		</div>

@@ -1,0 +1,23 @@
+# HoldenMyBeer
+
+> The personal website of Holden Kittelberger (holdenmybeer.me).
+
+## Site structure
+
+- [Home](https://holdenmybeer.me/): landing page (work in progress).
+- [Music — Album ranking](https://holdenmybeer.me/music): the full rated-album
+  catalogue. A hand-picked Top-5 carousel, then a sortable/filterable table
+  of every rated record with a per-album detail view (score, review notes,
+  first-listened date, per-track share of listening time, badges).
+- [Music — Listening stats](https://holdenmybeer.me/music/stats): year-by-year
+  minutes, top artists / albums / songs, a listening heatmap, a
+  new-vs-repeat discovery chart, and the year's public playlist. Artist
+  detail opens a modal with monthly trends and rated albums.
+- Courses, Design, Photos: placeholder routes, not yet built.
+
+## Notes
+
+- Listening data covers roughly 2019–present. Minutes for live-logged plays
+  use the track's full length as a proxy; historical export rows use actual
+  play time.
+- Ratings are the site owner's own, on a 0–10 half-point scale.

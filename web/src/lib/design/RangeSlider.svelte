@@ -71,7 +71,7 @@
 
 <div>
 	<div class="flex items-baseline justify-between">
-		<span class="font-mono text-[10px] tracking-[0.14em] text-ink-faint u-caps">{label}</span>
+		<span class="u-caps font-mono text-[10px] tracking-[0.14em] text-ink-faint">{label}</span>
 		<span class="font-mono text-[11px] text-ink-muted">
 			{lo === hi ? format(lo) : `${format(lo)} – ${format(hi)}`}
 		</span>

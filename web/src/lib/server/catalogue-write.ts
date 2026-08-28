@@ -209,7 +209,9 @@ export async function savePlaylists(
 			// app without Extended Access — only the name comes back. The tile
 			// then shows my top-50 of the year instead, with the link intact.
 			if (snap.tracks.length === 0) {
-				warnings.push(`${year}: link saved — Spotify won't share this playlist's tracks, so the tile shows my top 50`);
+				warnings.push(
+					`${year}: link saved — Spotify won't share this playlist's tracks, so the tile shows my top 50`
+				);
 			}
 		} catch {
 			warnings.push(`${year}: link saved, but Spotify was unreachable — the tile shows my top 50`);

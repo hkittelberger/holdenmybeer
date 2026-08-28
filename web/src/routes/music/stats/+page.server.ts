@@ -195,7 +195,13 @@ export const load: PageServerLoad = async ({ url }) => {
 
 		const discByMonth = new Map<number, DiscoveryMonth>();
 		for (let m = 1; m <= 12; m++)
-			discByMonth.set(m, { month: m, artist_new: 0, artist_repeat: 0, track_new: 0, track_repeat: 0 });
+			discByMonth.set(m, {
+				month: m,
+				artist_new: 0,
+				artist_repeat: 0,
+				track_new: 0,
+				track_repeat: 0
+			});
 		for (const d of discoveryR.rows) {
 			const row = discByMonth.get(d.month)!;
 			if (d.entity_type === 'artist') {
@@ -213,14 +219,18 @@ export const load: PageServerLoad = async ({ url }) => {
 			day: r.day,
 			minutes: Number(r.minutes)
 		}));
-		const nonZero = calendar.map((d) => d.minutes).filter((m) => m > 0).sort((a, b) => a - b);
+		const nonZero = calendar
+			.map((d) => d.minutes)
+			.filter((m) => m > 0)
+			.sort((a, b) => a - b);
 		// 5 quantile cut points from the user's own non-zero daily distribution
-		const q = (p: number) => nonZero[Math.min(nonZero.length - 1, Math.floor(p * nonZero.length))] ?? 0;
+		const q = (p: number) =>
+			nonZero[Math.min(nonZero.length - 1, Math.floor(p * nonZero.length))] ?? 0;
 		const quantiles = nonZero.length ? [q(0.2), q(0.4), q(0.6), q(0.8)] : [0, 0, 0, 0];
-		const busiest = calendar.reduce(
-			(best, d) => (d.minutes > best.minutes ? d : best),
-			{ day: '', minutes: 0 }
-		);
+		const busiest = calendar.reduce((best, d) => (d.minutes > best.minutes ? d : best), {
+			day: '',
+			minutes: 0
+		});
 
 		return {
 			years,

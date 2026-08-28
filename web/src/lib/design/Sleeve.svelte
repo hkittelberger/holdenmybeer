@@ -4,12 +4,15 @@
 	let {
 		album,
 		cover = null,
+		alt = '',
 		year = null,
 		class: klass = ''
 	}: {
 		album: AlbumColors;
 		/** real cover art URL — shown instead of the generated mark when set */
 		cover?: string | null;
+		/** described-content alt for the real cover art; '' = decorative */
+		alt?: string;
 		year?: number | string | null;
 		class?: string;
 	} = $props();
@@ -28,14 +31,14 @@
 	{#if showArt}
 		<img
 			src={cover}
-			alt=""
+			{alt}
 			class="absolute inset-0 h-full w-full object-cover"
 			loading="lazy"
 			onerror={() => (broken = true)}
 		/>
 	{:else if mark === 'circle'}
 		<span
-			class="absolute left-1/2 top-[44%] aspect-square w-[46%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+			class="absolute top-[44%] left-1/2 aspect-square w-[46%] -translate-x-1/2 -translate-y-1/2 rounded-full"
 			style="background:{c2};box-shadow:0 0 0 1px rgba(255,255,255,.14)"
 		></span>
 	{:else if mark === 'band'}
@@ -44,7 +47,7 @@
 		<span class="absolute inset-y-0 right-0 w-[38%]" style="background:{c2}"></span>
 	{:else}
 		<span
-			class="absolute bottom-[14%] right-[10%] aspect-square w-[34%] rotate-45"
+			class="absolute right-[10%] bottom-[14%] aspect-square w-[34%] rotate-45"
 			style="background:{c2}"
 		></span>
 	{/if}

@@ -1,8 +1,29 @@
 <script lang="ts">
 	import './layout.css';
 	import { page } from '$app/state';
+	import { SITE_URL, SITE_NAME, SITE_TAGLINE, AUTHOR_NAME } from '$lib/seo';
 
 	let { children } = $props();
+
+	// Site-wide structured data. WebSite + Person (the two schema.org types
+	// that describe a personal site with no other content type yet).
+	const structuredData = JSON.stringify([
+		{
+			'@context': 'https://schema.org',
+			'@type': 'WebSite',
+			name: SITE_NAME,
+			url: SITE_URL,
+			description: SITE_TAGLINE,
+			inLanguage: 'en-US'
+		},
+		{
+			'@context': 'https://schema.org',
+			'@type': 'Person',
+			name: AUTHOR_NAME,
+			url: SITE_URL,
+			alternateName: SITE_NAME
+		}
+	]);
 
 	const sections = [
 		{ href: '/', label: 'Home' },
@@ -35,6 +56,12 @@
 	});
 </script>
 
+<svelte:head>
+	<meta name="theme-color" content="#e4e8df" />
+	<meta name="author" content={AUTHOR_NAME} />
+	{@html `<script type="application/ld+json">${structuredData}</` + `script>`}
+</svelte:head>
+
 <svelte:body
 	onclick={() => {
 		menuOpen = false;
@@ -44,14 +71,12 @@
 <div class="flex min-h-screen flex-col">
 	<header class="sticky top-0 z-30 border-b-2 border-ink bg-paper/95 backdrop-blur-sm">
 		<nav class="mx-auto flex max-w-[1180px] items-center justify-between px-[22px] py-4">
-			<a href="/" class="font-mono text-[16px] font-semibold tracking-[0.2em] text-ink u-caps">
+			<a href="/" class="u-caps font-mono text-[16px] font-semibold tracking-[0.2em] text-ink">
 				HoldenMyBeer
 			</a>
 
 			<!-- desktop nav -->
-			<ul
-				class="hidden items-center gap-6 font-mono text-[13px] tracking-[0.13em] u-caps md:flex"
-			>
+			<ul class="u-caps hidden items-center gap-6 font-mono text-[13px] tracking-[0.13em] md:flex">
 				{#each sections as s (s.href)}
 					<li class="relative">
 						{#if s.menu}
@@ -71,7 +96,7 @@
 							</button>
 							{#if menuOpen}
 								<div
-									class="absolute right-0 top-[calc(100%+10px)] w-[200px] border border-border bg-raised shadow-[0_14px_30px_rgba(24,32,26,.2)]"
+									class="absolute top-[calc(100%+10px)] right-0 w-[200px] border border-border bg-raised shadow-[0_14px_30px_rgba(24,32,26,.2)]"
 								>
 									{#each music as m (m.href)}
 										<a
@@ -97,7 +122,8 @@
 									: 'text-ink-faint hover:text-copper'}"
 							>
 								{s.label}
-								{#if isActive(s.href)}<span class="absolute -bottom-[6px] left-0 h-[2px] w-full bg-copper"
+								{#if isActive(s.href)}<span
+										class="absolute -bottom-[6px] left-0 h-[2px] w-full bg-copper"
 									></span>{/if}
 							</a>
 						{/if}
@@ -124,7 +150,9 @@
 		</nav>
 
 		{#if navOpen}
-			<ul class="border-t border-rule bg-paper px-[22px] py-3 font-mono text-[13px] tracking-[0.12em] u-caps md:hidden">
+			<ul
+				class="u-caps border-t border-rule bg-paper px-[22px] py-3 font-mono text-[13px] tracking-[0.12em] md:hidden"
+			>
 				{#each sections as s (s.href)}
 					<li>
 						<a
@@ -144,7 +172,7 @@
 	</main>
 
 	<footer class="mt-[78px] border-t-2 border-ink bg-ink px-[22px] py-10 text-center">
-		<p class="font-mono text-[10px] tracking-[0.16em] text-[#8a948b] u-caps">
+		<p class="u-caps font-mono text-[10px] tracking-[0.16em] text-[#8a948b]">
 			HoldenMyBeer · personal site · {new Date().getFullYear()}
 		</p>
 	</footer>

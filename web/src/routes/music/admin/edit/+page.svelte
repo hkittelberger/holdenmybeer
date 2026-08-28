@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import Sleeve from '$lib/design/Sleeve.svelte';
+	import Seo from '$lib/components/Seo.svelte';
+	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import { rate, hmmss } from '$lib/design/tokens';
 	import type { AlbumFull, AlbumSearchHit } from '$lib/spotify-types';
 	import type { PageProps } from './$types';
@@ -50,7 +52,8 @@
 			searchError = '';
 			try {
 				const res = await fetch(`/music/admin/search?q=${encodeURIComponent(q)}`);
-				if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message ?? `HTTP ${res.status}`);
+				if (!res.ok)
+					throw new Error((await res.json().catch(() => ({}))).message ?? `HTTP ${res.status}`);
 				results = (await res.json()).results;
 			} catch (e) {
 				searchError = (e as Error).message || 'Search failed.';
@@ -82,7 +85,12 @@
 			const body = (await res.json()) as {
 				album: AlbumFull | null;
 				degraded: boolean;
-				existing: { rating: string; date_rated: string | null; review_notes: string | null; top_songs: string[] | null } | null;
+				existing: {
+					rating: string;
+					date_rated: string | null;
+					review_notes: string | null;
+					top_songs: string[] | null;
+				} | null;
 			};
 			degraded = body.degraded || !body.album;
 			picked = { album: body.album ?? partialFromHit(hit), fromSpotify: true };
@@ -98,9 +106,12 @@
 
 	function loadExisting(
 		id: string,
-		existing:
-			| { rating: string | number; date_rated: string | null; review_notes: string | null; top_songs: string[] | null }
-			| null
+		existing: {
+			rating: string | number;
+			date_rated: string | null;
+			review_notes: string | null;
+			top_songs: string[] | null;
+		} | null
 	) {
 		if (existing) {
 			editingId = id;
@@ -217,8 +228,10 @@
 	};
 
 	// keep the bound form fields intact after a save (don't native-reset)
-	const keepValues = () => async ({ update }: { update: (o?: { reset?: boolean }) => Promise<void> }) =>
-		update({ reset: false });
+	const keepValues =
+		() =>
+		async ({ update }: { update: (o?: { reset?: boolean }) => Promise<void> }) =>
+			update({ reset: false });
 
 	// after filing / removing a rating, collapse the editor back to the bare
 	// search box and leave a one-line confirmation above it
@@ -242,15 +255,27 @@
 	};
 </script>
 
+<Seo title="Curator Tools" description="Private curator tools." path="/music/admin/edit" noindex />
+<Breadcrumbs
+	items={[
+		{ label: 'Home', href: '/' },
+		{ label: 'Music', href: '/music' },
+		{ label: 'Admin', href: '/music/admin' },
+		{ label: 'Curator Tools', href: '/music/admin/edit' }
+	]}
+/>
+
 <div class="mx-auto max-w-[920px] px-[22px] py-10">
 	<!-- admin mode bar -->
 	<div
 		class="flex flex-wrap items-center justify-between gap-3 rounded-[3px] border border-ink bg-ink px-4 py-3 text-paper"
 	>
-		<span class="font-mono text-[10px] tracking-[0.16em] u-caps">Curator tools · writes to the live index</span>
+		<span class="u-caps font-mono text-[10px] tracking-[0.16em]"
+			>Curator tools · writes to the live index</span
+		>
 		<form method="POST" action="/music/admin?/logout" use:enhance>
 			<button
-				class="rounded-sm border border-ink-faint px-3 py-1.5 font-mono text-[10px] tracking-[0.12em] u-caps hover:border-copper-light hover:text-copper-light"
+				class="u-caps rounded-sm border border-ink-faint px-3 py-1.5 font-mono text-[10px] tracking-[0.12em] hover:border-copper-light hover:text-copper-light"
 			>
 				Lock
 			</button>
@@ -258,19 +283,26 @@
 	</div>
 
 	<!-- ══ add / edit an album ══════════════════════════════════════════ -->
-	<h2 class="font-display mt-8 text-[26px] font-bold u-caps" style="font-variation-settings:'wdth' 116">
+	<h2
+		class="u-caps mt-8 font-display text-[26px] font-bold"
+		style="font-variation-settings:'wdth' 116"
+	>
 		Add / edit an album
 	</h2>
-	<p class="font-mono text-[10px] tracking-[0.1em] text-ink-faint u-caps">Step 1 — look up. Step 2 — rate.</p>
+	<p class="u-caps font-mono text-[10px] tracking-[0.1em] text-ink-faint">
+		Step 1 — look up. Step 2 — rate.
+	</p>
 
 	<div id="album-form" class="mt-4 rounded-[3px] border border-border bg-raised p-5">
 		{#if justFiled && !picked}
-			<p class="mb-3 rounded-sm border border-copper/40 bg-copper-wash px-3 py-2 font-mono text-[11px] tracking-[0.06em] text-copper u-caps">
+			<p
+				class="u-caps mb-3 rounded-sm border border-copper/40 bg-copper-wash px-3 py-2 font-mono text-[11px] tracking-[0.06em] text-copper"
+			>
 				{justFiled} ✓ — search for the next one
 			</p>
 		{/if}
 		<label class="block">
-			<span class="mb-1.5 block font-mono text-[9px] tracking-[0.14em] text-ink-faint u-caps">
+			<span class="u-caps mb-1.5 block font-mono text-[9px] tracking-[0.14em] text-ink-faint">
 				Search Spotify catalogue
 			</span>
 			<input
@@ -283,10 +315,14 @@
 		</label>
 
 		{#if searching}
-			<p class="mt-2 font-mono text-[10px] tracking-[0.1em] text-ink-faint u-caps">Fetching catalogue…</p>
+			<p class="u-caps mt-2 font-mono text-[10px] tracking-[0.1em] text-ink-faint">
+				Fetching catalogue…
+			</p>
 		{/if}
 		{#if searchError}
-			<div class="mt-2 flex items-start gap-2 rounded-sm border border-copper bg-copper-wash px-3 py-2">
+			<div
+				class="mt-2 flex items-start gap-2 rounded-sm border border-copper bg-copper-wash px-3 py-2"
+			>
 				<span class="font-mono text-[12px] text-copper">!</span>
 				<p class="text-[13px] text-ink-muted">{searchError}</p>
 			</div>
@@ -301,7 +337,11 @@
 						class="flex w-full items-center gap-3 border-b border-rule bg-field px-3 py-2.5 text-left last:border-0 hover:bg-sunken focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-copper"
 					>
 						<span class="h-10 w-10 shrink-0 overflow-hidden rounded-[2px] bg-sunken">
-							{#if r.cover_url}<img src={r.cover_url} alt="" class="h-full w-full object-cover" />{/if}
+							{#if r.cover_url}<img
+									src={r.cover_url}
+									alt="{r.name} by {r.artist} — album cover"
+									class="h-full w-full object-cover"
+								/>{/if}
 						</span>
 						<span class="min-w-0 flex-1">
 							<span class="block truncate text-[14px]">{r.name}</span>
@@ -309,7 +349,7 @@
 								{r.artist} · {r.release_date?.slice(0, 4) ?? '—'} · {r.total_tracks ?? '?'} tracks
 							</span>
 						</span>
-						<span class="font-mono text-[10px] tracking-[0.08em] text-copper u-caps">Select</span>
+						<span class="u-caps font-mono text-[10px] tracking-[0.08em] text-copper">Select</span>
 					</button>
 				{/each}
 			</div>
@@ -317,10 +357,18 @@
 
 		{#if picked}
 			{@const a = picked.album}
-			<div class="mt-4 flex flex-wrap gap-4 rounded-sm border border-border-disabled bg-sunken p-3.5">
-				<span class="h-16 w-16 shrink-0 overflow-hidden rounded-[2px] shadow-[0_3px_10px_rgba(24,32,26,.16)]">
+			<div
+				class="mt-4 flex flex-wrap gap-4 rounded-sm border border-border-disabled bg-sunken p-3.5"
+			>
+				<span
+					class="h-16 w-16 shrink-0 overflow-hidden rounded-[2px] shadow-[0_3px_10px_rgba(24,32,26,.16)]"
+				>
 					{#if a.cover_url}
-						<img src={a.cover_url} alt="" class="h-full w-full object-cover" />
+						<img
+							src={a.cover_url}
+							alt="{a.name} by {a.artist} — album cover"
+							class="h-full w-full object-cover"
+						/>
 					{:else}
 						<Sleeve album={{ id: a.id, accent_1: null, accent_2: null }} />
 					{/if}
@@ -328,29 +376,37 @@
 				<div class="flex min-w-0 flex-1 flex-wrap gap-x-7 gap-y-2.5">
 					{#each [['Album', a.name], ['Artist', a.artist], ['Released', a.release_date ?? '—'], ['Tracks', String(a.total_tracks ?? a.tracks.length)], ['Length', a.total_duration_ms ? hmmss(a.total_duration_ms) : '—']] as [k, v] (k)}
 						<div>
-							<div class="font-mono text-[9px] tracking-[0.14em] text-ink-faint u-caps">{k}</div>
+							<div class="u-caps font-mono text-[9px] tracking-[0.14em] text-ink-faint">{k}</div>
 							<div class="mt-0.5 text-[14px]">{v}</div>
 						</div>
 					{/each}
-					<div class="w-full font-mono text-[10px] tracking-[0.06em] text-copper u-caps">
+					<div class="u-caps w-full font-mono text-[10px] tracking-[0.06em] text-copper">
 						{picked.fromSpotify ? 'Auto-filled from Spotify' : 'From the index'}
-						{#if editingId} · editing existing rating{/if}
+						{#if editingId}
+							· editing existing rating{/if}
 					</div>
 				</div>
 			</div>
 
 			{#if degraded}
-				<div class="mt-2 flex items-start gap-2 rounded-sm border border-copper bg-copper-wash px-3 py-2">
+				<div
+					class="mt-2 flex items-start gap-2 rounded-sm border border-copper bg-copper-wash px-3 py-2"
+				>
 					<span class="font-mono text-[12px] text-copper">!</span>
 					<p class="text-[13px] text-ink-muted">
-						Spotify's tracklist endpoint is rate-limited right now, so the top-song pickers
-						are empty and album length is unknown. The rating still saves — re-open this album
-						later (or run <code class="font-mono text-[12px]">metadata:resolve</code>) to fill the tracks in.
+						Spotify's tracklist endpoint is rate-limited right now, so the top-song pickers are
+						empty and album length is unknown. The rating still saves — re-open this album later (or
+						run <code class="font-mono text-[12px]">metadata:resolve</code>) to fill the tracks in.
 					</p>
 				</div>
 			{/if}
 
-			<form method="POST" action="?/saveRating" use:enhance={afterRating('save')} class="mt-4 space-y-4">
+			<form
+				method="POST"
+				action="?/saveRating"
+				use:enhance={afterRating('save')}
+				class="mt-4 space-y-4"
+			>
 				<input type="hidden" name="album_id" value={a.id} />
 				{#if picked.fromSpotify}
 					<input type="hidden" name="album_json" value={JSON.stringify(a)} />
@@ -358,7 +414,9 @@
 
 				<div class="flex flex-wrap gap-x-6 gap-y-4">
 					<label class="block flex-[0_0_220px]">
-						<span class="mb-1.5 flex justify-between font-mono text-[9px] tracking-[0.14em] text-ink-faint u-caps">
+						<span
+							class="u-caps mb-1.5 flex justify-between font-mono text-[9px] tracking-[0.14em] text-ink-faint"
+						>
 							<span>Rating / 10</span><span class="text-[13px] text-ink">{rate(rating)}</span>
 						</span>
 						<input
@@ -372,7 +430,9 @@
 						/>
 					</label>
 					<label class="block flex-[0_0_170px]">
-						<span class="mb-1.5 block font-mono text-[9px] tracking-[0.14em] text-ink-faint u-caps">Date rated</span>
+						<span class="u-caps mb-1.5 block font-mono text-[9px] tracking-[0.14em] text-ink-faint"
+							>Date rated</span
+						>
 						<input
 							type="date"
 							name="date_rated"
@@ -385,7 +445,9 @@
 				<div class="flex flex-wrap gap-3">
 					{#each [{ n: 'top1', get: () => top1, set: (v: string) => (top1 = v) }, { n: 'top2', get: () => top2, set: (v: string) => (top2 = v) }, { n: 'top3', get: () => top3, set: (v: string) => (top3 = v) }] as f, i (f.n)}
 						<label class="block flex-1 basis-[200px]">
-							<span class="mb-1.5 block font-mono text-[9px] tracking-[0.14em] text-ink-faint u-caps">
+							<span
+								class="u-caps mb-1.5 block font-mono text-[9px] tracking-[0.14em] text-ink-faint"
+							>
 								Top song {i + 1}
 							</span>
 							<select
@@ -404,7 +466,9 @@
 				</div>
 
 				<label class="block">
-					<span class="mb-1.5 flex justify-between font-mono text-[9px] tracking-[0.14em] text-ink-faint u-caps">
+					<span
+						class="u-caps mb-1.5 flex justify-between font-mono text-[9px] tracking-[0.14em] text-ink-faint"
+					>
 						<span>Review / notes</span><span>{notes.length} / 1000</span>
 					</span>
 					<textarea
@@ -419,19 +483,25 @@
 
 				<div class="flex flex-wrap items-center gap-3">
 					<button
-						class="rounded-sm bg-ink px-5 py-2.5 font-mono text-[11px] tracking-[0.14em] text-paper u-caps hover:bg-copper focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-copper"
+						class="u-caps rounded-sm bg-ink px-5 py-2.5 font-mono text-[11px] tracking-[0.14em] text-paper hover:bg-copper focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-copper"
 					>
 						{editingId ? 'Save changes' : 'File this card'}
 					</button>
-					<button type="button" onclick={clearForm} class="font-mono text-[10px] tracking-[0.1em] text-ink-faint u-caps hover:text-copper">
+					<button
+						type="button"
+						onclick={clearForm}
+						class="u-caps font-mono text-[10px] tracking-[0.1em] text-ink-faint hover:text-copper"
+					>
 						Clear
 					</button>
 					{#if msg('rating')?.saved}
-						<span class="font-mono text-[10px] tracking-[0.1em] text-copper u-caps">Saved ✓</span>
+						<span class="u-caps font-mono text-[10px] tracking-[0.1em] text-copper">Saved ✓</span>
 					{:else if msg('rating')?.deleted}
-						<span class="font-mono text-[10px] tracking-[0.1em] text-copper u-caps">Removed ✓</span>
+						<span class="u-caps font-mono text-[10px] tracking-[0.1em] text-copper">Removed ✓</span>
 					{:else if msg('rating')?.error}
-						<span class="font-mono text-[10px] tracking-[0.1em] text-copper">{msg('rating')?.error}</span>
+						<span class="font-mono text-[10px] tracking-[0.1em] text-copper"
+							>{msg('rating')?.error}</span
+						>
 					{/if}
 				</div>
 			</form>
@@ -445,7 +515,7 @@
 				>
 					<input type="hidden" name="album_id" value={a.id} />
 					<button
-						class="font-mono text-[10px] tracking-[0.1em] text-ink-faint u-caps hover:text-copper"
+						class="u-caps font-mono text-[10px] tracking-[0.1em] text-ink-faint hover:text-copper"
 						onclick={(e) => {
 							if (!confirm('Remove this rating from the index?')) e.preventDefault();
 						}}
@@ -459,7 +529,9 @@
 
 	{#if data.ratedAlbums.length}
 		<details class="mt-3 rounded-[3px] border border-border bg-raised">
-			<summary class="cursor-pointer px-4 py-3 font-mono text-[10px] tracking-[0.12em] text-ink-faint u-caps">
+			<summary
+				class="u-caps cursor-pointer px-4 py-3 font-mono text-[10px] tracking-[0.12em] text-ink-faint"
+			>
 				Or edit one of the {data.ratedAlbums.length} albums already rated
 			</summary>
 			<ul class="max-h-64 overflow-y-auto border-t border-rule">
@@ -472,7 +544,11 @@
 						>
 							<span class="h-8 w-8 shrink-0 overflow-hidden rounded-[2px]">
 								{#if a.cover_url}
-									<img src={a.cover_url} alt="" class="h-full w-full object-cover" />
+									<img
+										src={a.cover_url}
+										alt="{a.name} by {a.artist} — album cover"
+										class="h-full w-full object-cover"
+									/>
 								{:else}
 									<Sleeve album={a} />
 								{/if}
@@ -490,21 +566,33 @@
 	{/if}
 
 	<!-- ══ top five wheel ══════════════════════════════════════════════ -->
-	<h2 class="font-display mt-10 text-[26px] font-bold u-caps" style="font-variation-settings:'wdth' 116">
+	<h2
+		class="u-caps mt-10 font-display text-[26px] font-bold"
+		style="font-variation-settings:'wdth' 116"
+	>
 		Top five wheel
 	</h2>
-	<p class="font-mono text-[10px] tracking-[0.1em] text-ink-faint u-caps">
+	<p class="u-caps font-mono text-[10px] tracking-[0.1em] text-ink-faint">
 		Position 1 sits at the front of the library carousel
 	</p>
 
-	<form method="POST" action="?/saveWheel" use:enhance={keepValues} class="mt-4 rounded-[3px] border border-border bg-raised px-5 py-2.5">
+	<form
+		method="POST"
+		action="?/saveWheel"
+		use:enhance={keepValues}
+		class="mt-4 rounded-[3px] border border-border bg-raised px-5 py-2.5"
+	>
 		{#each slots as slot, i (i)}
 			{@const al = slot ? ratedById.get(slot) : null}
 			<div class="flex flex-wrap items-center gap-3 border-b border-rule py-3 last:border-0">
 				<span class="w-5 font-mono text-[14px] text-copper">{i + 1}</span>
 				<span class="h-9 w-9 shrink-0 overflow-hidden rounded-[2px]">
 					{#if al?.cover_url}
-						<img src={al.cover_url} alt="" class="h-full w-full object-cover" />
+						<img
+							src={al.cover_url}
+							alt="{al.name} by {al.artist} — album cover"
+							class="h-full w-full object-cover"
+						/>
 					{:else if al}
 						<Sleeve album={al} />
 					{:else}
@@ -522,7 +610,9 @@
 						<option value={a.id}>{a.name} — {a.artist}</option>
 					{/each}
 				</select>
-				<span class="w-9 text-right font-mono text-[13px] text-ink-muted">{al ? rate(al.rating) : ''}</span>
+				<span class="w-9 text-right font-mono text-[13px] text-ink-muted"
+					>{al ? rate(al.rating) : ''}</span
+				>
 				<div class="flex gap-1.5">
 					<button
 						type="button"
@@ -544,22 +634,26 @@
 			</div>
 		{/each}
 		<div class="flex flex-wrap items-center justify-between gap-3 py-3">
-			<span class="font-mono text-[10px] tracking-[0.1em] text-ink-faint u-caps">Front of wheel: {frontName}</span>
+			<span class="u-caps font-mono text-[10px] tracking-[0.1em] text-ink-faint"
+				>Front of wheel: {frontName}</span
+			>
 			<div class="flex items-center gap-3">
 				{#if msg('wheel')?.saved}
-					<span class="font-mono text-[10px] tracking-[0.1em] text-copper u-caps">Saved ✓</span>
+					<span class="u-caps font-mono text-[10px] tracking-[0.1em] text-copper">Saved ✓</span>
 				{:else if msg('wheel')?.error}
-					<span class="font-mono text-[10px] tracking-[0.1em] text-copper">{msg('wheel')?.error}</span>
+					<span class="font-mono text-[10px] tracking-[0.1em] text-copper"
+						>{msg('wheel')?.error}</span
+					>
 				{/if}
 				<button
 					type="button"
 					onclick={() => (slots = wheelFromData())}
-					class="rounded-sm border border-border-strong px-3 py-1.5 font-mono text-[10px] tracking-[0.1em] u-caps hover:border-copper hover:text-copper"
+					class="u-caps rounded-sm border border-border-strong px-3 py-1.5 font-mono text-[10px] tracking-[0.1em] hover:border-copper hover:text-copper"
 				>
 					Reset
 				</button>
 				<button
-					class="rounded-sm bg-ink px-4 py-2 font-mono text-[10px] tracking-[0.12em] text-paper u-caps hover:bg-copper"
+					class="u-caps rounded-sm bg-ink px-4 py-2 font-mono text-[10px] tracking-[0.12em] text-paper hover:bg-copper"
 				>
 					Save order
 				</button>
@@ -568,14 +662,22 @@
 	</form>
 
 	<!-- ══ yearly playlist links ══════════════════════════════════════ -->
-	<h2 class="font-display mt-10 text-[26px] font-bold u-caps" style="font-variation-settings:'wdth' 116">
+	<h2
+		class="u-caps mt-10 font-display text-[26px] font-bold"
+		style="font-variation-settings:'wdth' 116"
+	>
 		Yearly playlist links
 	</h2>
-	<p class="font-mono text-[10px] tracking-[0.1em] text-ink-faint u-caps">
+	<p class="u-caps font-mono text-[10px] tracking-[0.1em] text-ink-faint">
 		Empty field = Stats page shows the "no playlist linked" state
 	</p>
 
-	<form method="POST" action="?/savePlaylists" use:enhance={keepValues} class="mt-4 rounded-[3px] border border-border bg-raised px-5 py-2.5">
+	<form
+		method="POST"
+		action="?/savePlaylists"
+		use:enhance={keepValues}
+		class="mt-4 rounded-[3px] border border-border bg-raised px-5 py-2.5"
+	>
 		{#each links as link (link.year)}
 			<div class="flex flex-wrap items-center gap-3 border-b border-rule py-3 last:border-0">
 				<span class="w-12 font-mono text-[14px]">{link.year}</span>
@@ -587,7 +689,7 @@
 					class="flex-1 basis-[260px] rounded-sm border border-border-strong bg-field px-2.5 py-2 font-mono text-[12px] focus-visible:border-copper focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-copper"
 				/>
 				<span
-					class="font-mono text-[9px] tracking-[0.12em] u-caps {link.url.trim()
+					class="u-caps font-mono text-[9px] tracking-[0.12em] {link.url.trim()
 						? 'text-copper'
 						: 'text-ink-faintest'}"
 				>
@@ -596,7 +698,7 @@
 				<button
 					type="button"
 					onclick={() => (link.url = '')}
-					class="rounded-sm border border-border-strong px-2.5 py-1.5 font-mono text-[10px] tracking-[0.1em] u-caps hover:border-copper hover:text-copper"
+					class="u-caps rounded-sm border border-border-strong px-2.5 py-1.5 font-mono text-[10px] tracking-[0.1em] hover:border-copper hover:text-copper"
 				>
 					Clear
 				</button>
@@ -609,29 +711,44 @@
 		{/if}
 		<div class="flex items-center justify-end gap-3 py-3">
 			{#if msg('playlists')?.saved}
-				<span class="font-mono text-[10px] tracking-[0.1em] text-copper u-caps">
-					Saved ✓{#if !msg('playlists')?.warnings?.length} · tracklists pulled from Spotify{/if}
+				<span class="u-caps font-mono text-[10px] tracking-[0.1em] text-copper">
+					Saved ✓{#if !msg('playlists')?.warnings?.length}
+						· tracklists pulled from Spotify{/if}
 				</span>
 			{:else if msg('playlists')?.error}
-				<span class="font-mono text-[10px] tracking-[0.1em] text-copper">{msg('playlists')?.error}</span>
+				<span class="font-mono text-[10px] tracking-[0.1em] text-copper"
+					>{msg('playlists')?.error}</span
+				>
 			{/if}
-			<button class="rounded-sm bg-ink px-4 py-2 font-mono text-[10px] tracking-[0.12em] text-paper u-caps hover:bg-copper">
+			<button
+				class="u-caps rounded-sm bg-ink px-4 py-2 font-mono text-[10px] tracking-[0.12em] text-paper hover:bg-copper"
+			>
 				Save links
 			</button>
 		</div>
 	</form>
 
 	<!-- ══ spotify profile ═══════════════════════════════════════════ -->
-	<h2 class="font-display mt-10 text-[26px] font-bold u-caps" style="font-variation-settings:'wdth' 116">
+	<h2
+		class="u-caps mt-10 font-display text-[26px] font-bold"
+		style="font-variation-settings:'wdth' 116"
+	>
 		Spotify profile
 	</h2>
-	<p class="font-mono text-[10px] tracking-[0.1em] text-ink-faint u-caps">
+	<p class="u-caps font-mono text-[10px] tracking-[0.1em] text-ink-faint">
 		Shown as the "open profile" link on the Stats page
 	</p>
 
-	<form method="POST" action="?/saveProfile" use:enhance={keepValues} class="mt-4 flex flex-wrap items-end gap-3 rounded-[3px] border border-border bg-raised p-5">
+	<form
+		method="POST"
+		action="?/saveProfile"
+		use:enhance={keepValues}
+		class="mt-4 flex flex-wrap items-end gap-3 rounded-[3px] border border-border bg-raised p-5"
+	>
 		<label class="block flex-1 basis-[320px]">
-			<span class="mb-1.5 block font-mono text-[9px] tracking-[0.14em] text-ink-faint u-caps">Profile URL</span>
+			<span class="u-caps mb-1.5 block font-mono text-[9px] tracking-[0.14em] text-ink-faint"
+				>Profile URL</span
+			>
 			<input
 				type="text"
 				name="spotify_profile_url"
@@ -640,13 +757,16 @@
 				class="w-full rounded-sm border border-border-strong bg-field px-3 py-2.5 font-mono text-[12px] focus-visible:border-copper focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-copper"
 			/>
 		</label>
-		<button class="rounded-sm bg-ink px-4 py-2.5 font-mono text-[10px] tracking-[0.12em] text-paper u-caps hover:bg-copper">
+		<button
+			class="u-caps rounded-sm bg-ink px-4 py-2.5 font-mono text-[10px] tracking-[0.12em] text-paper hover:bg-copper"
+		>
 			Save
 		</button>
 		{#if msg('profile')?.saved}
-			<span class="font-mono text-[10px] tracking-[0.1em] text-copper u-caps">Saved ✓</span>
+			<span class="u-caps font-mono text-[10px] tracking-[0.1em] text-copper">Saved ✓</span>
 		{:else if msg('profile')?.error}
-			<span class="font-mono text-[10px] tracking-[0.1em] text-copper">{msg('profile')?.error}</span>
+			<span class="font-mono text-[10px] tracking-[0.1em] text-copper">{msg('profile')?.error}</span
+			>
 		{/if}
 	</form>
 

@@ -147,10 +147,12 @@ export const load: PageServerLoad = async () => {
 			}
 
 			const lifetimeMinutes = Number(a.lifetime_minutes);
-			const plays = lengthMs > 0 ? Math.max(1, Math.round(lifetimeMinutes / (lengthMs / 60000))) : 0;
+			const plays =
+				lengthMs > 0 ? Math.max(1, Math.round(lifetimeMinutes / (lengthMs / 60000))) : 0;
 
 			const badges: string[] = [];
-			if (a.showcase_rank && a.showcase_rank <= 5) badges.push(`All-time top 5 · No.${a.showcase_rank}`);
+			if (a.showcase_rank && a.showcase_rank <= 5)
+				badges.push(`All-time top 5 · No.${a.showcase_rank}`);
 			for (const [year, id] of topByYear) if (id === a.id) badges.push(`Top album of ${year}`);
 
 			return {

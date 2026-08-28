@@ -16,7 +16,13 @@ export interface ArtistDetail {
 	yearMinutes: number;
 	monthly: { month: number; minutes: number; pctOfMonth: number }[];
 	byYear: { year: number; minutes: number }[];
-	topSongs: { uri: string; name: string; album: string | null; cover_url: string | null; plays: number }[];
+	topSongs: {
+		uri: string;
+		name: string;
+		album: string | null;
+		cover_url: string | null;
+		plays: number;
+	}[];
 	ratedAlbums: {
 		id: string;
 		name: string;
@@ -83,7 +89,13 @@ export const GET: RequestHandler = async ({ params, url }) => {
 				 group by 1`,
 				[year]
 			),
-			pool.query<{ uri: string; name: string; album: string | null; cover_url: string | null; plays: string }>(
+			pool.query<{
+				uri: string;
+				name: string;
+				album: string | null;
+				cover_url: string | null;
+				plays: string;
+			}>(
 				`select p.track_uri as uri, coalesce(t.name, max(p.track_name)) as name,
 					al.name as album, al.cover_url, count(*)::text as plays
 				 from plays p
@@ -155,6 +167,9 @@ export const GET: RequestHandler = async ({ params, url }) => {
 				accent_2: r.accent_2
 			}))
 		};
-		return json(detail);
+		// Read-only; brief edge/browser cache. Cloudflare gzip/brotli is automatic.
+		return json(detail, {
+			headers: { 'Cache-Control': 'public, max-age=300, stale-while-revalidate=3600' }
+		});
 	});
 };

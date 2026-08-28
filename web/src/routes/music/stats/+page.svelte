@@ -12,6 +12,8 @@
 	import PlaylistPanel from '$lib/design/PlaylistPanel.svelte';
 	import ArtistDetail from '$lib/design/ArtistDetail.svelte';
 	import AlbumDetailById from '$lib/design/AlbumDetailById.svelte';
+	import Seo from '$lib/components/Seo.svelte';
+	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 	import { fmt, mmss } from '$lib/design/tokens';
 	import type { PageProps } from './$types';
 
@@ -86,6 +88,19 @@
 	const panel = 'rounded-[3px] border border-border bg-raised p-5';
 </script>
 
+<Seo
+	title="Listening Stats"
+	description="Seven years of Spotify listening, year by year: total minutes, top artists, albums and songs, a daily listening heatmap, and a new-vs-repeat discovery chart."
+	path="/music/stats"
+/>
+<Breadcrumbs
+	items={[
+		{ label: 'Home', href: '/' },
+		{ label: 'Music', href: '/music' },
+		{ label: 'Stats', href: '/music/stats' }
+	]}
+/>
+
 <div class="mx-auto max-w-[1180px] px-[22px] py-12">
 	<div class="flex flex-wrap items-start justify-between gap-4">
 		<div class="min-w-0 flex-1">
@@ -95,8 +110,8 @@
 			<a
 				href={data.spotifyProfileUrl}
 				target="_blank"
-				rel="noopener"
-				class="shrink-0 rounded-sm border border-copper px-3 py-2 font-mono text-[11px] tracking-[0.1em] text-copper u-caps hover:bg-copper hover:text-copper-text"
+				rel="noopener noreferrer"
+				class="u-caps shrink-0 rounded-sm border border-copper px-3 py-2 font-mono text-[11px] tracking-[0.1em] text-copper hover:bg-copper hover:text-copper-text"
 			>
 				Spotify profile ↗
 			</a>
@@ -125,10 +140,10 @@
 	<!-- minutes per year -->
 	<div class="{panel} mt-6">
 		<div class="mb-3 flex items-baseline justify-between">
-			<h3 class="font-display text-[15px] font-bold tracking-[0.06em] text-ink u-caps">
+			<h3 class="u-caps font-display text-[15px] font-bold tracking-[0.06em] text-ink">
 				Minutes listened per year
 			</h3>
-			<span class="font-mono text-[10px] tracking-[0.1em] text-ink-faintest u-caps">
+			<span class="u-caps font-mono text-[10px] tracking-[0.1em] text-ink-faintest">
 				Click a bar to switch year
 			</span>
 		</div>
@@ -180,10 +195,12 @@
 	<!-- listening calendar -->
 	<div class="{panel} mt-6">
 		<div class="mb-1 flex flex-wrap items-baseline justify-between gap-2">
-			<h3 class="font-display text-[15px] font-bold tracking-[0.06em] text-ink u-caps">
+			<h3 class="u-caps font-display text-[15px] font-bold tracking-[0.06em] text-ink">
 				Listening calendar — {data.year}
 			</h3>
-			<div class="flex items-center gap-1.5 font-mono text-[9px] tracking-[0.1em] text-ink-faintest u-caps">
+			<div
+				class="u-caps flex items-center gap-1.5 font-mono text-[9px] tracking-[0.1em] text-ink-faintest"
+			>
 				Quiet
 				{#each ['#e9dfd2', '#dcbfa2', '#c7936c', '#a96a3e', '#874c23'] as c (c)}
 					<span class="h-3 w-3 rounded-[1px]" style="background:{c}"></span>
@@ -191,7 +208,7 @@
 				Heavy
 			</div>
 		</div>
-		<p class="mb-3 font-mono text-[10px] tracking-[0.08em] text-ink-faint u-caps">
+		<p class="u-caps mb-3 font-mono text-[10px] tracking-[0.08em] text-ink-faint">
 			{fmt(data.calendarMeta.daysWithListening)} days with listening · busiest {busiestLabel} ·
 			{fmt(data.calendarMeta.busiestMinutes)} min · shades are your own quantiles
 		</p>
@@ -201,18 +218,20 @@
 	<!-- discovery -->
 	<div class="{panel} mt-6">
 		<div class="mb-1 flex flex-wrap items-baseline justify-between gap-2">
-			<h3 class="font-display text-[15px] font-bold tracking-[0.06em] text-ink u-caps">
+			<h3 class="u-caps font-display text-[15px] font-bold tracking-[0.06em] text-ink">
 				Discovery rate — {data.year}
 			</h3>
 			<div class="flex items-center gap-4">
-				<span class="flex items-center gap-1.5 font-mono text-[9px] tracking-[0.1em] text-ink-faint u-caps">
+				<span
+					class="u-caps flex items-center gap-1.5 font-mono text-[9px] tracking-[0.1em] text-ink-faint"
+				>
 					<span class="h-3 w-3 rounded-[1px] bg-copper"></span>New
 					<span class="ml-2 h-3 w-3 rounded-[1px] bg-bar-inactive"></span>Repeat
 				</span>
 				<MetricToggle options={['artists', 'tracks']} bind:value={discoveryMode} />
 			</div>
 		</div>
-		<p class="mb-3 font-mono text-[10px] tracking-[0.08em] text-ink-faint u-caps">
+		<p class="u-caps mb-3 font-mono text-[10px] tracking-[0.08em] text-ink-faint">
 			{fmt(disc.nw)} new · {fmt(disc.rp)} repeat {discoveryMode} this year
 		</p>
 		<DiscoveryChart months={data.discovery} mode={discoveryMode} />

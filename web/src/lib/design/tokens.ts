@@ -62,7 +62,9 @@ export function noOrphan(s: string): string {
 export const fmt = (n: number): string => n.toLocaleString('en-US');
 export const rate = (n: number): string => n.toFixed(1);
 export const dateShort = (s: string | null): string =>
-	s ? new Date(s + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—';
+	s
+		? new Date(s + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+		: '—';
 export const dateLong = (s: string | null): string =>
 	s
 		? new Date(s + 'T00:00:00').toLocaleDateString('en-US', {

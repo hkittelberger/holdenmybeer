@@ -1,0 +1,15 @@
+{
+	"name": "HoldenMyBeer",
+	"short_name": "HoldenMyBeer",
+	"description": "A personal site — album ratings and a seven-year listening record.",
+	"start_url": "/",
+	"scope": "/",
+	"display": "standalone",
+	"background_color": "#e4e8df",
+	"theme_color": "#e4e8df",
+	"icons": [
+		{ "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" },
+		{ "src": "/icon-512.png", "type": "image/png", "sizes": "512x512" },
+		{ "src": "/icon-512.png", "type": "image/png", "sizes": "512x512", "purpose": "maskable" }
+	]
+}

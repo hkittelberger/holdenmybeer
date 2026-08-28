@@ -12,7 +12,20 @@
 	} = $props();
 
 	const HEAT = ['#e9dfd2', '#dcbfa2', '#c7936c', '#a96a3e', '#874c23'];
-	const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+	const MONTHS = [
+		'Jan',
+		'Feb',
+		'Mar',
+		'Apr',
+		'May',
+		'Jun',
+		'Jul',
+		'Aug',
+		'Sep',
+		'Oct',
+		'Nov',
+		'Dec'
+	];
 
 	const byDay = $derived(new Map(days.map((d) => [d.day, d.minutes])));
 	const todayIso = new Date().toISOString().slice(0, 10);
@@ -85,7 +98,7 @@
 			{#each MONTHS as mo, i (mo)}
 				{#if monthCols[i] >= 0}
 					<span
-						class="absolute u-caps"
+						class="u-caps absolute"
 						style="left:calc({monthCols[i]} * (var(--cell) + var(--gap)))">{mo}</span
 					>
 				{/if}

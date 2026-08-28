@@ -52,7 +52,11 @@ export function passwordOk(candidate: string): boolean {
 
 export async function mintToken(): Promise<{ name: string; value: string; maxAge: number }> {
 	const expiry = String(Date.now() + TTL_MS);
-	return { name: COOKIE, value: `${expiry}.${await hmac(expiry)}`, maxAge: Math.floor(TTL_MS / 1000) };
+	return {
+		name: COOKIE,
+		value: `${expiry}.${await hmac(expiry)}`,
+		maxAge: Math.floor(TTL_MS / 1000)
+	};
 }
 
 export async function tokenValid(raw: string | undefined): Promise<boolean> {

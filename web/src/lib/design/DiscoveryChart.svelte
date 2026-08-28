@@ -4,7 +4,20 @@
 
 	let { months, mode }: { months: DiscoveryMonth[]; mode: 'artists' | 'tracks' } = $props();
 
-	const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+	const MONTHS = [
+		'Jan',
+		'Feb',
+		'Mar',
+		'Apr',
+		'May',
+		'Jun',
+		'Jul',
+		'Aug',
+		'Sep',
+		'Oct',
+		'Nov',
+		'Dec'
+	];
 
 	const rows = $derived(
 		months.map((m) => ({
@@ -22,7 +35,11 @@
 	function enter(e: MouseEvent, month: number, seg: Seg, n: number) {
 		hover = { month, seg };
 		const kind = seg === 'nw' ? 'New' : 'Repeat';
-		tip = { x: e.clientX, y: e.clientY, text: `${kind} ${mode} in ${MONTHS[month - 1]}: ${fmt(n)}` };
+		tip = {
+			x: e.clientX,
+			y: e.clientY,
+			text: `${kind} ${mode} in ${MONTHS[month - 1]}: ${fmt(n)}`
+		};
 	}
 	function move(e: MouseEvent) {
 		if (tip) tip = { ...tip, x: e.clientX, y: e.clientY };

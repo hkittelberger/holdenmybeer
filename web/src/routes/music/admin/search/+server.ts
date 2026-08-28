@@ -7,10 +7,11 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 	if (!(await tokenValid(cookies.get(COOKIE_NAME)))) throw error(401, 'locked');
 
 	const q = url.searchParams.get('q') ?? '';
-	if (q.trim().length < 2) return json({ results: [] });
+	const noStore = { 'Cache-Control': 'no-store' };
+	if (q.trim().length < 2) return json({ results: [] }, { headers: noStore });
 
 	try {
-		return json({ results: await searchAlbums(q) });
+		return json({ results: await searchAlbums(q) }, { headers: noStore });
 	} catch (e) {
 		if (e instanceof SpotifyConfigError) throw error(503, 'Spotify credentials not configured.');
 		if (e instanceof SpotifyDownError) throw error(502, 'Spotify catalogue is unreachable.');

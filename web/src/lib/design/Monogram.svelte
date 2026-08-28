@@ -22,7 +22,7 @@
 {#if src}
 	<img
 		{src}
-		alt={name}
+		alt="{name} — artist photo"
 		width={size}
 		height={size}
 		class="shrink-0 object-cover {round ? 'rounded-full' : 'rounded-[2px]'}"

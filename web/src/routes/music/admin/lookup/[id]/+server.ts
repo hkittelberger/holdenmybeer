@@ -31,12 +31,16 @@ export const GET: RequestHandler = async ({ params, cookies }) => {
 	);
 	const existing = existingR[0] ?? null;
 
+	const noStore = { 'Cache-Control': 'no-store' };
 	try {
-		return json({ album: await getAlbumFull(params.id), existing, degraded: false });
+		return json(
+			{ album: await getAlbumFull(params.id), existing, degraded: false },
+			{ headers: noStore }
+		);
 	} catch (e) {
 		if (e instanceof SpotifyConfigError) throw error(503, 'Spotify credentials not configured.');
 		if (e instanceof SpotifyDownError) {
-			return json({ album: null, existing, degraded: true });
+			return json({ album: null, existing, degraded: true }, { headers: noStore });
 		}
 		throw e;
 	}

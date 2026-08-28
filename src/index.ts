@@ -44,12 +44,78 @@ class RateLimited429Error extends Error {
   }
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * fetch() with a per-attempt timeout, bounded exponential backoff, and a
+ * hard overall deadline. Retries transient failures only: network errors,
+ * 5xx, and 429 (honouring Retry-After when it's short). A 401/4xx is
+ * returned to the caller immediately — retrying won't help.
+ *
+ * This is the "circuit breaker" for the polling job: without it a single
+ * hung TCP connection blocks the whole hourly run until GitHub's job
+ * timeout (6h). With it, the job gives up after ~45s of trying and the
+ * next scheduled run picks up where this one left off.
+ */
+async function fetchWithRetry(
+  url: string | URL,
+  init: RequestInit = {},
+  {
+    attempts = 4,
+    perAttemptTimeoutMs = 12_000,
+    overallDeadlineMs = 45_000,
+    baseBackoffMs = 800,
+    maxRetryAfterMs = 20_000,
+  } = {},
+): Promise<Response> {
+  const startedAt = Date.now();
+  let lastErr: unknown;
+
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    if (attempt > 0) {
+      const backoff = Math.min(baseBackoffMs * 2 ** (attempt - 1), 8_000);
+      const jitter = Math.random() * 300;
+      if (Date.now() - startedAt + backoff > overallDeadlineMs) break;
+      await sleep(backoff + jitter);
+    }
+
+    try {
+      const res = await fetch(url, {
+        ...init,
+        signal: AbortSignal.timeout(perAttemptTimeoutMs),
+      });
+
+      // Retry 5xx and 429; return everything else (2xx, 4xx) to the caller.
+      if (res.status >= 500 || res.status === 429) {
+        lastErr = new Error(`Spotify ${res.status}`);
+        if (res.status === 429) {
+          const ra = Number(res.headers.get("Retry-After") ?? "0") * 1000;
+          if (ra > 0 && ra <= maxRetryAfterMs && Date.now() - startedAt + ra < overallDeadlineMs) {
+            await sleep(ra);
+          } else if (ra > maxRetryAfterMs) {
+            // A long lock — stop now, let the next hourly run retry.
+            return res;
+          }
+        }
+        continue;
+      }
+
+      return res;
+    } catch (err) {
+      // Network error / timeout / abort — retry within the deadline.
+      lastErr = err;
+    }
+  }
+
+  throw lastErr ?? new Error("fetchWithRetry: exhausted retries");
+}
+
 async function refreshAccessToken(
   clientId: string,
   clientSecret: string,
   refreshToken: string,
 ): Promise<string> {
-  const res = await fetch("https://accounts.spotify.com/api/token", {
+  const res = await fetchWithRetry("https://accounts.spotify.com/api/token", {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -84,7 +150,7 @@ async function fetchRecentlyPlayed(
     url.searchParams.set("after", String(afterMs));
   }
 
-  const res = await fetch(url, {
+  const res = await fetchWithRetry(url, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
 
@@ -123,43 +189,48 @@ async function insertPlays(
   client: Client,
   items: SpotifyPlayItem[],
 ): Promise<{ inserted: number; skipped: number; skippedNonTrack: number }> {
-  let inserted = 0;
-  let skipped = 0;
-  let skippedNonTrack = 0;
+  // recently-played is track-only today, but guard anyway so a podcast /
+  // video / local-file row can never land in `plays`.
+  const tracks = items.filter(
+    (i) => i.track && i.track.type === "track" && i.track.uri,
+  );
+  const skippedNonTrack = items.length - tracks.length;
 
-  for (const item of items) {
-    const track = item.track;
-    // recently-played is track-only today, but guard anyway so a podcast /
-    // video / local-file row can never land in `plays`.
-    if (!track || track.type !== "track" || !track.uri) {
-      skippedNonTrack++;
-      continue;
-    }
-
-    const result = await client.query(
-      `insert into plays
-         (track_uri, track_name, album_uri, album_name, played_at,
-          duration_ms, ms_played, source, raw)
-       values ($1, $2, $3, $4, $5, $6, null, 'live', $7)
-       on conflict (track_uri, played_at) do nothing`,
-      [
-        track.uri,
-        track.name,
-        track.album?.uri ?? null,
-        track.album?.name ?? null,
-        item.played_at,
-        track.duration_ms,
-        JSON.stringify(item),
-      ],
-    );
-    if (result.rowCount) {
-      inserted++;
-    } else {
-      skipped++;
-    }
+  if (tracks.length === 0) {
+    return { inserted: 0, skipped: 0, skippedNonTrack };
   }
 
-  return { inserted, skipped, skippedNonTrack };
+  // One multi-row INSERT rather than a query per item. The unique
+  // (track_uri, played_at) constraint still does all the dedupe work;
+  // rowCount tells us how many of the batch were actually new.
+  const cols = 7;
+  const values: unknown[] = [];
+  const tuples = tracks.map((item, n) => {
+    const t = item.track!;
+    values.push(
+      t.uri,
+      t.name,
+      t.album?.uri ?? null,
+      t.album?.name ?? null,
+      item.played_at,
+      t.duration_ms,
+      JSON.stringify(item),
+    );
+    const b = n * cols;
+    return `($${b + 1}, $${b + 2}, $${b + 3}, $${b + 4}, $${b + 5}, $${b + 6}, null, 'live', $${b + 7})`;
+  });
+
+  const result = await client.query(
+    `insert into plays
+       (track_uri, track_name, album_uri, album_name, played_at,
+        duration_ms, ms_played, source, raw)
+     values ${tuples.join(", ")}
+     on conflict (track_uri, played_at) do nothing`,
+    values,
+  );
+
+  const inserted = result.rowCount ?? 0;
+  return { inserted, skipped: tracks.length - inserted, skippedNonTrack };
 }
 
 async function run(): Promise<number> {

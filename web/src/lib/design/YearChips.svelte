@@ -14,7 +14,7 @@
 
 <div class="flex flex-wrap items-center gap-3">
 	{#if label}
-		<span class="font-mono text-[10px] tracking-[0.14em] text-ink-faint u-caps">{label}</span>
+		<span class="u-caps font-mono text-[10px] tracking-[0.14em] text-ink-faint">{label}</span>
 	{/if}
 	<div class="inline-flex overflow-hidden rounded-sm border border-border-strong">
 		{#each years as y, i (y)}
