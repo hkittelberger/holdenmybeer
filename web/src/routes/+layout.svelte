@@ -48,6 +48,7 @@
 		href === '/'
 			? page.url.pathname === '/'
 			: page.url.pathname === href || page.url.pathname.startsWith(href + '/');
+	const isExact = (href: string) => page.url.pathname === href;
 
 	// close everything on navigation
 	$effect(() => {
@@ -55,7 +56,16 @@
 		menuOpen = false;
 		navOpen = false;
 	});
+
+	function onEscape(e: KeyboardEvent) {
+		if (e.key === 'Escape') {
+			menuOpen = false;
+			navOpen = false;
+		}
+	}
 </script>
+
+<svelte:window onkeydown={onEscape} />
 
 <svelte:head>
 	<meta name="theme-color" content="#e4e8df" />
@@ -66,6 +76,7 @@
 <svelte:body
 	onclick={() => {
 		menuOpen = false;
+		navOpen = false;
 	}}
 />
 
@@ -86,29 +97,42 @@
 					<li class="relative">
 						{#if s.menu}
 							<button
+								type="button"
 								onclick={(e) => {
 									e.stopPropagation();
 									menuOpen = !menuOpen;
 								}}
 								aria-expanded={menuOpen}
+								aria-haspopup="true"
+								aria-controls="music-menu"
 								class="relative flex items-center gap-1 py-1 {inMusic
 									? 'text-copper'
 									: 'text-ink-faint hover:text-copper'}"
 							>
-								{s.label}<span class="text-[8px]">▾</span>
+								{s.label}<span aria-hidden="true" class="text-[8px]">▾</span>
 								{#if inMusic}<span class="absolute -bottom-[6px] left-0 h-[2px] w-full bg-copper"
 									></span>{/if}
 							</button>
 							{#if menuOpen}
 								<div
+									id="music-menu"
 									class="absolute top-[calc(100%+10px)] right-0 w-[200px] border border-border bg-raised shadow-[0_14px_30px_rgba(24,32,26,.2)]"
 								>
 									{#each music as m (m.href)}
 										<a
 											href={m.href}
-											class="block border-b border-rule px-4 py-3 last:border-0 hover:bg-zebra"
+											aria-current={isExact(m.href) ? 'page' : undefined}
+											class="block border-b border-rule px-4 py-3 last:border-0 hover:bg-zebra {isExact(
+												m.href
+											)
+												? 'bg-zebra'
+												: ''}"
 										>
-											<span class="block text-[11px] tracking-[0.12em] text-ink">{m.label}</span>
+											<span
+												class="block text-[11px] tracking-[0.12em] {isExact(m.href)
+													? 'text-copper'
+													: 'text-ink'}">{m.label}</span
+											>
 											<span
 												class="mt-0.5 block font-sans text-[11px] tracking-normal text-ink-faint normal-case"
 											>
@@ -138,9 +162,11 @@
 
 			<!-- mobile hamburger -->
 			<button
-				class="grid size-8 place-items-center md:hidden"
-				aria-label="Menu"
+				type="button"
+				class="-mr-2 grid size-11 place-items-center md:hidden"
+				aria-label={navOpen ? 'Close menu' : 'Open menu'}
 				aria-expanded={navOpen}
+				aria-controls="mobile-nav"
 				onclick={(e) => {
 					e.stopPropagation();
 					navOpen = !navOpen;
@@ -155,20 +181,54 @@
 		</nav>
 
 		{#if navOpen}
-			<ul
-				class="u-caps border-t border-rule bg-paper px-[22px] py-3 font-mono text-[13px] tracking-[0.12em] md:hidden"
+			<nav
+				id="mobile-nav"
+				aria-label="Site"
+				class="u-caps border-t border-rule bg-paper px-[22px] py-2 font-mono text-[13px] tracking-[0.12em] md:hidden"
 			>
-				{#each sections as s (s.href)}
-					<li>
-						<a
-							href={s.href}
-							class="block py-2.5 {isActive(s.href) ? 'text-copper' : 'text-ink-muted'}"
-						>
-							{s.label}
-						</a>
-					</li>
-				{/each}
-			</ul>
+				<ul>
+					{#each sections as s (s.href)}
+						{#if s.menu}
+							<li class="border-b border-rule py-2 last:border-0">
+								<a
+									href={s.href}
+									aria-current={isExact(s.href) ? 'page' : undefined}
+									class="flex min-h-[44px] items-center {isExact(s.href)
+										? 'text-copper'
+										: 'text-ink-muted'}">{s.label}</a
+								>
+								<ul class="mb-1 ml-3 border-l-2 border-rule pl-4">
+									{#each music as m (m.href)}
+										<li>
+											<a
+												href={m.href}
+												aria-current={isExact(m.href) ? 'page' : undefined}
+												class="flex min-h-[44px] items-center text-[12px] {isExact(m.href)
+													? 'text-copper'
+													: 'text-ink-faint'}"
+											>
+												{m.label}
+											</a>
+										</li>
+									{/each}
+								</ul>
+							</li>
+						{:else}
+							<li class="border-b border-rule last:border-0">
+								<a
+									href={s.href}
+									aria-current={isActive(s.href) ? 'page' : undefined}
+									class="flex min-h-[44px] items-center {isActive(s.href)
+										? 'text-copper'
+										: 'text-ink-muted'}"
+								>
+									{s.label}
+								</a>
+							</li>
+						{/if}
+					{/each}
+				</ul>
+			</nav>
 		{/if}
 	</header>
 

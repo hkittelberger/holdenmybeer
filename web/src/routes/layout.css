@@ -67,6 +67,23 @@ body {
 	color: var(--color-raised);
 }
 
+html {
+	caret-color: var(--color-copper);
+	accent-color: var(--color-copper);
+}
+
+/* One themed focus ring for every keyboard-focused control — including the
+   ones with no per-component style. Pointer clicks stay clean (:focus-visible
+   only). Dark surfaces (the detail sidebars) opt into a light ring. */
+:focus-visible {
+	outline: 2px solid var(--color-copper);
+	outline-offset: 2px;
+	border-radius: 2px;
+}
+[data-surface='dark'] :focus-visible {
+	outline-color: var(--color-copper-light);
+}
+
 /* hidden internal scrollers with a fade at the end (handoff §5) */
 .noscroll {
 	scrollbar-width: none;

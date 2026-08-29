@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Sleeve from './Sleeve.svelte';
+	import { focusTrap } from '$lib/actions/focusTrap';
 	import { rate, fmt, dateLong, mmss, accents, noOrphan } from './tokens';
 	import type { CatalogueAlbum } from '../../routes/music/+page.server';
 
@@ -23,16 +24,19 @@
 
 <div class="fixed inset-0 z-50">
 	<button
-		aria-label="Close"
+		aria-label="Close album detail"
 		class="absolute inset-0 bg-ink/45 backdrop-blur-[1px]"
 		onclick={onclose}
 	></button>
 
 	<div
+		use:focusTrap
 		role="dialog"
 		aria-modal="true"
 		aria-label={`${album.name} detail`}
-		class="noscroll absolute inset-y-0 right-0 w-full max-w-[640px] overflow-x-hidden overflow-y-auto text-[#e6ebe2] shadow-[-24px_0_60px_rgba(16,22,18,.4)]"
+		tabindex="-1"
+		data-surface="dark"
+		class="noscroll absolute inset-y-0 right-0 w-full max-w-[640px] overflow-x-hidden overflow-y-auto text-[#e6ebe2] shadow-[-24px_0_60px_rgba(16,22,18,.4)] outline-none"
 		style="
 			background:
 				radial-gradient(135% 42% at 50% 0%, color-mix(in oklab, {c2} 58%, transparent) 0%, transparent 68%),
@@ -48,11 +52,12 @@
 			<div class="flex items-start justify-between">
 				<p class="u-caps font-mono text-[11px] tracking-[0.18em] text-white/45">Card detail</p>
 				<button
-					aria-label="Close"
+					type="button"
+					aria-label="Close album detail"
 					onclick={onclose}
-					class="grid size-9 place-items-center rounded-full border border-white/25 text-white/80 hover:border-copper-light hover:text-copper-light"
+					class="grid size-10 place-items-center rounded-full border border-white/25 text-white/80 hover:border-copper-light hover:text-copper-light"
 				>
-					✕
+					<span aria-hidden="true">✕</span>
 				</button>
 			</div>
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
+	import { page, navigating } from '$app/state';
 	import SectionHeader from '$lib/design/SectionHeader.svelte';
 	import StatTile from '$lib/design/StatTile.svelte';
 	import YearChips from '$lib/design/YearChips.svelte';
@@ -19,11 +19,21 @@
 
 	let { data }: PageProps = $props();
 
-	function setYear(y: number) {
+	const yearHref = (y: number) => {
 		const u = new URL(page.url);
 		u.searchParams.set('year', String(y));
-		goto(u, { keepFocus: true, noScroll: true });
+		return u.pathname + u.search;
+	};
+	function setYear(y: number) {
+		goto(yearHref(y), { keepFocus: true, noScroll: true });
 	}
+	// the year a navigation is currently loading (for the optimistic highlight)
+	const pendingYear = $derived(
+		navigating.to?.url.pathname === page.url.pathname
+			? Number(navigating.to.url.searchParams.get('year')) || null
+			: null
+	);
+	const switchingYear = $derived(pendingYear !== null);
 
 	let songMetric = $state<'plays' | 'minutes'>('plays');
 	let discoveryMode = $state<'artists' | 'tracks'>('tracks');
@@ -102,139 +112,150 @@
 />
 
 <div class="mx-auto max-w-[1180px] px-[22px] py-12">
-	<div class="flex flex-wrap items-start justify-between gap-4">
-		<div class="min-w-0 flex-1">
-			<SectionHeader kicker="Section C — Listening Record" title="The year in minutes" />
-		</div>
-		{#if data.spotifyProfileUrl}
-			<a
-				href={data.spotifyProfileUrl}
-				target="_blank"
-				rel="noopener noreferrer"
-				class="u-caps shrink-0 rounded-sm border border-copper px-3 py-2 font-mono text-[11px] tracking-[0.1em] text-copper hover:bg-copper hover:text-copper-text"
-			>
-				Spotify profile ↗
-			</a>
+	<SectionHeader kicker="Section C — Listening Record" title="The year in minutes">
+		{#snippet action()}
+			{#if data.spotifyProfileUrl}
+				<a
+					href={data.spotifyProfileUrl}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="u-caps inline-block rounded-sm border border-copper px-3 py-2 font-mono text-[11px] tracking-[0.1em] text-copper hover:bg-copper hover:text-copper-text"
+				>
+					Spotify profile ↗
+				</a>
+			{/if}
+		{/snippet}
+	</SectionHeader>
+
+	<div class="-mt-3 flex items-center gap-3">
+		<YearChips years={data.years} selected={data.year} pending={pendingYear} href={yearHref} />
+		{#if switchingYear}
+			<span class="u-caps font-mono text-[10px] tracking-[0.14em] text-ink-faintest" role="status">
+				Loading {pendingYear}…
+			</span>
 		{/if}
 	</div>
 
-	<div class="-mt-2">
-		<YearChips years={data.years} selected={data.year} onselect={setYear} />
-	</div>
-
-	<!-- stat tiles -->
-	<div class="mt-8 grid gap-6 sm:grid-cols-3">
-		<StatTile
-			label="Minutes in {data.year}"
-			value={fmt(data.totals.minutes)}
-			note="{fmt(data.totals.hours)} hours of listening"
-		/>
-		<StatTile
-			label="Albums rated {data.year}"
-			value={fmt(data.totals.albumsRated)}
-			note="cards filed this year"
-		/>
-		<StatTile label="Mean score" value={data.totals.meanScore} note="across the whole index" />
-	</div>
-
-	<!-- minutes per year -->
-	<div class="{panel} mt-6">
-		<div class="mb-3 flex items-baseline justify-between">
-			<h3 class="u-caps font-display text-[15px] font-bold tracking-[0.06em] text-ink">
-				Minutes listened per year
-			</h3>
-			<span class="u-caps font-mono text-[10px] tracking-[0.1em] text-ink-faintest">
-				Click a bar to switch year
-			</span>
+	<!-- everything below the year selector reloads on year change -->
+	<div
+		class="transition-opacity duration-150"
+		class:opacity-40={switchingYear}
+		aria-busy={switchingYear}
+	>
+		<!-- stat tiles -->
+		<div class="mt-8 grid gap-6 sm:grid-cols-3">
+			<StatTile
+				label="Minutes in {data.year}"
+				value={fmt(data.totals.minutes)}
+				note="{fmt(data.totals.hours)} hours of listening"
+			/>
+			<StatTile
+				label="Albums rated {data.year}"
+				value={fmt(data.totals.albumsRated)}
+				note="cards filed this year"
+			/>
+			<StatTile label="Mean score" value={data.totals.meanScore} note="across the whole index" />
 		</div>
-		<BarChart data={data.perYear} selected={data.year} onselect={setYear} />
-	</div>
 
-	<!-- artist / album boards -->
-	<div class="mt-6 grid gap-6 lg:grid-cols-2">
-		<RankBoard
-			title="By artist — {data.year}"
-			items={artistItems}
-			visual="monogram"
-			showBar
-			valueSuffix="min"
-			onselect={(it) => (openArtist = it.key)}
-			emptyNote="Artist minutes fill in as the catalogue metadata resolves."
-		/>
-		<RankBoard
-			title="By album — {data.year}"
-			items={albumItems}
-			visual="cover"
-			valueSuffix="min"
-			onselect={(it) => (openAlbum = it.key)}
-			emptyNote="Album minutes fill in as the catalogue metadata resolves."
-		/>
-	</div>
-
-	<!-- top songs / playlist -->
-	<div class="mt-6 grid gap-6 lg:grid-cols-2">
-		<RankBoard
-			title="Top songs of {data.year}"
-			items={songItems}
-			visual="cover"
-			valueSuffix={songMetric}
-		>
-			{#snippet headerExtra()}
-				<MetricToggle options={['plays', 'minutes']} bind:value={songMetric} label="Metric" />
-			{/snippet}
-		</RankBoard>
-		<PlaylistPanel
-			year={data.year}
-			songs={data.songs}
-			playlistTracks={data.playlistTracks}
-			playlistName={data.yearPlaylistName}
-			url={data.yearPlaylistUrl}
-		/>
-	</div>
-
-	<!-- listening calendar -->
-	<div class="{panel} mt-6">
-		<div class="mb-1 flex flex-wrap items-baseline justify-between gap-2">
-			<h3 class="u-caps font-display text-[15px] font-bold tracking-[0.06em] text-ink">
-				Listening calendar — {data.year}
-			</h3>
-			<div
-				class="u-caps flex items-center gap-1.5 font-mono text-[9px] tracking-[0.1em] text-ink-faintest"
-			>
-				Quiet
-				{#each ['#e9dfd2', '#dcbfa2', '#c7936c', '#a96a3e', '#874c23'] as c (c)}
-					<span class="h-3 w-3 rounded-[1px]" style="background:{c}"></span>
-				{/each}
-				Heavy
-			</div>
-		</div>
-		<p class="u-caps mb-3 font-mono text-[10px] tracking-[0.08em] text-ink-faint">
-			{fmt(data.calendarMeta.daysWithListening)} days with listening · busiest {busiestLabel} ·
-			{fmt(data.calendarMeta.busiestMinutes)} min · shades are your own quantiles
-		</p>
-		<Heatmap year={data.year} days={data.calendar} quantiles={data.calendarMeta.quantiles} />
-	</div>
-
-	<!-- discovery -->
-	<div class="{panel} mt-6">
-		<div class="mb-1 flex flex-wrap items-baseline justify-between gap-2">
-			<h3 class="u-caps font-display text-[15px] font-bold tracking-[0.06em] text-ink">
-				Discovery rate — {data.year}
-			</h3>
-			<div class="flex items-center gap-4">
-				<span
-					class="u-caps flex items-center gap-1.5 font-mono text-[9px] tracking-[0.1em] text-ink-faint"
-				>
-					<span class="h-3 w-3 rounded-[1px] bg-copper"></span>New
-					<span class="ml-2 h-3 w-3 rounded-[1px] bg-bar-inactive"></span>Repeat
+		<!-- minutes per year -->
+		<div class="{panel} mt-6">
+			<div class="mb-3 flex items-baseline justify-between">
+				<h3 class="u-caps font-display text-[15px] font-bold tracking-[0.06em] text-ink">
+					Minutes listened per year
+				</h3>
+				<span class="u-caps font-mono text-[10px] tracking-[0.1em] text-ink-faintest">
+					Click a bar to switch year
 				</span>
-				<MetricToggle options={['artists', 'tracks']} bind:value={discoveryMode} />
 			</div>
+			<BarChart data={data.perYear} selected={data.year} onselect={setYear} />
 		</div>
-		<p class="u-caps mb-3 font-mono text-[10px] tracking-[0.08em] text-ink-faint">
-			{fmt(disc.nw)} new · {fmt(disc.rp)} repeat {discoveryMode} this year
-		</p>
-		<DiscoveryChart months={data.discovery} mode={discoveryMode} />
+
+		<!-- artist / album boards -->
+		<div class="mt-6 grid gap-6 lg:grid-cols-2">
+			<RankBoard
+				title="By artist — {data.year}"
+				items={artistItems}
+				visual="monogram"
+				showBar
+				valueSuffix="min"
+				onselect={(it) => (openArtist = it.key)}
+				emptyNote="Artist minutes fill in as the catalogue metadata resolves."
+			/>
+			<RankBoard
+				title="By album — {data.year}"
+				items={albumItems}
+				visual="cover"
+				valueSuffix="min"
+				onselect={(it) => (openAlbum = it.key)}
+				emptyNote="Album minutes fill in as the catalogue metadata resolves."
+			/>
+		</div>
+
+		<!-- top songs / playlist -->
+		<div class="mt-6 grid gap-6 lg:grid-cols-2">
+			<RankBoard
+				title="Top songs of {data.year}"
+				items={songItems}
+				visual="cover"
+				valueSuffix={songMetric}
+			>
+				{#snippet headerExtra()}
+					<MetricToggle options={['plays', 'minutes']} bind:value={songMetric} label="Metric" />
+				{/snippet}
+			</RankBoard>
+			<PlaylistPanel
+				year={data.year}
+				songs={data.songs}
+				playlistTracks={data.playlistTracks}
+				playlistName={data.yearPlaylistName}
+				url={data.yearPlaylistUrl}
+			/>
+		</div>
+
+		<!-- listening calendar -->
+		<div class="{panel} mt-6">
+			<div class="mb-1 flex flex-wrap items-baseline justify-between gap-2">
+				<h3 class="u-caps font-display text-[15px] font-bold tracking-[0.06em] text-ink">
+					Listening calendar — {data.year}
+				</h3>
+				<div
+					class="u-caps flex items-center gap-1.5 font-mono text-[9px] tracking-[0.1em] text-ink-faintest"
+				>
+					Quiet
+					{#each ['#e9dfd2', '#dcbfa2', '#c7936c', '#a96a3e', '#874c23'] as c (c)}
+						<span class="h-3 w-3 rounded-[1px]" style="background:{c}"></span>
+					{/each}
+					Heavy
+				</div>
+			</div>
+			<p class="u-caps mb-3 font-mono text-[10px] tracking-[0.08em] text-ink-faint">
+				{fmt(data.calendarMeta.daysWithListening)} days with listening · busiest {busiestLabel} ·
+				{fmt(data.calendarMeta.busiestMinutes)} min · shades are your own quantiles
+			</p>
+			<Heatmap year={data.year} days={data.calendar} quantiles={data.calendarMeta.quantiles} />
+		</div>
+
+		<!-- discovery -->
+		<div class="{panel} mt-6">
+			<div class="mb-1 flex flex-wrap items-baseline justify-between gap-2">
+				<h3 class="u-caps font-display text-[15px] font-bold tracking-[0.06em] text-ink">
+					Discovery rate — {data.year}
+				</h3>
+				<div class="flex items-center gap-4">
+					<span
+						class="u-caps flex items-center gap-1.5 font-mono text-[9px] tracking-[0.1em] text-ink-faint"
+					>
+						<span class="h-3 w-3 rounded-[1px] bg-copper"></span>New
+						<span class="ml-2 h-3 w-3 rounded-[1px] bg-bar-inactive"></span>Repeat
+					</span>
+					<MetricToggle options={['artists', 'tracks']} bind:value={discoveryMode} />
+				</div>
+			</div>
+			<p class="u-caps mb-3 font-mono text-[10px] tracking-[0.08em] text-ink-faint">
+				{fmt(disc.nw)} new · {fmt(disc.rp)} repeat {discoveryMode} this year
+			</p>
+			<DiscoveryChart months={data.discovery} mode={discoveryMode} />
+		</div>
 	</div>
 </div>
 

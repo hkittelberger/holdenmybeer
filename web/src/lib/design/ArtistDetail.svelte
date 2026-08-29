@@ -3,6 +3,7 @@
 	import Sleeve from './Sleeve.svelte';
 	import BarChart from './BarChart.svelte';
 	import YearPills from './YearPills.svelte';
+	import { focusTrap } from '$lib/actions/focusTrap';
 	import { rate, fmt, dateLong, noOrphan } from './tokens';
 	import type { ArtistDetail } from '../../routes/music/stats/artist/[id]/+server';
 
@@ -78,27 +79,31 @@
 
 <div class="fixed inset-0 z-50">
 	<button
-		aria-label="Close"
+		aria-label="Close artist detail"
 		class="absolute inset-0 bg-ink/45 backdrop-blur-[1px]"
 		onclick={onclose}
 	></button>
 
 	<div
+		use:focusTrap
 		role="dialog"
 		aria-modal="true"
-		aria-label="Artist detail"
-		class="noscroll absolute inset-y-0 right-0 w-full max-w-[640px] overflow-x-hidden overflow-y-auto bg-[#151a22] text-[#e6ebe2] shadow-[-24px_0_60px_rgba(16,22,18,.4)]"
+		aria-label="{data?.name ?? 'Artist'} detail"
+		tabindex="-1"
+		data-surface="dark"
+		class="noscroll absolute inset-y-0 right-0 w-full max-w-[640px] overflow-x-hidden overflow-y-auto bg-[#151a22] text-[#e6ebe2] shadow-[-24px_0_60px_rgba(16,22,18,.4)] outline-none"
 		style="background-image:radial-gradient(120% 55% at 100% 0%, rgba(158,92,52,.28), transparent 55%); animation:hm-slide-in 300ms cubic-bezier(.22,.7,.2,1)"
 	>
 		<div class="p-7">
 			<div class="flex items-start justify-between">
 				<p class="u-caps font-mono text-[11px] tracking-[0.18em] text-white/45">Artist detail</p>
 				<button
-					aria-label="Close"
+					type="button"
+					aria-label="Close artist detail"
 					onclick={onclose}
-					class="grid size-9 place-items-center rounded-full border border-white/25 text-white/80 hover:border-copper-light hover:text-copper-light"
+					class="grid size-10 place-items-center rounded-full border border-white/25 text-white/80 hover:border-copper-light hover:text-copper-light"
 				>
-					✕
+					<span aria-hidden="true">✕</span>
 				</button>
 			</div>
 

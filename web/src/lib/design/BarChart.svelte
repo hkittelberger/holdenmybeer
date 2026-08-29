@@ -5,18 +5,25 @@
 		data,
 		selected,
 		onselect,
+		label = 'Pick a year',
 		height = 220
 	}: {
 		data: { year: number; minutes: number }[];
 		selected: number;
 		onselect?: (y: number) => void;
+		label?: string;
 		height?: number;
 	} = $props();
 
 	const max = $derived(Math.max(1, ...data.map((d) => d.minutes)));
 </script>
 
-<div class="flex gap-2" style="height:{height}px">
+<div
+	class="flex gap-2"
+	style="height:{height}px"
+	role={onselect ? 'group' : undefined}
+	aria-label={onselect ? label : undefined}
+>
 	{#each data as d (d.year)}
 		{@const h = (d.minutes / max) * 100}
 		<div class="flex flex-1 flex-col items-center">
@@ -24,9 +31,10 @@
 			<div class="flex w-full flex-1 items-end">
 				{#if onselect}
 					<button
+						type="button"
 						onclick={() => onselect(d.year)}
 						aria-pressed={d.year === selected}
-						aria-label={`${d.year}: ${d.minutes} minutes`}
+						aria-label="{d.year}: {fmt(d.minutes)} minutes{d.year === selected ? ' (showing)' : ''}"
 						class="w-full rounded-[1px] {d.year === selected
 							? 'bg-copper'
 							: 'bg-bar-inactive hover:bg-ink-faintest'}"
