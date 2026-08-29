@@ -34,7 +34,7 @@
 				data-sveltekit-noscroll
 				data-sveltekit-keepfocus
 				aria-current={y === selected ? 'true' : undefined}
-				class="flex h-8 min-w-[3.25rem] items-center justify-center rounded-sm border border-border-strong px-2 font-mono text-[11px] tracking-[0.04em] transition-colors sm:min-w-0 sm:rounded-none sm:border-0 sm:px-2.5 {i >
+				class="flex h-8 min-w-[3.25rem] items-center justify-center rounded-sm border border-border-strong px-2 font-mono text-[11px] leading-none tracking-[0.04em] transition-colors sm:h-[26px] sm:min-w-0 sm:rounded-none sm:border-0 sm:px-2.5 {i >
 				0
 					? 'sm:border-l sm:border-border-strong'
 					: ''} {active

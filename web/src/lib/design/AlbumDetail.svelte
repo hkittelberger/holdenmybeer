@@ -50,7 +50,9 @@
 	>
 		<div class="p-7">
 			<div class="flex items-start justify-between">
-				<p class="u-caps font-mono text-[11px] tracking-[0.18em] text-white/45">Card detail</p>
+				<p class="u-caps font-mono text-[11px] tracking-[0.18em] text-white/45">
+					{album.rating == null ? 'Listening record' : 'Card detail'}
+				</p>
 				<button
 					type="button"
 					aria-label="Close album detail"
@@ -80,14 +82,27 @@
 						{noOrphan(album.name)}
 					</h2>
 					<div class="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1">
-						<span class="font-mono text-[clamp(28px,8vw,40px)] leading-none font-medium">
-							{rate(album.rating)}
-						</span>
-						<span
-							class="u-caps pb-1 font-mono text-[10px] leading-tight tracking-[0.12em] text-white/50"
-						>
-							Out of 10 · Rated {dateLong(album.date_rated)}
-						</span>
+						{#if album.rating == null}
+							<span
+								class="u-caps font-mono text-[clamp(18px,4.5vw,24px)] leading-none font-medium text-white/75"
+							>
+								Not rated
+							</span>
+							<span
+								class="u-caps pb-1 font-mono text-[10px] leading-tight tracking-[0.12em] text-white/45"
+							>
+								In the listening record, not the index
+							</span>
+						{:else}
+							<span class="font-mono text-[clamp(28px,8vw,40px)] leading-none font-medium">
+								{rate(album.rating)}
+							</span>
+							<span
+								class="u-caps pb-1 font-mono text-[10px] leading-tight tracking-[0.12em] text-white/50"
+							>
+								Out of 10 · Rated {dateLong(album.date_rated)}
+							</span>
+						{/if}
 					</div>
 				</div>
 			</div>

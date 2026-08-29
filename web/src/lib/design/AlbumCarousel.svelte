@@ -113,7 +113,7 @@
 						alt="{a.name} by {a.artist} — album cover"
 						year={yearOf(a)}
 					/>
-					{#if d === 0}
+					{#if d === 0 && a.rating != null}
 						<span
 							class="absolute right-0 -bottom-3 translate-x-3 bg-copper px-3 py-2 font-mono text-lg font-medium text-copper-text"
 						>
@@ -145,7 +145,9 @@
 			</p>
 			<p class="mt-0.5 truncate text-ink-muted">{heroAlbum.artist}</p>
 			<p class="u-caps mt-1.5 font-mono text-[11px] tracking-[0.1em] text-ink-faint">
-				{yearOf(heroAlbum)} · {hmmss(heroAlbum.length_ms)} · Rated {rate(heroAlbum.rating)}
+				{yearOf(heroAlbum)} · {hmmss(heroAlbum.length_ms)}{heroAlbum.rating != null
+					? ` · Rated ${rate(heroAlbum.rating)}`
+					: ''}
 			</p>
 			<button
 				aria-label="Next record"

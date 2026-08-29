@@ -4,19 +4,21 @@ import type { CatalogueAlbum, CatalogueTrack } from '../../routes/music/+page.se
 const COUNTED = `(p.source = 'live' or p.ms_played >= 30000)`;
 const MIN = `(case when p.source = 'live' then p.duration_ms else p.ms_played end) / 60000.0`;
 
-/** Full detail for one rated album — same shape the catalogue page uses,
- *  so <AlbumDetail> can render it verbatim. */
+/** Full detail for one album — same shape the catalogue page uses, so
+ *  <AlbumDetail> can render it verbatim. Works for albums that are only in
+ *  the listening record (not the ratings index): `rating` comes back null
+ *  and everything else is still populated. */
 export async function loadAlbumDetail(pool: Pool, id: string): Promise<CatalogueAlbum | null> {
 	const [albumR, tracksR, topYearR] = await Promise.all([
 		pool.query<{
 			id: string;
 			name: string;
-			artist: string;
+			artist: string | null;
 			cover_url: string | null;
 			accent_1: string | null;
 			accent_2: string | null;
 			release_date: string | null;
-			rating: string;
+			rating: string | null;
 			date_rated: string | null;
 			review_notes: string | null;
 			showcase_rank: number | null;
@@ -34,9 +36,9 @@ export async function loadAlbumDetail(pool: Pool, id: string): Promise<Catalogue
 				coalesce(round(sum(${MIN}) filter (where ${COUNTED})), 0)::text as lifetime_minutes,
 				to_char(min(p.played_at at time zone 'America/New_York') filter (where ${COUNTED}),
 					'YYYY-MM-DD') as first_listened
-			 from album_ratings r
-			 join albums al on al.id = r.album_id
-			 join artists ar on ar.id = al.primary_artist_id
+			 from albums al
+			 left join album_ratings r on r.album_id = al.id
+			 left join artists ar on ar.id = al.primary_artist_id
 			 left join tracks t on t.album_id = al.id
 			 left join plays p on p.track_uri = t.uri
 			 where al.id = $1
@@ -122,12 +124,12 @@ export async function loadAlbumDetail(pool: Pool, id: string): Promise<Catalogue
 	return {
 		id: a.id,
 		name: a.name,
-		artist: a.artist,
+		artist: a.artist ?? '—',
 		cover_url: a.cover_url,
 		accent_1: a.accent_1,
 		accent_2: a.accent_2,
 		release_date: a.release_date,
-		rating: Number(a.rating),
+		rating: a.rating == null ? null : Number(a.rating),
 		date_rated: a.date_rated,
 		review_notes: a.review_notes,
 		showcase_rank: a.showcase_rank,

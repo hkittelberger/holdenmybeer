@@ -76,12 +76,12 @@
 			const dy = a.date_rated ? +a.date_rated.slice(0, 4) : 0;
 			if (ry && (ry < relLo || ry > relHi)) return false;
 			if (dy && (dy < ratLo || dy > ratHi)) return false;
-			if (a.rating < scoreLo || a.rating > scoreHi) return false;
+			if ((a.rating ?? 0) < scoreLo || (a.rating ?? 0) > scoreHi) return false;
 			return true;
 		});
 		const dir = sortDir === 'asc' ? 1 : -1;
 		out = [...out].sort((a, b) => {
-			if (sortKey === 'rating') return (a.rating - b.rating) * dir;
+			if (sortKey === 'rating') return ((a.rating ?? 0) - (b.rating ?? 0)) * dir;
 			if (sortKey === 'minutes') return (a.lifetime_minutes - b.lifetime_minutes) * dir;
 			const av = sortKey === 'release' ? a.release_date : a.date_rated;
 			const bv = sortKey === 'release' ? b.release_date : b.date_rated;
@@ -359,7 +359,7 @@
 										class="font-mono {mobile ? 'text-base' : 'text-xl'} font-medium text-ink"
 										style="border-bottom:2px solid var(--color-copper); padding-bottom:1px"
 									>
-										{rate(a.rating)}
+										{a.rating == null ? '—' : rate(a.rating)}
 									</span>
 								</span>
 							</button>

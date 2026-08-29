@@ -19,7 +19,7 @@ export interface CatalogueAlbum {
 	accent_1: string | null;
 	accent_2: string | null;
 	release_date: string | null;
-	rating: number;
+	rating: number | null; // null = in the listening record but not the ratings index
 	date_rated: string | null;
 	review_notes: string | null;
 	showcase_rank: number | null;
