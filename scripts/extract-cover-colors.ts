@@ -16,6 +16,7 @@
 
 import pg from 'pg';
 import { Vibrant } from 'node-vibrant/node';
+import { pgConnectionString } from '../src/lib/pg-conn.ts';
 
 const { Pool } = pg;
 
@@ -79,7 +80,7 @@ async function main(): Promise<number> {
 		return 1;
 	}
 
-	const pool = new Pool({ connectionString: url, max: 4 });
+	const pool = new Pool({ connectionString: pgConnectionString(url), max: 4 });
 	try {
 		const { rows } = await pool.query<{ id: string; name: string; cover_url: string }>(
 			`select id, name, cover_url from albums

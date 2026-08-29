@@ -182,6 +182,19 @@ rating, date, top-3 songs, review, Top-5 slot) · `settings`
 Counted-play rule everywhere: `source = 'live' OR ms_played >= 30000`.
 All time bucketing is **America/New_York**.
 
+### Keeping metadata fresh
+
+The hourly logger already fills `tracks` / `albums` / `artists` /
+`track_artists` for **new live listens** from the play's stored `raw` —
+including album cover art. It does **not** get: artist profile photos
+(`artists.image_url` — not in the recently-played payload, only the
+`/v1/artists` API has it) or album accent colours (`accent_1/2`). So after
+a run of new listening:
+
+- `npm run colors:extract` — album gradient colours (no API, safe anytime)
+- `npm run metadata:resolve` — artist photos + anything from the historical
+  export, then `npm run rollups`
+
 ---
 
 ## Scripts
@@ -192,7 +205,7 @@ Run from the repo root; each reads `.env`.
 |---|---|
 | `npm run import:history` | one-time: load a Spotify extended-history JSON export into `plays` (`source='export'`, dedupe on `(track_uri, played_at)`) |
 | `npm run metadata:resolve` | backfill `artists`/`albums`/`tracks` from the Spotify API for every distinct track. Rate-limited & resumable — safe to re-run. Then `npm run rollups`. Add `-- --batch` to use the 50-at-a-time endpoints (≈50× fewer requests) — needs Spotify **Extended Access** (403 in Development Mode). |
-| `node --experimental-strip-types --env-file=.env scripts/extract-cover-colors.ts` | pull the 2-colour accent pair from each album cover (used for generated sleeves / tinting) |
+| `npm run colors:extract` | pull the 2-colour accent pair from each album cover (gradient sleeves, album-popup tint). No Spotify API, resumable. Run after new albums appear. |
 | `node --experimental-strip-types --env-file=.env scripts/backfill-primary-live.ts` | copy live rows from `DATABASE_URL_CRON` into `DATABASE_URL` (cutover helper; idempotent) |
 | `npm run rollups` | rebuild all four rollup tables — run after any bulk metadata/plays change |
 

@@ -2,6 +2,7 @@
 	import './layout.css';
 	import { page } from '$app/state';
 	import { SITE_URL, SITE_NAME, SITE_TAGLINE, AUTHOR_NAME } from '$lib/seo';
+	import Mark from '$lib/components/Mark.svelte';
 
 	let { children } = $props();
 
@@ -71,7 +72,11 @@
 <div class="flex min-h-screen flex-col">
 	<header class="sticky top-0 z-30 border-b-2 border-ink bg-paper/95 backdrop-blur-sm">
 		<nav class="mx-auto flex max-w-[1180px] items-center justify-between px-[22px] py-4">
-			<a href="/" class="u-caps font-mono text-[16px] font-semibold tracking-[0.2em] text-ink">
+			<a
+				href="/"
+				class="u-caps flex items-center gap-2.5 font-mono text-[16px] font-semibold tracking-[0.2em] text-ink"
+			>
+				<Mark size={22} />
 				HoldenMyBeer
 			</a>
 
@@ -171,7 +176,10 @@
 		{@render children()}
 	</main>
 
-	<footer class="mt-[78px] border-t-2 border-ink bg-ink px-[22px] py-10 text-center">
+	<footer
+		class="mt-[78px] flex flex-col items-center gap-3 border-t-2 border-ink bg-ink px-[22px] py-10 text-center"
+	>
+		<Mark size={26} color="#8a948b" />
 		<p class="u-caps font-mono text-[10px] tracking-[0.16em] text-[#8a948b]">
 			HoldenMyBeer · personal site · {new Date().getFullYear()}
 		</p>

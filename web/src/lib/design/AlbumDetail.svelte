@@ -35,8 +35,12 @@
 		class="noscroll absolute inset-y-0 right-0 w-full max-w-[640px] overflow-x-hidden overflow-y-auto text-[#e6ebe2] shadow-[-24px_0_60px_rgba(16,22,18,.4)]"
 		style="
 			background:
-				radial-gradient(120% 60% at 100% 0%, color-mix(in oklab, {c2} 60%, transparent) 0%, transparent 55%),
-				linear-gradient(180deg, color-mix(in oklab, {c1} 82%, #0c0f0d) 0%, #12160f 60%);
+				radial-gradient(135% 42% at 50% 0%, color-mix(in oklab, {c2} 58%, transparent) 0%, transparent 68%),
+				radial-gradient(100% 55% at 0% 100%, color-mix(in oklab, {c1} 26%, transparent) 0%, transparent 55%),
+				linear-gradient(178deg,
+					color-mix(in oklab, {c1} 74%, #0b0e0c) 0%,
+					color-mix(in oklab, {c1} 32%, #0f120d) 42%,
+					color-mix(in oklab, {c1} 16%, #0d0f0b) 100%);
 			animation: hm-slide-in 300ms cubic-bezier(.22,.7,.2,1);
 		"
 	>
