@@ -1,24 +1,24 @@
 {
-  "lastRunAt": "2026-08-29T20:07:22.206Z",
-  "fetched": 8,
-  "inserted": 8,
+  "lastRunAt": "2026-08-29T21:07:20.079Z",
+  "fetched": 17,
+  "inserted": 17,
   "skipped": 0,
   "metadata": {
-    "ranAt": "2026-08-29T20:07:22.288Z",
+    "ranAt": "2026-08-29T21:07:20.166Z",
     "ok": true,
     "quotaHit": true,
     "stoppedOn": "quota",
     "budget": 120,
-    "spent": 0,
+    "spent": 1,
     "tracks": {
-      "resolved": 0,
+      "resolved": 1,
       "notFound": 0,
-      "remaining": 10262
+      "remaining": 10248
     },
     "artists": {
       "resolved": 0,
-      "remaining": 401
+      "remaining": 404
     },
-    "note": "Spotify quota lock hit after 0 call(s) — resumes automatically when the rolling 24h window clears. 10262 tracks + 401 artist photos still to do."
+    "note": "Spotify quota lock hit after 1 call(s) — resumes automatically when the rolling 24h window clears. 10248 tracks + 404 artist photos still to do."
   }
 }
