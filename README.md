@@ -37,9 +37,11 @@ below.
 │   └── .env / .dev.vars     local secrets (git-ignored)  ── see web/.env.example
 │
 ├── src/                     the hourly logger  →  GitHub Actions
-│   ├── index.ts             poll recently-played, insert plays, upsert metadata
-│   ├── build-rollups.ts     rebuild the 4 stats rollup tables from `plays`
-│   └── lib/live-metadata.ts artists/albums/tracks upsert from a play's raw JSON
+│   ├── index.ts                 poll recently-played, insert plays, upsert metadata
+│   ├── resolve-metadata-cron.ts budgeted Spotify catalogue backfill (drip)
+│   ├── build-rollups.ts         rebuild the 4 stats rollup tables from `plays`
+│   ├── lib/live-metadata.ts     artists/albums/tracks upsert from a play's raw JSON
+│   └── lib/spotify.ts           Spotify Client-Credentials API helper (Node)
 │
 ├── scripts/                 one-off data tools (see "Scripts" below)
 ├── migrations/              numbered SQL, applied in order
@@ -122,9 +124,35 @@ Server code worth knowing:
 
 Polls Spotify `recently-played` every hour (`.github/workflows/log-plays.yml`,
 cron `7 * * * *`), inserts new rows into `plays`, upserts artist/album/track
-metadata from each row's `raw` JSON, then rebuilds the rollup tables. The
+metadata from each row's `raw` JSON, resolves a small budget of older
+catalogue tracks (see below), then rebuilds the rollup tables. The
 `status.json` commit at the end of every run is the workflow's
 anti-auto-disable heartbeat — leave it in.
+
+### Budgeted metadata backfill (`src/resolve-metadata-cron.ts`)
+
+The `raw` JSON only carries metadata for **live** listens. The ~10k tracks
+from the historical export have none, and this Spotify app is in
+Development Mode — a small rolling-24h catalogue quota, every batch endpoint
+403, no individual Extended Quota Mode. So instead of one big run that
+trips a ~24h lock, the workflow spends a fixed budget (`METADATA_BUDGET`,
+default 120) of `/v1/tracks/{id}` + `/v1/artists/{id}` calls per hourly run,
+**most-played tracks first**, spread across the day. It:
+
+- is `continue-on-error` **and** always exits 0 — can't fail the job or
+  block the `status.json` commit;
+- stops cleanly on a `QUOTA_EXCEEDED` lock or an 8-minute wall-clock
+  deadline and resumes next hour (queue = `tracks.uri IS NULL`);
+- writes what happened into `status.json` → `metadata`:
+  `{ ok, quotaHit, spent, tracks:{resolved,notFound,remaining},
+  artists:{resolved,remaining}, note }`;
+- only writes the same Spotify-id-keyed rows the live path already writes —
+  nothing to reconcile.
+
+Watch `status.json`; if `metadata.quotaHit` stays `false` for a day or two,
+bump `METADATA_BUDGET` in the workflow. A 404'd track gets a name-only
+`tracks` row so it leaves the queue — `delete from tracks where id is null`
+to retry the dead set later.
 
 ```sh
 npm install
@@ -192,8 +220,9 @@ including album cover art. It does **not** get: artist profile photos
 a run of new listening:
 
 - `npm run colors:extract` — album gradient colours (no API, safe anytime)
-- `npm run metadata:resolve` — artist photos + anything from the historical
-  export, then `npm run rollups`
+- the hourly cron drips through the historical-export backlog on its own
+  (see "Budgeted metadata backfill" above); `npm run metadata:resolve` is
+  the same work run manually, then `npm run rollups`
 
 ---
 
@@ -204,7 +233,7 @@ Run from the repo root; each reads `.env`.
 | Command | What |
 |---|---|
 | `npm run import:history` | one-time: load a Spotify extended-history JSON export into `plays` (`source='export'`, dedupe on `(track_uri, played_at)`) |
-| `npm run metadata:resolve` | backfill `artists`/`albums`/`tracks` from the Spotify API for every distinct track. Rate-limited & resumable — safe to re-run. Then `npm run rollups`. Add `-- --batch` to use the 50-at-a-time endpoints (≈50× fewer requests) — needs Spotify **Extended Access** (403 in Development Mode). |
+| `npm run metadata:resolve` | manual version of the hourly drip — backfill `artists`/`albums`/`tracks` from the Spotify API, most-played first, rate-limited & resumable. `-- --limit N` caps it. Then `npm run rollups`. (`-- --batch` needs Spotify Extended Access, which is org-only — it 403s here.) |
 | `npm run colors:extract` | pull the 2-colour accent pair from each album cover (gradient sleeves, album-popup tint). No Spotify API, resumable. Run after new albums appear. |
 | `node --experimental-strip-types --env-file=.env scripts/backfill-primary-live.ts` | copy live rows from `DATABASE_URL_CRON` into `DATABASE_URL` (cutover helper; idempotent) |
 | `npm run rollups` | rebuild all four rollup tables — run after any bulk metadata/plays change |
@@ -226,10 +255,13 @@ Run from the repo root; each reads `.env`.
 
 - Replace the placeholder album ratings (`review_notes` starting `SEED —`)
   with real ones via `/music/admin`.
-- Point the GitHub Actions `DATABASE_URL` secret at the canonical Neon
-  branch so the hourly cron writes there (site already does).
-- **Spotify Extended Access** (dashboard request) unblocks two things: the
-  batch metadata endpoints (`metadata:resolve -- --batch` — a full backfill
-  in one short run instead of weeks of quota-limited daily runs) and real
-  per-year playlist tracklists on the stats page. In Development Mode both
-  return 403.
+- Point the GitHub Actions `DATABASE_URL` secret at the same Neon branch the
+  site reads — **required** for the budgeted metadata backfill to land where
+  it's useful (it runs inside the cron).
+- Catalogue metadata for the historical export fills in gradually via the
+  hourly drip. Watch `status.json` → `metadata`; raise `METADATA_BUDGET` in
+  the workflow if `quotaHit` stays `false`.
+- **Spotify Extended Quota Mode** would remove the drip entirely (batch
+  endpoints, big daily budget) and unlock real per-year playlist tracklists
+  on the stats page — but it is **organisation-only**, not available to an
+  individual account.

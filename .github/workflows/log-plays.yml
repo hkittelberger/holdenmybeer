@@ -39,6 +39,23 @@ jobs:
           SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
+      # Budgeted catalogue-metadata backfill (src/resolve-metadata-cron.ts).
+      # Spends up to METADATA_BUDGET Spotify calls resolving the most-played
+      # still-unresolved tracks (then leftover budget on artist photos),
+      # spread across the 24 hourly runs so we stay clear of Development-Mode
+      # quota. `continue-on-error` + the script's own always-exit-0 guard mean
+      # a failure here never fails the job or blocks the commit below. Runs
+      # before the rollup rebuild so the hour's newly-resolved tracks fold in.
+      # Bump METADATA_BUDGET once status.json shows quotaHit staying false.
+      - name: Resolve catalogue metadata (budgeted)
+        continue-on-error: true
+        run: node dist/resolve-metadata-cron.js
+        env:
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          METADATA_BUDGET: "120"
+
       # Rebuild the rollup tables from the freshly-inserted plays. Decoupled
       # from the insert on purpose (docs/open-threads.md): `continue-on-error`
       # means a rollup failure shows red in the Actions UI for visibility but

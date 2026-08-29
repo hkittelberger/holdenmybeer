@@ -172,10 +172,7 @@ export interface SpotifyArtist extends SpotifyArtistRef {
 export const idFromUri = (uri: string): string => uri.split(":")[2] ?? uri;
 
 /** Spotify release_date + precision → a Postgres-safe date string or null. */
-export function releaseDate(
-  date: string | null,
-  precision: string | null,
-): string | null {
+export function releaseDate(date: string | null, precision: string | null): string | null {
   if (!date) return null;
   if (precision === "day") return date;
   if (precision === "month") return `${date}-01`;
