@@ -11,6 +11,7 @@
     "dev": "npm run build && node --env-file=.env dist/index.js",
     "import:history": "node --experimental-strip-types --env-file=.env scripts/import-history.ts",
     "metadata:resolve": "node --experimental-strip-types --env-file=.env scripts/resolve-metadata.ts",
+    "metadata:deezer": "node --experimental-strip-types --env-file=.env scripts/resolve-metadata-deezer.ts",
     "colors:extract": "node --experimental-strip-types --env-file=.env scripts/extract-cover-colors.ts",
     "typecheck:scripts": "tsc -p tsconfig.scripts.json"
   },

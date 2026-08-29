@@ -30,7 +30,7 @@
 		const artistId = id;
 		const y = chartYear;
 		loading = true;
-		fetch(`/music/stats/artist/${artistId}?year=${y}`)
+		fetch(`/music/stats/artist/${encodeURIComponent(artistId)}?year=${y}`)
 			.then((r) => (r.ok ? r.json() : Promise.reject()))
 			.then((d: ArtistDetail) => {
 				data = d;

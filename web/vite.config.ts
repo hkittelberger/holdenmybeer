@@ -26,7 +26,15 @@ export default defineConfig({
 					'script-src': ['self'],
 					'style-src': ['self', 'unsafe-inline', 'https://fonts.googleapis.com'],
 					'font-src': ['self', 'data:', 'https://fonts.gstatic.com'],
-					'img-src': ['self', 'data:', 'https://*.scdn.co', 'https://*.spotifycdn.com'],
+					// album / artist art: Spotify (*.scdn.co / *.spotifycdn.com) and
+					// Deezer (*.dzcdn.net — the Deezer metadata backfill).
+					'img-src': [
+						'self',
+						'data:',
+						'https://*.scdn.co',
+						'https://*.spotifycdn.com',
+						'https://*.dzcdn.net'
+					],
 					'connect-src': ['self'],
 					'frame-ancestors': ['none'],
 					'base-uri': ['self'],

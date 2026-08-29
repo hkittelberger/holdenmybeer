@@ -9,7 +9,7 @@
 	$effect(() => {
 		const albumId = id;
 		album = null;
-		fetch(`/music/album/${albumId}`)
+		fetch(`/music/album/${encodeURIComponent(albumId)}`)
 			.then((r) => (r.ok ? r.json() : Promise.reject()))
 			.then((d: CatalogueAlbum) => (album = d))
 			.catch(() => onclose());

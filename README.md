@@ -192,8 +192,11 @@ including album cover art. It does **not** get: artist profile photos
 a run of new listening:
 
 - `npm run colors:extract` — album gradient colours (no API, safe anytime)
-- `npm run metadata:resolve` — artist photos + anything from the historical
-  export, then `npm run rollups`
+- `npm run metadata:deezer` — artist photos, album runtimes, track numbers +
+  anything from the historical export, resolved via the Deezer API (see
+  below), then `npm run rollups`
+- `npm run metadata:resolve` — the Spotify equivalent, kept only for small
+  touch-ups (Development-Mode quota makes it unusable for a bulk backfill)
 
 ---
 
@@ -204,8 +207,9 @@ Run from the repo root; each reads `.env`.
 | Command | What |
 |---|---|
 | `npm run import:history` | one-time: load a Spotify extended-history JSON export into `plays` (`source='export'`, dedupe on `(track_uri, played_at)`) |
-| `npm run metadata:resolve` | backfill `artists`/`albums`/`tracks` from the Spotify API for every distinct track. Rate-limited & resumable — safe to re-run. Then `npm run rollups`. Add `-- --batch` to use the 50-at-a-time endpoints (≈50× fewer requests) — needs Spotify **Extended Access** (403 in Development Mode). |
-| `npm run colors:extract` | pull the 2-colour accent pair from each album cover (gradient sleeves, album-popup tint). No Spotify API, resumable. Run after new albums appear. |
+| `npm run metadata:deezer` | backfill `artists`/`albums`/`tracks`/`track_artists` from the **Deezer** API for every distinct unresolved track — durations, covers, artist photos, album runtimes, track numbers, release dates. Resumable (`tracks.uri IS NULL`), ~45–60 min for the full history. Then `npm run colors:extract` + `npm run rollups`. `-- --write-weak` also writes artist-only matches; `-- --limit N` does the N most-played first. |
+| `npm run metadata:resolve` | Spotify-API equivalent — kept as a fallback for small touch-ups. Development-Mode quota (≈few hundred calls / 24 h, batch endpoints 403, Extended Quota Mode is org-only) makes it impractical for a bulk backfill. |
+| `npm run colors:extract` | pull the 2-colour accent pair from each album cover (gradient sleeves, album-popup tint). No music API, resumable. Run after new albums appear. |
 | `node --experimental-strip-types --env-file=.env scripts/backfill-primary-live.ts` | copy live rows from `DATABASE_URL_CRON` into `DATABASE_URL` (cutover helper; idempotent) |
 | `npm run rollups` | rebuild all four rollup tables — run after any bulk metadata/plays change |
 
@@ -228,8 +232,14 @@ Run from the repo root; each reads `.env`.
   with real ones via `/music/admin`.
 - Point the GitHub Actions `DATABASE_URL` secret at the canonical Neon
   branch so the hourly cron writes there (site already does).
-- **Spotify Extended Access** (dashboard request) unblocks two things: the
-  batch metadata endpoints (`metadata:resolve -- --batch` — a full backfill
-  in one short run instead of weeks of quota-limited daily runs) and real
-  per-year playlist tracklists on the stats page. In Development Mode both
-  return 403.
+- **Metadata comes from Deezer** (`npm run metadata:deezer`), not Spotify —
+  Spotify Development Mode caps catalogue calls at a few hundred per 24 h,
+  403s every batch endpoint, and Extended Quota Mode is organisation-only.
+  Artists/albums are de-duplicated across the two sources by `norm_key`
+  (`migrations/013`–`014`); see `docs/BP2-metadata-resolution.md`.
+- **Spotify Extended Access** would still be nice for real per-year playlist
+  tracklists on the stats page (`/v1/playlists/{id}/tracks` is 403 in
+  Development Mode); the stats page falls back to the top-50-of-the-year.
+- A handful of tracks (~2 %) don't resolve on Deezer (cross-catalogue name
+  differences, classical, all-symbol artist names) — fix by hand in
+  `/music/admin` or leave as "(unknown)".
