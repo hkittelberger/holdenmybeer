@@ -33,7 +33,28 @@
 			? Number(navigating.to.url.searchParams.get('year')) || null
 			: null
 	);
-	const switchingYear = $derived(pendingYear !== null);
+	// Hold the switching treatment for a floor of ~280ms total even when the
+	// data was already preloaded (hover) — so the transition reads the same on
+	// desktop and mobile instead of flashing invisibly.
+	let switchingYear = $state(false);
+	let litYear = $state<number | null>(null);
+	let switchStartedAt = 0;
+	$effect(() => {
+		if (pendingYear !== null) {
+			if (!switchingYear) {
+				switchingYear = true;
+				switchStartedAt = Date.now();
+			}
+			litYear = pendingYear;
+		} else if (switchingYear) {
+			const remaining = Math.max(0, 280 - (Date.now() - switchStartedAt));
+			const t = setTimeout(() => {
+				switchingYear = false;
+				litYear = null;
+			}, remaining);
+			return () => clearTimeout(t);
+		}
+	});
 
 	let songMetric = $state<'plays' | 'minutes'>('plays');
 	let discoveryMode = $state<'artists' | 'tracks'>('tracks');
@@ -127,13 +148,16 @@
 		{/snippet}
 	</SectionHeader>
 
-	<div class="-mt-3 flex items-center gap-3">
-		<YearChips years={data.years} selected={data.year} pending={pendingYear} href={yearHref} />
-		{#if switchingYear}
-			<span class="u-caps font-mono text-[10px] tracking-[0.14em] text-ink-faintest" role="status">
-				Loading {pendingYear}…
-			</span>
-		{/if}
+	<div class="-mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+		<YearChips years={data.years} selected={data.year} pending={litYear} href={yearHref} />
+		<span
+			class="u-caps font-mono text-[10px] tracking-[0.14em] text-ink-faintest transition-opacity"
+			class:opacity-0={!switchingYear}
+			role="status"
+			aria-live="polite"
+		>
+			{#if switchingYear}Loading {litYear}…{/if}
+		</span>
 	</div>
 
 	<!-- everything below the year selector reloads on year change -->

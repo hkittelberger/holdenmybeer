@@ -88,7 +88,10 @@
 	}
 </script>
 
-<div class="overflow-x-auto">
+<!-- x-scroll only: overflow-x:auto alone makes the browser compute overflow-y
+     to auto too, and the hover-scale on edge cells then triggers a vertical
+     scrollbar — pin y to visible and give the scaled cells a little room. -->
+<div class="overflow-x-auto overflow-y-hidden py-1">
 	<div class="inline-block min-w-full" style="--cell:12px; --gap:3px">
 		<!-- month row -->
 		<div
@@ -127,7 +130,7 @@
 						onmouseenter={(e) => show(e, c)}
 						onmousemove={(e) => tip && show(e, c)}
 						onmouseleave={() => (tip = null)}
-						class="rounded-[1px] transition-transform hover:scale-[1.35] hover:ring-1 hover:ring-ink"
+						class="rounded-[1px] transition-transform hover:scale-[1.25] hover:ring-1 hover:ring-ink"
 						style="
 							grid-column:{c.col + 1}; grid-row:{c.row + 1};
 							background:{c.future ? 'transparent' : b === 0 ? 'transparent' : HEAT[b - 1]};

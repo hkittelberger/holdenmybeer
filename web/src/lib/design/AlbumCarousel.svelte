@@ -98,7 +98,7 @@
 					pointer-events:{L.o === 0 ? 'none' : 'auto'};
 				"
 				aria-hidden={L.o === 0}
-				aria-label={d === 0 ? `Open ${a.name}` : d < 0 ? 'Previous record' : 'Next record'}
+				aria-label={d === 0 ? `Open ${a.name}` : `Show ${a.name}`}
 				onclick={() => clickSleeve(d, a.id, i)}
 			>
 				<div
@@ -126,32 +126,31 @@
 	</div>
 
 	{#if heroAlbum}
-		<!-- arrows anchor to the TOP of this block (a fixed distance below the
-		     carousel); the title grows downward without moving them. -->
-		<div class="mx-auto mt-7 grid max-w-[600px] grid-cols-[44px_1fr_44px] items-start gap-9">
+		<!-- arrows are absolutely anchored to the top corners of this block (a
+		     fixed distance below the carousel) so the title, which grows
+		     downward, gets the full width and never has to break a word. -->
+		<div class="relative mx-auto mt-7 max-w-[600px] px-10 text-center sm:px-14">
 			<button
-				aria-label="Previous"
+				aria-label="Previous record"
 				onclick={() => move(-1)}
-				class="mt-1 grid size-11 place-items-center justify-self-start rounded-full border border-ink-faint text-ink hover:border-copper hover:text-copper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copper"
+				class="absolute top-1 left-0 grid size-9 place-items-center rounded-full border border-ink-faint text-ink hover:border-copper hover:text-copper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copper sm:size-11"
 			>
 				←
 			</button>
-			<div class="min-w-0 text-center">
-				<p
-					class="u-caps font-display text-[clamp(20px,2.8vw,30px)] leading-tight font-bold text-balance break-words text-ink"
-					style="font-variation-settings:'wdth' 115"
-				>
-					{noOrphan(heroAlbum.name)}
-				</p>
-				<p class="mt-0.5 truncate text-ink-muted">{heroAlbum.artist}</p>
-				<p class="u-caps mt-1.5 font-mono text-[11px] tracking-[0.1em] text-ink-faint">
-					{yearOf(heroAlbum)} · {hmmss(heroAlbum.length_ms)} · Rated {rate(heroAlbum.rating)}
-				</p>
-			</div>
+			<p
+				class="u-caps font-display text-[clamp(15px,3.7vw,30px)] leading-tight font-bold text-pretty [overflow-wrap:break-word] [hyphens:none] text-ink"
+				style="font-variation-settings:'wdth' 115"
+			>
+				{noOrphan(heroAlbum.name)}
+			</p>
+			<p class="mt-0.5 truncate text-ink-muted">{heroAlbum.artist}</p>
+			<p class="u-caps mt-1.5 font-mono text-[11px] tracking-[0.1em] text-ink-faint">
+				{yearOf(heroAlbum)} · {hmmss(heroAlbum.length_ms)} · Rated {rate(heroAlbum.rating)}
+			</p>
 			<button
-				aria-label="Next"
+				aria-label="Next record"
 				onclick={() => move(1)}
-				class="mt-1 grid size-11 place-items-center justify-self-end rounded-full border border-ink-faint text-ink hover:border-copper hover:text-copper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copper"
+				class="absolute top-1 right-0 grid size-9 place-items-center rounded-full border border-ink-faint text-ink hover:border-copper hover:text-copper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copper sm:size-11"
 			>
 				→
 			</button>
