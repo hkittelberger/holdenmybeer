@@ -33,6 +33,7 @@ jobs:
       - run: npm run build
 
       - run: node dist/index.js          # insert new plays + metadata upsert from raw
+        continue-on-error: true          # auth/infra blips should not fail keepalive workflow
         env:
           SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
           SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
