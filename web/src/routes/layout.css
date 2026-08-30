@@ -70,6 +70,10 @@ body {
 html {
 	caret-color: var(--color-copper);
 	accent-color: var(--color-copper);
+	/* Disable the double-tap-to-zoom gesture (and its 300ms tap delay) across
+	   the whole page — rapid taps on a control were zooming the viewport.
+	   `manipulation` still allows panning and two-finger pinch-zoom. */
+	touch-action: manipulation;
 }
 
 /* One themed focus ring for every keyboard-focused control — including the

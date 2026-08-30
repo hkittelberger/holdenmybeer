@@ -9,7 +9,7 @@
 		height = 220
 	}: {
 		data: { year: number; minutes: number }[];
-		selected: number;
+		selected: number | null;
 		onselect?: (y: number) => void;
 		label?: string;
 		height?: number;

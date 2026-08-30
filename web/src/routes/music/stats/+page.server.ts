@@ -57,16 +57,38 @@ const NY_YEAR = `extract(year from p.played_at at time zone 'America/New_York')`
 
 export const load: PageServerLoad = async ({ url }) => {
 	return withPool(async (pool) => {
-		const now = new Date().getUTCFullYear();
+		const currentYear = Number(
+			new Intl.DateTimeFormat('en-US', {
+				timeZone: 'America/New_York',
+				year: 'numeric'
+			}).format(new Date())
+		);
 
 		const yearsR = await pool.query<{ year: string }>(
 			`select distinct extract(year from day)::text as year from daily_minutes order by 1 desc`
 		);
 		const years = yearsR.rows.map((r) => Number(r.year));
-		if (years.length === 0) years.push(now);
+		if (years.length === 0) years.push(currentYear);
 
-		const wanted = Number(url.searchParams.get('year'));
-		const year = years.includes(wanted) ? wanted : years[0];
+		// ?year=all → all-time roll-up; otherwise a specific year, defaulting to
+		// the current calendar year (falling back to the newest year with data).
+		const raw = url.searchParams.get('year');
+		const allTime = raw === 'all';
+		const wanted = Number(raw);
+		const year = allTime
+			? currentYear
+			: years.includes(wanted)
+				? wanted
+				: years.includes(currentYear)
+					? currentYear
+					: years[0];
+
+		// year filters — dropped entirely in all-time mode
+		const params = allTime ? [] : [year];
+		const filterM = allTime ? '' : 'where m.year = $1';
+		const filterY = allTime ? '' : 'where y.year = $1';
+		const filterSong = allTime ? '' : `and ${NY_YEAR} = $1`;
+		const empty = Promise.resolve({ rows: [] as never[] });
 
 		const [
 			perYearR,
@@ -84,28 +106,31 @@ export const load: PageServerLoad = async ({ url }) => {
 				`select extract(year from day)::text as year, round(sum(minutes))::text as minutes
 				 from daily_minutes group by 1 order by 1`
 			),
-			pool.query<{
-				minutes: string;
-				albums_rated: string;
-				mean_score: string | null;
-			}>(
-				`select
-					(select coalesce(round(sum(minutes)),0)::text from daily_minutes
-					   where extract(year from day) = $1)                                   as minutes,
-					(select count(*)::text from album_ratings
-					   where extract(year from date_rated) = $1)                            as albums_rated,
-					(select to_char(avg(rating), 'FM990.00') from album_ratings)            as mean_score`,
-				[year]
-			),
+			allTime
+				? pool.query<{ minutes: string; albums_rated: string; mean_score: string | null }>(
+						`select
+							(select coalesce(round(sum(minutes)),0)::text from daily_minutes)          as minutes,
+							(select count(*)::text from album_ratings)                                 as albums_rated,
+							(select to_char(avg(rating), 'FM990.00') from album_ratings)               as mean_score`
+					)
+				: pool.query<{ minutes: string; albums_rated: string; mean_score: string | null }>(
+						`select
+							(select coalesce(round(sum(minutes)),0)::text from daily_minutes
+							   where extract(year from day) = $1)                                   as minutes,
+							(select count(*)::text from album_ratings
+							   where extract(year from date_rated) = $1)                            as albums_rated,
+							(select to_char(avg(rating), 'FM990.00') from album_ratings)            as mean_score`,
+						[year]
+					),
 			pool.query<{ id: string; name: string; image_url: string | null; minutes: string }>(
 				`select a.id, a.name, a.image_url, round(sum(m.minutes))::text as minutes
 				 from monthly_artist_minutes m
 				 join artists a on a.id = m.artist_id
-				 where m.year = $1
+				 ${filterM}
 				 group by a.id, a.name, a.image_url
 				 order by sum(m.minutes) desc
 				 limit 40`,
-				[year]
+				params
 			),
 			pool.query<{
 				id: string;
@@ -117,14 +142,15 @@ export const load: PageServerLoad = async ({ url }) => {
 				minutes: string;
 			}>(
 				`select al.id, al.name, ar.name as artist, al.cover_url, al.accent_1, al.accent_2,
-					round(y.minutes)::text as minutes
+					round(sum(y.minutes))::text as minutes
 				 from yearly_album_minutes y
 				 join albums al on al.id = y.album_id
 				 join artists ar on ar.id = al.primary_artist_id
-				 where y.year = $1
-				 order by y.minutes desc
+				 ${filterY}
+				 group by al.id, al.name, ar.name, al.cover_url, al.accent_1, al.accent_2
+				 order by sum(y.minutes) desc
 				 limit 40`,
-				[year]
+				params
 			),
 			pool.query<{
 				uri: string;
@@ -148,44 +174,52 @@ export const load: PageServerLoad = async ({ url }) => {
 				 left join albums al on al.id = t.album_id
 				 left join track_artists ta on ta.track_uri = p.track_uri and ta.role = 'primary'
 				 left join artists ar on ar.id = ta.artist_id
-				 where ${COUNTED} and ${NY_YEAR} = $1
+				 where ${COUNTED} ${filterSong}
 				 group by p.track_uri, t.name, ar.name, al.cover_url, al.accent_1, al.accent_2, t.duration_ms
 				 order by count(*) desc
 				 limit 50`,
-				[year]
+				params
 			),
-			pool.query<{ day: string; minutes: string }>(
-				`select to_char(day, 'YYYY-MM-DD') as day, round(minutes)::text as minutes
-				 from daily_minutes where extract(year from day) = $1 order by day`,
-				[year]
-			),
-			pool.query<{
-				month: number;
-				entity_type: string;
-				new_count: number;
-				repeat_count: number;
-			}>(
-				`select month, entity_type, new_count, repeat_count
-				 from monthly_discovery where year = $1`,
-				[year]
-			),
+			allTime
+				? empty
+				: pool.query<{ day: string; minutes: string }>(
+						`select to_char(day, 'YYYY-MM-DD') as day, round(minutes)::text as minutes
+						 from daily_minutes where extract(year from day) = $1 order by day`,
+						[year]
+					),
+			allTime
+				? empty
+				: pool.query<{
+						month: number;
+						entity_type: string;
+						new_count: number;
+						repeat_count: number;
+					}>(
+						`select month, entity_type, new_count, repeat_count
+						 from monthly_discovery where year = $1`,
+						[year]
+					),
 			pool.query<{ key: string; value: string }>(`select key, value from settings`),
-			pool.query<{ spotify_url: string; playlist_name: string | null }>(
-				`select spotify_url, playlist_name from year_playlists where year = $1`,
-				[year]
-			),
-			pool.query<{
-				position: number;
-				track_name: string;
-				artist_name: string | null;
-				duration_ms: number | null;
-				spotify_url: string | null;
-				cover_url: string | null;
-			}>(
-				`select position, track_name, artist_name, duration_ms, spotify_url, cover_url
-				 from year_playlist_tracks where year = $1 order by position`,
-				[year]
-			)
+			allTime
+				? empty
+				: pool.query<{ spotify_url: string; playlist_name: string | null }>(
+						`select spotify_url, playlist_name from year_playlists where year = $1`,
+						[year]
+					),
+			allTime
+				? empty
+				: pool.query<{
+						position: number;
+						track_name: string;
+						artist_name: string | null;
+						duration_ms: number | null;
+						spotify_url: string | null;
+						cover_url: string | null;
+					}>(
+						`select position, track_name, artist_name, duration_ms, spotify_url, cover_url
+						 from year_playlist_tracks where year = $1 order by position`,
+						[year]
+					)
 		]);
 
 		const perYear: YearMinutes[] = perYearR.rows.map((r) => ({
@@ -235,6 +269,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		return {
 			years,
 			year,
+			allTime,
 			perYear,
 			totals: {
 				minutes: Number(totalsR.rows[0].minutes),

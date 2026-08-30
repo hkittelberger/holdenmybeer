@@ -19,7 +19,9 @@
 
 	let { data }: PageProps = $props();
 
-	const yearHref = (y: number) => {
+	type Period = number | 'all';
+
+	const yearHref = (y: Period) => {
 		const u = new URL(page.url);
 		u.searchParams.set('year', String(y));
 		return u.pathname + u.search;
@@ -27,17 +29,21 @@
 	function setYear(y: number) {
 		goto(yearHref(y), { keepFocus: true, noScroll: true });
 	}
-	// the year a navigation is currently loading (for the optimistic highlight)
-	const pendingYear = $derived(
+	// what the stats below are scoped to, for headings/labels
+	const periodLabel = $derived(data.allTime ? 'all time' : String(data.year));
+	// the period a navigation is currently loading (for the optimistic highlight)
+	const pendingYear = $derived<Period | null>(
 		navigating.to?.url.pathname === page.url.pathname
-			? Number(navigating.to.url.searchParams.get('year')) || null
+			? navigating.to.url.searchParams.get('year') === 'all'
+				? 'all'
+				: Number(navigating.to.url.searchParams.get('year')) || null
 			: null
 	);
 	// Hold the switching treatment for a floor of ~280ms total even when the
 	// data was already preloaded (hover) — so the transition reads the same on
 	// desktop and mobile instead of flashing invisibly.
 	let switchingYear = $state(false);
-	let litYear = $state<number | null>(null);
+	let litYear = $state<Period | null>(null);
 	let switchStartedAt = 0;
 	$effect(() => {
 		if (pendingYear !== null) {
@@ -149,14 +155,20 @@
 	</SectionHeader>
 
 	<div class="-mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-		<YearChips years={data.years} selected={data.year} pending={litYear} href={yearHref} />
+		<YearChips
+			years={data.years}
+			selected={data.allTime ? 'all' : data.year}
+			pending={litYear}
+			href={yearHref}
+			showAllTime
+		/>
 		<span
 			class="u-caps font-mono text-[10px] tracking-[0.14em] text-ink-faintest transition-opacity"
 			class:opacity-0={!switchingYear}
 			role="status"
 			aria-live="polite"
 		>
-			{#if switchingYear}Loading {litYear}…{/if}
+			{#if switchingYear}Loading {litYear === 'all' ? 'all time' : litYear}…{/if}
 		</span>
 	</div>
 
@@ -169,14 +181,14 @@
 		<!-- stat tiles -->
 		<div class="mt-8 grid gap-6 sm:grid-cols-3">
 			<StatTile
-				label="Minutes in {data.year}"
+				label={data.allTime ? 'Minutes, all time' : `Minutes in ${data.year}`}
 				value={fmt(data.totals.minutes)}
 				note="{fmt(data.totals.hours)} hours of listening"
 			/>
 			<StatTile
-				label="Albums rated {data.year}"
+				label={data.allTime ? 'Albums rated' : `Albums rated ${data.year}`}
 				value={fmt(data.totals.albumsRated)}
-				note="cards filed this year"
+				note={data.allTime ? 'cards in the index' : 'cards filed this year'}
 			/>
 			<StatTile label="Mean score" value={data.totals.meanScore} note="across the whole index" />
 		</div>
@@ -191,13 +203,13 @@
 					Click a bar to switch year
 				</span>
 			</div>
-			<BarChart data={data.perYear} selected={data.year} onselect={setYear} />
+			<BarChart data={data.perYear} selected={data.allTime ? null : data.year} onselect={setYear} />
 		</div>
 
 		<!-- artist / album boards -->
 		<div class="mt-6 grid gap-6 lg:grid-cols-2">
 			<RankBoard
-				title="By artist — {data.year}"
+				title="By artist — {periodLabel}"
 				items={artistItems}
 				visual="monogram"
 				showBar
@@ -206,7 +218,7 @@
 				emptyNote="Artist minutes fill in as the catalogue metadata resolves."
 			/>
 			<RankBoard
-				title="By album — {data.year}"
+				title="By album — {periodLabel}"
 				items={albumItems}
 				visual="cover"
 				valueSuffix="min"
@@ -216,9 +228,9 @@
 		</div>
 
 		<!-- top songs / playlist -->
-		<div class="mt-6 grid gap-6 lg:grid-cols-2">
+		<div class="mt-6 grid gap-6 {data.allTime ? '' : 'lg:grid-cols-2'}">
 			<RankBoard
-				title="Top songs of {data.year}"
+				title={data.allTime ? 'Top songs, all time' : `Top songs of ${data.year}`}
 				items={songItems}
 				visual="cover"
 				valueSuffix={songMetric}
@@ -227,59 +239,63 @@
 					<MetricToggle options={['plays', 'minutes']} bind:value={songMetric} label="Metric" />
 				{/snippet}
 			</RankBoard>
-			<PlaylistPanel
-				year={data.year}
-				songs={data.songs}
-				playlistTracks={data.playlistTracks}
-				playlistName={data.yearPlaylistName}
-				url={data.yearPlaylistUrl}
-			/>
+			{#if !data.allTime}
+				<PlaylistPanel
+					year={data.year}
+					songs={data.songs}
+					playlistTracks={data.playlistTracks}
+					playlistName={data.yearPlaylistName}
+					url={data.yearPlaylistUrl}
+				/>
+			{/if}
 		</div>
 
-		<!-- listening calendar -->
-		<div class="{panel} mt-6">
-			<div class="mb-1 flex flex-wrap items-baseline justify-between gap-2">
-				<h3 class="u-caps font-display text-[15px] font-bold tracking-[0.06em] text-ink">
-					Listening calendar — {data.year}
-				</h3>
-				<div
-					class="u-caps flex items-center gap-1.5 font-mono text-[9px] tracking-[0.1em] text-ink-faintest"
-				>
-					Quiet
-					{#each ['#e9dfd2', '#dcbfa2', '#c7936c', '#a96a3e', '#874c23'] as c (c)}
-						<span class="h-3 w-3 rounded-[1px]" style="background:{c}"></span>
-					{/each}
-					Heavy
-				</div>
-			</div>
-			<p class="u-caps mb-3 font-mono text-[10px] tracking-[0.08em] text-ink-faint">
-				{fmt(data.calendarMeta.daysWithListening)} days with listening · busiest {busiestLabel} ·
-				{fmt(data.calendarMeta.busiestMinutes)} min · shades are your own quantiles
-			</p>
-			<Heatmap year={data.year} days={data.calendar} quantiles={data.calendarMeta.quantiles} />
-		</div>
-
-		<!-- discovery -->
-		<div class="{panel} mt-6">
-			<div class="mb-1 flex flex-wrap items-baseline justify-between gap-2">
-				<h3 class="u-caps font-display text-[15px] font-bold tracking-[0.06em] text-ink">
-					Discovery rate — {data.year}
-				</h3>
-				<div class="flex items-center gap-4">
-					<span
-						class="u-caps flex items-center gap-1.5 font-mono text-[9px] tracking-[0.1em] text-ink-faint"
+		{#if !data.allTime}
+			<!-- listening calendar -->
+			<div class="{panel} mt-6">
+				<div class="mb-1 flex flex-wrap items-baseline justify-between gap-2">
+					<h3 class="u-caps font-display text-[15px] font-bold tracking-[0.06em] text-ink">
+						Listening calendar — {data.year}
+					</h3>
+					<div
+						class="u-caps flex items-center gap-1.5 font-mono text-[9px] tracking-[0.1em] text-ink-faintest"
 					>
-						<span class="h-3 w-3 rounded-[1px] bg-copper"></span>New
-						<span class="ml-2 h-3 w-3 rounded-[1px] bg-bar-inactive"></span>Repeat
-					</span>
-					<MetricToggle options={['artists', 'tracks']} bind:value={discoveryMode} />
+						Quiet
+						{#each ['#e9dfd2', '#dcbfa2', '#c7936c', '#a96a3e', '#874c23'] as c (c)}
+							<span class="h-3 w-3 rounded-[1px]" style="background:{c}"></span>
+						{/each}
+						Heavy
+					</div>
 				</div>
+				<p class="u-caps mb-3 font-mono text-[10px] tracking-[0.08em] text-ink-faint">
+					{fmt(data.calendarMeta.daysWithListening)} days with listening · busiest {busiestLabel} ·
+					{fmt(data.calendarMeta.busiestMinutes)} min · shades are your own quantiles
+				</p>
+				<Heatmap year={data.year} days={data.calendar} quantiles={data.calendarMeta.quantiles} />
 			</div>
-			<p class="u-caps mb-3 font-mono text-[10px] tracking-[0.08em] text-ink-faint">
-				{fmt(disc.nw)} new · {fmt(disc.rp)} repeat {discoveryMode} this year
-			</p>
-			<DiscoveryChart months={data.discovery} mode={discoveryMode} />
-		</div>
+
+			<!-- discovery -->
+			<div class="{panel} mt-6">
+				<div class="mb-1 flex flex-wrap items-baseline justify-between gap-2">
+					<h3 class="u-caps font-display text-[15px] font-bold tracking-[0.06em] text-ink">
+						Discovery rate — {data.year}
+					</h3>
+					<div class="flex items-center gap-4">
+						<span
+							class="u-caps flex items-center gap-1.5 font-mono text-[9px] tracking-[0.1em] text-ink-faint"
+						>
+							<span class="h-3 w-3 rounded-[1px] bg-copper"></span>New
+							<span class="ml-2 h-3 w-3 rounded-[1px] bg-bar-inactive"></span>Repeat
+						</span>
+						<MetricToggle options={['artists', 'tracks']} bind:value={discoveryMode} />
+					</div>
+				</div>
+				<p class="u-caps mb-3 font-mono text-[10px] tracking-[0.08em] text-ink-faint">
+					{fmt(disc.nw)} new · {fmt(disc.rp)} repeat {discoveryMode} this year
+				</p>
+				<DiscoveryChart months={data.discovery} mode={discoveryMode} />
+			</div>
+		{/if}
 	</div>
 </div>
 
