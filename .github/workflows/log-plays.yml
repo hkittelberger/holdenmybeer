@@ -54,7 +54,7 @@ jobs:
           SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
           SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          METADATA_BUDGET: "120"
+          METADATA_BUDGET: "50"
 
       # Rebuild the rollup tables from the freshly-inserted plays. Decoupled
       # from the insert on purpose (docs/open-threads.md): `continue-on-error`
