@@ -1,24 +1,24 @@
 {
-  "lastRunAt": "2026-08-31T21:07:25.061Z",
-  "fetched": 5,
-  "inserted": 5,
+  "lastRunAt": "2026-08-31T22:07:17.931Z",
+  "fetched": 8,
+  "inserted": 8,
   "skipped": 0,
   "metadata": {
-    "ranAt": "2026-08-31T21:07:25.153Z",
+    "ranAt": "2026-08-31T22:07:18.017Z",
     "ok": true,
-    "quotaHit": true,
-    "stoppedOn": "quota",
+    "quotaHit": false,
+    "stoppedOn": "queue-empty",
     "budget": 50,
-    "spent": 0,
+    "spent": 50,
     "tracks": {
-      "resolved": 0,
+      "resolved": 50,
       "notFound": 0,
-      "remaining": 9563
+      "remaining": 9511
     },
     "artists": {
       "resolved": 0,
-      "remaining": 520
+      "remaining": 535
     },
-    "note": "Spotify quota lock hit after 0 call(s) — resumes automatically when the rolling 24h window clears. 9563 tracks + 520 artist photos still to do."
+    "note": "resolved 50 track(s) (+0 unavailable) and 0 artist photo(s) in 50 call(s); 9511 tracks + 535 photos left ≈ 191 more hourly runs; stopped on queue-empty, rate ended at 1.1 req/s."
   }
 }
