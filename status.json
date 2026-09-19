@@ -1,10 +1,10 @@
 {
-  "lastRunAt": "2026-09-19T07:07:20.258Z",
-  "fetched": 4,
-  "inserted": 4,
+  "lastRunAt": "2026-09-19T08:07:22.044Z",
+  "fetched": 0,
+  "inserted": 0,
   "skipped": 0,
   "metadata": {
-    "ranAt": "2026-09-19T07:07:20.353Z",
+    "ranAt": "2026-09-19T08:07:22.129Z",
     "ok": false,
     "quotaHit": false,
     "stoppedOn": "queue-empty",
@@ -17,8 +17,8 @@
     },
     "artists": {
       "resolved": 48,
-      "remaining": 203
+      "remaining": 155
     },
-    "note": "resolved 0 track(s) (+0 unavailable) and 48 artist photo(s) in 50 call(s); 1 tracks + 203 photos left; stopped on queue-empty, rate ended at 2 req/s."
+    "note": "resolved 0 track(s) (+0 unavailable) and 48 artist photo(s) in 50 call(s); 1 tracks + 155 photos left; stopped on queue-empty, rate ended at 2 req/s."
   }
 }
