@@ -1,10 +1,10 @@
 {
-  "lastRunAt": "2026-11-09T20:07:19.576Z",
-  "fetched": 14,
-  "inserted": 14,
+  "lastRunAt": "2026-11-09T21:07:18.162Z",
+  "fetched": 17,
+  "inserted": 17,
   "skipped": 0,
   "metadata": {
-    "ranAt": "2026-11-09T20:07:19.682Z",
+    "ranAt": "2026-11-09T21:07:18.248Z",
     "ok": false,
     "quotaHit": false,
     "stoppedOn": "queue-empty",
