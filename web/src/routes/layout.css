@@ -134,3 +134,32 @@ html {
 .u-caps {
 	text-transform: uppercase;
 }
+
+/* ── Text fields / selects ─────────────────────────────────────────────
+   One quiet treatment for every input, select and textarea: the border
+   darkens on hover and turns copper on focus with a soft 3px wash — no
+   double outline. Unlayered on purpose so it beats the global
+   :focus-visible ring above. */
+.field {
+	transition:
+		border-color 150ms var(--ease-move),
+		box-shadow 150ms var(--ease-move);
+}
+.field:hover {
+	border-color: var(--color-ink-faintest);
+}
+.field:focus,
+.field:focus-visible {
+	outline: none;
+	border-color: var(--color-copper);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-copper) 13%, transparent);
+}
+
+/* ── Cards on the ledger ───────────────────────────────────────────────
+   Boxes sit at arbitrary heights, so a ledger hairline would sometimes run
+   1–3px above or below a card edge and read as a misalignment. A paper
+   "mat" around each card keeps every rule at least 12px clear of it, so the
+   lines visibly stop short instead of almost-touching. */
+.mat {
+	box-shadow: 0 0 0 12px var(--color-paper);
+}

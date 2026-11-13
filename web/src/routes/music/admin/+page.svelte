@@ -18,7 +18,7 @@
 				type="password"
 				autocomplete="current-password"
 				required
-				class="w-full rounded-sm border border-border-strong bg-field px-3 py-2.5 text-sm focus-visible:border-copper focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-copper"
+				class="field w-full rounded-sm border border-border-strong bg-field px-3 py-2.5 text-sm"
 			/>
 			{#if form?.error}
 				<p class="u-caps font-mono text-[10px] tracking-[0.1em] text-copper">{form.error}</p>

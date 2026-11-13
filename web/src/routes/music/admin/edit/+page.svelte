@@ -310,7 +310,7 @@
 				bind:value={query}
 				oninput={runSearch}
 				placeholder="album or artist"
-				class="w-full rounded-sm border border-border-strong bg-field px-3 py-2.5 text-sm focus-visible:border-copper focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-copper"
+				class="field w-full rounded-sm border border-border-strong bg-field px-3 py-2.5 text-sm"
 			/>
 		</label>
 
@@ -334,7 +334,7 @@
 					<button
 						type="button"
 						onclick={() => pick(r)}
-						class="flex w-full items-center gap-3 border-b border-rule bg-field px-3 py-2.5 text-left last:border-0 hover:bg-sunken focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-copper"
+						class="flex w-full items-center gap-3 border-b border-rule bg-field px-3 py-2.5 text-left transition-colors duration-150 last:border-0 hover:bg-rowhover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-copper"
 					>
 						<span class="h-10 w-10 shrink-0 overflow-hidden rounded-[2px] bg-sunken">
 							{#if r.cover_url}<img
@@ -437,7 +437,7 @@
 							type="date"
 							name="date_rated"
 							bind:value={dateRated}
-							class="w-full rounded-sm border border-border-strong bg-field px-2.5 py-2 font-mono text-[13px] focus-visible:border-copper focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-copper"
+							class="field w-full rounded-sm border border-border-strong bg-field px-2.5 py-2 font-mono text-[13px]"
 						/>
 					</label>
 				</div>
@@ -454,7 +454,7 @@
 								name={f.n}
 								value={f.get()}
 								onchange={(e) => f.set((e.target as HTMLSelectElement).value)}
-								class="w-full rounded-sm border border-border-strong bg-field px-2.5 py-2 text-[13px] focus-visible:border-copper focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-copper"
+								class="field w-full rounded-sm border border-border-strong bg-field px-2.5 py-2 text-[13px]"
 							>
 								<option value="">— none —</option>
 								{#each trackOptions as t (t.uri)}
@@ -477,7 +477,7 @@
 						rows="6"
 						maxlength="1000"
 						placeholder="What it sounded like, when, and why the score."
-						class="w-full resize-y rounded-sm border border-border-strong bg-field px-3 py-2.5 text-sm leading-relaxed focus-visible:border-copper focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-copper"
+						class="field w-full resize-y rounded-sm border border-border-strong bg-field px-3 py-2.5 text-sm leading-relaxed"
 					></textarea>
 				</label>
 
@@ -603,7 +603,7 @@
 					name="slot{i}"
 					bind:value={slots[i]}
 					aria-label="Wheel position {i + 1}"
-					class="flex-1 basis-[240px] rounded-sm border border-border-strong bg-field px-2.5 py-2 text-[13px] focus-visible:border-copper focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-copper"
+					class="field flex-1 basis-[240px] rounded-sm border border-border-strong bg-field px-2.5 py-2 text-[13px]"
 				>
 					<option value="">— empty —</option>
 					{#each albumOptions as a (a.id)}
@@ -686,7 +686,7 @@
 					name="url_{link.year}"
 					bind:value={link.url}
 					placeholder="https://open.spotify.com/playlist/…"
-					class="flex-1 basis-[260px] rounded-sm border border-border-strong bg-field px-2.5 py-2 font-mono text-[12px] focus-visible:border-copper focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-copper"
+					class="field flex-1 basis-[260px] rounded-sm border border-border-strong bg-field px-2.5 py-2 font-mono text-[12px]"
 				/>
 				<span
 					class="u-caps font-mono text-[9px] tracking-[0.12em] {link.url.trim()
@@ -754,7 +754,7 @@
 				name="spotify_profile_url"
 				bind:value={profileUrl}
 				placeholder="https://open.spotify.com/user/…"
-				class="w-full rounded-sm border border-border-strong bg-field px-3 py-2.5 font-mono text-[12px] focus-visible:border-copper focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-copper"
+				class="field w-full rounded-sm border border-border-strong bg-field px-3 py-2.5 font-mono text-[12px]"
 			/>
 		</label>
 		<button

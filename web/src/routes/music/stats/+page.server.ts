@@ -35,14 +35,6 @@ export interface CalendarDay {
 	day: string;
 	minutes: number;
 }
-export interface PlaylistTrack {
-	position: number;
-	track_name: string;
-	artist_name: string | null;
-	duration_ms: number | null;
-	spotify_url: string | null;
-	cover_url: string | null;
-}
 export interface DiscoveryMonth {
 	month: number;
 	artist_new: number;
@@ -90,58 +82,48 @@ export const load: PageServerLoad = async ({ url }) => {
 		const filterSong = allTime ? '' : `and ${NY_YEAR} = $1`;
 		const empty = Promise.resolve({ rows: [] as never[] });
 
-		const [
-			perYearR,
-			totalsR,
-			artistsR,
-			albumsR,
-			songsR,
-			calR,
-			discoveryR,
-			settingsR,
-			playlistR,
-			playlistTracksR
-		] = await Promise.all([
-			pool.query<{ year: string; minutes: string }>(
-				`select extract(year from day)::text as year, round(sum(minutes))::text as minutes
+		const [perYearR, totalsR, artistsR, albumsR, songsR, calR, discoveryR, settingsR, playlistR] =
+			await Promise.all([
+				pool.query<{ year: string; minutes: string }>(
+					`select extract(year from day)::text as year, round(sum(minutes))::text as minutes
 				 from daily_minutes group by 1 order by 1`
-			),
-			allTime
-				? pool.query<{ minutes: string; albums_rated: string; mean_score: string | null }>(
-						`select
+				),
+				allTime
+					? pool.query<{ minutes: string; albums_rated: string; mean_score: string | null }>(
+							`select
 							(select coalesce(round(sum(minutes)),0)::text from daily_minutes)          as minutes,
 							(select count(*)::text from album_ratings)                                 as albums_rated,
 							(select to_char(avg(rating), 'FM990.00') from album_ratings)               as mean_score`
-					)
-				: pool.query<{ minutes: string; albums_rated: string; mean_score: string | null }>(
-						`select
+						)
+					: pool.query<{ minutes: string; albums_rated: string; mean_score: string | null }>(
+							`select
 							(select coalesce(round(sum(minutes)),0)::text from daily_minutes
 							   where extract(year from day) = $1)                                   as minutes,
 							(select count(*)::text from album_ratings
 							   where extract(year from date_rated) = $1)                            as albums_rated,
 							(select to_char(avg(rating), 'FM990.00') from album_ratings)            as mean_score`,
-						[year]
-					),
-			pool.query<{ id: string; name: string; image_url: string | null; minutes: string }>(
-				`select a.id, a.name, a.image_url, round(sum(m.minutes))::text as minutes
+							[year]
+						),
+				pool.query<{ id: string; name: string; image_url: string | null; minutes: string }>(
+					`select a.id, a.name, a.image_url, round(sum(m.minutes))::text as minutes
 				 from monthly_artist_minutes m
 				 join artists a on a.id = m.artist_id
 				 ${filterM}
 				 group by a.id, a.name, a.image_url
 				 order by sum(m.minutes) desc
 				 limit 40`,
-				params
-			),
-			pool.query<{
-				id: string;
-				name: string;
-				artist: string;
-				cover_url: string | null;
-				accent_1: string | null;
-				accent_2: string | null;
-				minutes: string;
-			}>(
-				`select al.id, al.name, ar.name as artist, al.cover_url, al.accent_1, al.accent_2,
+					params
+				),
+				pool.query<{
+					id: string;
+					name: string;
+					artist: string;
+					cover_url: string | null;
+					accent_1: string | null;
+					accent_2: string | null;
+					minutes: string;
+				}>(
+					`select al.id, al.name, ar.name as artist, al.cover_url, al.accent_1, al.accent_2,
 					round(sum(y.minutes))::text as minutes
 				 from yearly_album_minutes y
 				 join albums al on al.id = y.album_id
@@ -150,20 +132,20 @@ export const load: PageServerLoad = async ({ url }) => {
 				 group by al.id, al.name, ar.name, al.cover_url, al.accent_1, al.accent_2
 				 order by sum(y.minutes) desc
 				 limit 40`,
-				params
-			),
-			pool.query<{
-				uri: string;
-				name: string;
-				artist: string | null;
-				cover_url: string | null;
-				accent_1: string | null;
-				accent_2: string | null;
-				duration_ms: number | null;
-				plays: string;
-				minutes: string;
-			}>(
-				`select p.track_uri as uri,
+					params
+				),
+				pool.query<{
+					uri: string;
+					name: string;
+					artist: string | null;
+					cover_url: string | null;
+					accent_1: string | null;
+					accent_2: string | null;
+					duration_ms: number | null;
+					plays: string;
+					minutes: string;
+				}>(
+					`select p.track_uri as uri,
 					coalesce(t.name, max(p.track_name))            as name,
 					ar.name                                       as artist,
 					al.cover_url, al.accent_1, al.accent_2, t.duration_ms,
@@ -178,49 +160,35 @@ export const load: PageServerLoad = async ({ url }) => {
 				 group by p.track_uri, t.name, ar.name, al.cover_url, al.accent_1, al.accent_2, t.duration_ms
 				 order by count(*) desc
 				 limit 50`,
-				params
-			),
-			allTime
-				? empty
-				: pool.query<{ day: string; minutes: string }>(
-						`select to_char(day, 'YYYY-MM-DD') as day, round(minutes)::text as minutes
+					params
+				),
+				allTime
+					? empty
+					: pool.query<{ day: string; minutes: string }>(
+							`select to_char(day, 'YYYY-MM-DD') as day, round(minutes)::text as minutes
 						 from daily_minutes where extract(year from day) = $1 order by day`,
-						[year]
-					),
-			allTime
-				? empty
-				: pool.query<{
-						month: number;
-						entity_type: string;
-						new_count: number;
-						repeat_count: number;
-					}>(
-						`select month, entity_type, new_count, repeat_count
+							[year]
+						),
+				allTime
+					? empty
+					: pool.query<{
+							month: number;
+							entity_type: string;
+							new_count: number;
+							repeat_count: number;
+						}>(
+							`select month, entity_type, new_count, repeat_count
 						 from monthly_discovery where year = $1`,
-						[year]
-					),
-			pool.query<{ key: string; value: string }>(`select key, value from settings`),
-			allTime
-				? empty
-				: pool.query<{ spotify_url: string; playlist_name: string | null }>(
-						`select spotify_url, playlist_name from year_playlists where year = $1`,
-						[year]
-					),
-			allTime
-				? empty
-				: pool.query<{
-						position: number;
-						track_name: string;
-						artist_name: string | null;
-						duration_ms: number | null;
-						spotify_url: string | null;
-						cover_url: string | null;
-					}>(
-						`select position, track_name, artist_name, duration_ms, spotify_url, cover_url
-						 from year_playlist_tracks where year = $1 order by position`,
-						[year]
-					)
-		]);
+							[year]
+						),
+				pool.query<{ key: string; value: string }>(`select key, value from settings`),
+				allTime
+					? empty
+					: pool.query<{ spotify_url: string; playlist_name: string | null }>(
+							`select spotify_url, playlist_name from year_playlists where year = $1`,
+							[year]
+						)
+			]);
 
 		const perYear: YearMinutes[] = perYearR.rows.map((r) => ({
 			year: Number(r.year),
@@ -313,8 +281,7 @@ export const load: PageServerLoad = async ({ url }) => {
 			discovery: [...discByMonth.values()],
 			spotifyProfileUrl: settings.spotify_profile_url ?? null,
 			yearPlaylistUrl: playlistR.rows[0]?.spotify_url ?? null,
-			yearPlaylistName: playlistR.rows[0]?.playlist_name ?? null,
-			playlistTracks: playlistTracksR.rows as PlaylistTrack[]
+			yearPlaylistName: playlistR.rows[0]?.playlist_name ?? null
 		};
 	});
 };

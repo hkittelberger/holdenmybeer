@@ -42,12 +42,12 @@
 				data-sveltekit-noscroll
 				data-sveltekit-keepfocus
 				aria-current={e.value === selected ? 'true' : undefined}
-				class="flex h-8 min-w-[3.25rem] items-center justify-center rounded-sm border border-border-strong px-2 font-mono text-[11px] leading-none tracking-[0.04em] whitespace-nowrap transition-colors sm:h-[26px] sm:min-w-0 sm:rounded-none sm:border-0 sm:px-2.5 {i >
+				class="flex h-8 min-w-[3.25rem] items-center justify-center rounded-sm border border-border-strong px-2 font-mono text-[11px] leading-none tracking-[0.04em] whitespace-nowrap transition-colors duration-150 sm:h-[26px] sm:min-w-0 sm:rounded-none sm:border-0 sm:px-2.5 {i >
 				0
 					? 'sm:border-l sm:border-border-strong'
 					: ''} {active
 					? 'bg-copper text-copper-text'
-					: 'bg-field text-ink-muted hover:bg-zebra hover:text-copper'} {pending === e.value
+					: 'bg-field text-ink-muted hover:text-copper'} {pending === e.value
 					? 'animate-pulse'
 					: ''}"
 			>

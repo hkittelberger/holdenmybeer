@@ -122,7 +122,7 @@
 										<a
 											href={m.href}
 											aria-current={isExact(m.href) ? 'page' : undefined}
-											class="block border-b border-rule px-4 py-3 last:border-0 hover:bg-zebra {isExact(
+											class="block border-b border-rule px-4 py-3 transition-colors duration-150 last:border-0 hover:bg-rowhover {isExact(
 												m.href
 											)
 												? 'bg-zebra'

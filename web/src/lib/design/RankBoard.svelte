@@ -77,7 +77,7 @@
 				></span>
 			</span>
 		{/if}
-		<span class="flex w-14 flex-col items-end leading-none">
+		<span class="flex w-[5.25rem] flex-col items-end leading-none whitespace-nowrap">
 			<span class="font-mono text-[20px] font-medium text-ink">{fmt(it.value)}</span>
 			{#if valueSuffix}
 				<span class="u-caps mt-1 font-mono text-[9px] tracking-[0.1em] text-ink-faintest"
@@ -88,7 +88,7 @@
 	</span>
 {/snippet}
 
-<div class="flex h-full flex-col rounded-[3px] border border-border bg-raised">
+<div class="mat flex h-full flex-col overflow-hidden rounded-[3px] border border-border bg-raised">
 	<div
 		class="flex flex-wrap items-baseline justify-between gap-2 border-b border-rule px-5 pt-4 pb-3"
 	>
@@ -114,7 +114,7 @@
 						{#if onselect}
 							<button
 								onclick={() => onselect(it)}
-								class="grid w-full grid-cols-[1.75rem_2.75rem_1fr_auto] items-center gap-3.5 px-5 py-3.5 text-left transition-colors hover:bg-rowhover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-copper"
+								class="grid w-full grid-cols-[1.75rem_2.75rem_1fr_auto] items-center gap-3.5 px-5 py-3.5 text-left transition-colors duration-150 hover:bg-rowhover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-copper"
 							>
 								{@render rowInner(it, i)}
 							</button>

@@ -13,8 +13,13 @@ export interface ArtistDetail {
 	ratedCount: number;
 	lifetimeMinutes: number;
 	firstListened: string | null;
+	/** null when the request was for all time */
+	year: number | null;
+	/** minutes in the requested year, or lifetime minutes for all time */
 	yearMinutes: number;
-	monthly: { month: number; minutes: number; pctOfMonth: number }[];
+	/** one point per month: the 12 months of `year`, or every month from the
+	 *  first listen to the latest month on record for all time */
+	monthly: { year: number; month: number; minutes: number; pctOfMonth: number }[];
 	byYear: { year: number; minutes: number }[];
 	topSongs: {
 		uri: string;
@@ -29,6 +34,7 @@ export interface ArtistDetail {
 		rating: number;
 		date_rated: string | null;
 		release_date: string | null;
+		cover_url: string | null;
 		accent_1: string | null;
 		accent_2: string | null;
 	}[];
@@ -36,7 +42,12 @@ export interface ArtistDetail {
 
 export const GET: RequestHandler = async ({ params, url }) => {
 	const id = params.id;
-	const year = Number(url.searchParams.get('year')) || new Date().getUTCFullYear();
+	const allTime = url.searchParams.get('year') === 'all';
+	const year = allTime ? 0 : Number(url.searchParams.get('year')) || new Date().getUTCFullYear();
+	// all time: no year filter ($2 = 0 never matches, so the year-scoped
+	// filters below are swapped out rather than parameterised)
+	const inYear = allTime ? 'true' : `extract(year from ${NY}) = $2`;
+	const inYear1 = allTime ? 'true' : `extract(year from ${NY}) = $1`;
 
 	return withPool(async (pool) => {
 		const [meta, monthly, byYear, monthTotals, top, rated] = await Promise.all([
@@ -52,7 +63,7 @@ export const GET: RequestHandler = async ({ params, url }) => {
 					coalesce(round(sum(${MS}) filter (where ${COUNTED}) / 60000.0), 0)::text as lifetime_minutes,
 					to_char(min(${NY}) filter (where ${COUNTED}), 'YYYY-MM-DD')               as first_listened,
 					coalesce(round(sum(${MS}) filter (where ${COUNTED}
-					   and extract(year from ${NY}) = $2) / 60000.0), 0)::text                as year_minutes,
+					   and ${inYear}) / 60000.0), 0)::text                                    as year_minutes,
 					(select count(*) from album_ratings r
 					   join albums al on al.id = r.album_id
 					   where al.primary_artist_id = $1)::text                                as rated_count
@@ -61,16 +72,16 @@ export const GET: RequestHandler = async ({ params, url }) => {
 				 left join plays p on p.track_uri = ta.track_uri
 				 where a.id = $1
 				 group by a.name, a.image_url`,
-				[id, year]
+				allTime ? [id] : [id, year]
 			),
-			pool.query<{ month: number; minutes: string }>(
-				`select extract(month from ${NY})::int as month,
+			pool.query<{ year: number; month: number; minutes: string }>(
+				`select extract(year from ${NY})::int as year, extract(month from ${NY})::int as month,
 					round(sum(${MS}) / 60000.0)::text as minutes
 				 from plays p
 				 join track_artists ta on ta.track_uri = p.track_uri and ta.role = 'primary'
-				 where ta.artist_id = $1 and ${COUNTED} and extract(year from ${NY}) = $2
-				 group by 1`,
-				[id, year]
+				 where ta.artist_id = $1 and ${COUNTED} and ${inYear}
+				 group by 1, 2`,
+				allTime ? [id] : [id, year]
 			),
 			pool.query<{ year: number; minutes: string }>(
 				`select extract(year from ${NY})::int as year,
@@ -81,13 +92,13 @@ export const GET: RequestHandler = async ({ params, url }) => {
 				 group by 1 order by 1`,
 				[id]
 			),
-			pool.query<{ month: number; minutes: string }>(
-				`select extract(month from ${NY})::int as month,
+			pool.query<{ year: number; month: number; minutes: string }>(
+				`select extract(year from ${NY})::int as year, extract(month from ${NY})::int as month,
 					round(sum(${MS}) / 60000.0)::text as minutes
 				 from plays p
-				 where ${COUNTED} and extract(year from ${NY}) = $1
-				 group by 1`,
-				[year]
+				 where ${COUNTED} and ${inYear1}
+				 group by 1, 2`,
+				allTime ? [] : [year]
 			),
 			pool.query<{
 				uri: string;
@@ -113,13 +124,14 @@ export const GET: RequestHandler = async ({ params, url }) => {
 				rating: string;
 				date_rated: string | null;
 				release_date: string | null;
+				cover_url: string | null;
 				accent_1: string | null;
 				accent_2: string | null;
 			}>(
 				`select al.id, al.name, r.rating::text,
 					to_char(r.date_rated, 'YYYY-MM-DD') as date_rated,
 					to_char(al.release_date, 'YYYY-MM-DD') as release_date,
-					al.accent_1, al.accent_2
+					al.cover_url, al.accent_1, al.accent_2
 				 from album_ratings r
 				 join albums al on al.id = r.album_id
 				 where al.primary_artist_id = $1
@@ -131,14 +143,30 @@ export const GET: RequestHandler = async ({ params, url }) => {
 		if (meta.rows.length === 0) throw error(404, 'artist not found');
 		const m = meta.rows[0];
 
-		const monthMin = new Map(monthly.rows.map((r) => [r.month, Number(r.minutes)]));
-		const totalMin = new Map(monthTotals.rows.map((r) => [r.month, Number(r.minutes)]));
-		const monthlyOut = Array.from({ length: 12 }, (_, i) => {
-			const mo = i + 1;
-			const mins = monthMin.get(mo) ?? 0;
-			const tot = totalMin.get(mo) ?? 0;
-			return { month: mo, minutes: mins, pctOfMonth: tot > 0 ? (mins / tot) * 100 : 0 };
-		});
+		const ym = (y: number, mo: number) => y * 12 + (mo - 1);
+		const monthMin = new Map(monthly.rows.map((r) => [ym(r.year, r.month), Number(r.minutes)]));
+		const totalMin = new Map(monthTotals.rows.map((r) => [ym(r.year, r.month), Number(r.minutes)]));
+		// month range: Jan–Dec of the year, or (all time) the artist's first
+		// month through the latest month anyone was listened to
+		let start = ym(year, 1);
+		let end = ym(year, 12);
+		if (allTime) {
+			const artistKeys = [...monthMin.keys()];
+			const allKeys = [...totalMin.keys()];
+			start = artistKeys.length ? Math.min(...artistKeys) : 0;
+			end = allKeys.length ? Math.max(...allKeys) : start;
+		}
+		const monthlyOut: ArtistDetail['monthly'] = [];
+		for (let k = start; k <= end; k++) {
+			const mins = monthMin.get(k) ?? 0;
+			const tot = totalMin.get(k) ?? 0;
+			monthlyOut.push({
+				year: Math.floor(k / 12),
+				month: (k % 12) + 1,
+				minutes: mins,
+				pctOfMonth: tot > 0 ? (mins / tot) * 100 : 0
+			});
+		}
 
 		const detail: ArtistDetail = {
 			id,
@@ -147,6 +175,7 @@ export const GET: RequestHandler = async ({ params, url }) => {
 			ratedCount: Number(m.rated_count),
 			lifetimeMinutes: Number(m.lifetime_minutes),
 			firstListened: m.first_listened,
+			year: allTime ? null : year,
 			yearMinutes: Number(m.year_minutes),
 			monthly: monthlyOut,
 			byYear: byYear.rows.map((r) => ({ year: r.year, minutes: Number(r.minutes) })),
@@ -163,6 +192,7 @@ export const GET: RequestHandler = async ({ params, url }) => {
 				rating: Number(r.rating),
 				date_rated: r.date_rated,
 				release_date: r.release_date,
+				cover_url: r.cover_url,
 				accent_1: r.accent_1,
 				accent_2: r.accent_2
 			}))

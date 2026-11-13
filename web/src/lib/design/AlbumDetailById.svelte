@@ -2,7 +2,11 @@
 	import AlbumDetail from './AlbumDetail.svelte';
 	import type { CatalogueAlbum } from '../../routes/music/+page.server';
 
-	let { id, onclose }: { id: string; onclose: () => void } = $props();
+	let {
+		id,
+		onclose,
+		onartist
+	}: { id: string; onclose: () => void; onartist?: (artistId: string) => void } = $props();
 
 	let album = $state<CatalogueAlbum | null>(null);
 
@@ -23,7 +27,7 @@
 <svelte:window onkeydown={keydown} />
 
 {#if album}
-	<AlbumDetail {album} {onclose} />
+	<AlbumDetail {album} {onclose} {onartist} />
 {:else}
 	<div class="fixed inset-0 z-50">
 		<button aria-label="Close album detail" class="absolute inset-0 bg-ink/45" onclick={onclose}

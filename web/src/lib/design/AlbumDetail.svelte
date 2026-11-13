@@ -4,7 +4,16 @@
 	import { rate, fmt, dateLong, mmss, accents, noOrphan } from './tokens';
 	import type { CatalogueAlbum } from '../../routes/music/+page.server';
 
-	let { album, onclose }: { album: CatalogueAlbum; onclose: () => void } = $props();
+	let {
+		album,
+		onclose,
+		onartist
+	}: {
+		album: CatalogueAlbum;
+		onclose: () => void;
+		/** open the album artist's detail (the popup swaps to it) */
+		onartist?: (artistId: string) => void;
+	} = $props();
 
 	const [c1, c2] = $derived(accents(album));
 	const maxPct = $derived(Math.max(1, ...album.tracks.map((t) => t.pct)));
@@ -57,7 +66,7 @@
 					type="button"
 					aria-label="Close album detail"
 					onclick={onclose}
-					class="grid size-10 place-items-center rounded-full border border-white/25 text-white/80 hover:border-copper-light hover:text-copper-light"
+					class="grid size-10 place-items-center rounded-full border border-white/25 text-white/80 transition-colors duration-150 hover:border-copper-light hover:text-copper-light"
 				>
 					<span aria-hidden="true">✕</span>
 				</button>
@@ -74,7 +83,17 @@
 					/>
 				</div>
 				<div class="min-w-0 flex-1">
-					<p class="truncate text-sm text-white/55">{album.artist}</p>
+					{#if onartist && album.artist_id}
+						<button
+							type="button"
+							onclick={() => album.artist_id && onartist(album.artist_id)}
+							class="block max-w-full truncate text-left text-sm text-white/55 underline decoration-white/20 underline-offset-4 transition-colors duration-150 hover:text-copper-light hover:decoration-copper-light"
+						>
+							{album.artist}
+						</button>
+					{:else}
+						<p class="truncate text-sm text-white/55">{album.artist}</p>
+					{/if}
 					<h2
 						class="u-caps mt-1 font-display text-[clamp(20px,4.4vw,28px)] leading-[1.02] font-bold text-balance break-words"
 						style="font-variation-settings:'wdth' 108"
@@ -201,7 +220,7 @@
 
 			{#if album.review_notes}
 				<div
-					class="mt-7 bg-white text-[15px] text-ink"
+					class="mt-7 overflow-hidden rounded-[3px] bg-white text-[15px] text-ink"
 					style="border-left:4px double var(--color-copper); padding:14px 22px 20px"
 				>
 					<p class="u-caps mb-2 font-mono text-[10px] tracking-[0.14em] text-ink-faint">

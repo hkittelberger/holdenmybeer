@@ -15,6 +15,7 @@ export interface CatalogueAlbum {
 	id: string;
 	name: string;
 	artist: string;
+	artist_id: string | null;
 	cover_url: string | null;
 	accent_1: string | null;
 	accent_2: string | null;
@@ -42,6 +43,7 @@ export const load: PageServerLoad = async () => {
 			id: string;
 			name: string;
 			artist: string;
+			artist_id: string;
 			cover_url: string | null;
 			accent_1: string | null;
 			accent_2: string | null;
@@ -57,7 +59,7 @@ export const load: PageServerLoad = async () => {
 			first_listened: string | null;
 		}>(`
 			select
-				al.id, al.name, ar.name as artist, al.cover_url, al.accent_1, al.accent_2,
+				al.id, al.name, ar.name as artist, ar.id as artist_id, al.cover_url, al.accent_1, al.accent_2,
 				al.total_tracks, al.total_duration_ms,
 				to_char(al.release_date, 'YYYY-MM-DD') as release_date,
 				r.rating::text, to_char(r.date_rated, 'YYYY-MM-DD') as date_rated,
@@ -69,7 +71,7 @@ export const load: PageServerLoad = async () => {
 			join artists ar on ar.id = al.primary_artist_id
 			left join tracks t on t.album_id = al.id
 			left join plays p on p.track_uri = t.uri
-			group by al.id, ar.name, r.rating, r.date_rated, r.review_notes, r.showcase_rank, r.top_songs
+			group by al.id, ar.name, ar.id, r.rating, r.date_rated, r.review_notes, r.showcase_rank, r.top_songs
 		`);
 
 		const tracksQ = pool.query<{
@@ -159,6 +161,7 @@ export const load: PageServerLoad = async () => {
 				id: a.id,
 				name: a.name,
 				artist: a.artist,
+				artist_id: a.artist_id,
 				cover_url: a.cover_url,
 				accent_1: a.accent_1,
 				accent_2: a.accent_2,

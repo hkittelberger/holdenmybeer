@@ -5,6 +5,7 @@
 	import SectionHeader from '$lib/design/SectionHeader.svelte';
 	import AlbumCarousel from '$lib/design/AlbumCarousel.svelte';
 	import AlbumDetail from '$lib/design/AlbumDetail.svelte';
+	import ArtistDetail from '$lib/design/ArtistDetail.svelte';
 	import Sleeve from '$lib/design/Sleeve.svelte';
 	import RangeSlider from '$lib/design/RangeSlider.svelte';
 	import Seo from '$lib/components/Seo.svelte';
@@ -144,6 +145,18 @@
 		syncUrl(null);
 	}
 
+	// artist popup, reached from an album's artist name; it swaps with the
+	// album popup in both directions
+	let openArtistId = $state<string | null>(null);
+	function openArtist(id: string) {
+		close();
+		openArtistId = id;
+	}
+	function albumFromArtist(id: string) {
+		openArtistId = null;
+		open(id);
+	}
+
 	const arrow = (k: typeof sortKey) => (sortKey === k ? (sortDir === 'desc' ? ' ↓' : ' ↑') : '');
 	const sortCols: { k: typeof sortKey; label: string }[] = [
 		{ k: 'release', label: 'Released' },
@@ -193,7 +206,7 @@
 				<input
 					bind:value={search}
 					placeholder="album or artist"
-					class="mt-1.5 w-full rounded-sm border border-border-strong bg-field px-3 py-2.5 text-sm placeholder:text-ink-faintest focus-visible:border-copper focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-copper"
+					class="field mt-1.5 w-full rounded-sm border border-border-strong bg-field px-3 py-2.5 text-sm placeholder:text-ink-faintest"
 				/>
 			</label>
 			<div>
@@ -201,7 +214,7 @@
 				<button
 					onclick={() => (filtersOpen = !filtersOpen)}
 					aria-pressed={filtersOpen}
-					class="u-caps mt-1.5 flex items-center gap-1.5 rounded-sm border px-3 py-2.5 font-mono text-[11px] tracking-[0.1em] {filtersOpen ||
+					class="u-caps mt-1.5 flex items-center gap-1.5 rounded-sm border px-3 py-2.5 font-mono text-[11px] tracking-[0.1em] transition-colors duration-150 {filtersOpen ||
 					filtersActive
 						? 'border-copper bg-copper text-copper-text'
 						: 'border-border-strong text-ink-muted hover:border-copper hover:text-copper'}"
@@ -212,7 +225,9 @@
 		</div>
 
 		{#if filtersOpen}
-			<div class="mt-4 grid gap-6 rounded-[3px] border border-border bg-sunken p-5 sm:grid-cols-3">
+			<div
+				class="mat mt-4 grid gap-6 rounded-[3px] border border-border bg-sunken p-5 sm:grid-cols-3"
+			>
 				<RangeSlider
 					label="Release year"
 					min={relMin}
@@ -240,10 +255,10 @@
 					<button
 						onclick={() => setSort(c.k as typeof sortKey)}
 						aria-pressed={sortKey === c.k}
-						class="u-caps shrink-0 rounded-sm border px-3 py-2 font-mono text-[11px] tracking-[0.08em] {sortKey ===
+						class="u-caps shrink-0 rounded-sm border px-3 py-2 font-mono text-[11px] tracking-[0.08em] transition-colors duration-150 {sortKey ===
 						c.k
 							? 'border-copper bg-copper text-copper-text'
-							: 'border-border-strong text-ink-muted'}"
+							: 'border-border-strong text-ink-muted hover:border-copper hover:text-copper'}"
 					>
 						{c.label}{arrow(c.k as typeof sortKey)}
 					</button>
@@ -277,7 +292,7 @@
 				</p>
 				<button
 					onclick={resetFilters}
-					class="mt-4 rounded-sm bg-ink px-4 py-2 text-sm text-paper hover:bg-copper focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-copper"
+					class="mt-4 rounded-sm bg-ink px-4 py-2 text-sm text-paper transition-colors duration-150 hover:bg-copper focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-copper"
 				>
 					Reset filters
 				</button>
@@ -286,7 +301,8 @@
 			{@const rowGrid = mobile
 				? 'grid-cols-[2rem_3rem_minmax(0,1fr)_auto]'
 				: 'grid-cols-[2.5rem_3.25rem_minmax(0,1fr)_6.5rem_6.5rem_6.5rem_4.5rem]'}
-			<div class="mt-5">
+			<!-- opaque paper so the ledger rules don't run through the rows -->
+			<div class="mat mt-5 bg-paper">
 				{#if !mobile}
 					<div
 						class="grid {rowGrid} u-caps items-center gap-4 border-b border-ink pr-3 pb-2 font-mono text-[10px] tracking-[0.12em] text-ink-faint"
@@ -298,7 +314,7 @@
 							<button
 								onclick={() => setSort(c.k)}
 								aria-pressed={sortKey === c.k}
-								class="-my-1 rounded-sm py-1 {c.k === 'rating'
+								class="-my-1 rounded-sm py-1 transition-colors duration-150 {c.k === 'rating'
 									? '-mr-1.5 justify-self-end pr-1.5 pl-1.5'
 									: '-ml-1.5 justify-self-start pr-1.5 pl-1.5'} {sortKey === c.k
 									? 'bg-copper text-copper-text'
@@ -313,7 +329,7 @@
 				<ul>
 					{#each pageRows as a, i (a.id)}
 						{@const tint = accents(a)[0]}
-						<li class="odd:bg-transparent even:bg-zebra">
+						<li class="odd:bg-paper even:bg-zebra">
 							<button
 								onclick={() => open(a.id)}
 								class="grid w-full {rowGrid} items-center gap-4 py-3 pr-3 text-left transition-colors duration-150 hover:bg-rowhover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-copper"
@@ -379,7 +395,7 @@
 								<span class="u-caps text-[10px] tracking-[0.12em] text-ink-faint">Per page</span>
 								<select
 									bind:value={perPageChoice}
-									class="rounded-sm border border-border-strong bg-field px-2 py-1 text-[11px] focus-visible:border-copper focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-copper"
+									class="field rounded-sm border border-border-strong bg-field px-2 py-1 text-[11px]"
 								>
 									{#each PER_PAGE_OPTIONS as n (n)}
 										<option value={n}>{n}</option>
@@ -394,16 +410,17 @@
 							<button
 								onclick={() => (pageNum = Math.max(0, pageNum - 1))}
 								disabled={pageNum === 0}
-								class="grid size-8 place-items-center rounded-sm border border-border-strong hover:border-copper disabled:border-border-disabled disabled:text-border-strong disabled:hover:border-border-disabled"
+								class="grid size-8 place-items-center rounded-sm border border-border-strong transition-colors duration-150 hover:border-copper hover:text-copper disabled:border-border-disabled disabled:text-border-strong disabled:hover:border-border-disabled disabled:hover:text-border-strong"
 								aria-label="Previous page">←</button
 							>
 							{#each Array(pageCount) as _, p (p)}
 								<button
 									onclick={() => (pageNum = p)}
 									aria-current={p === pageNum ? 'page' : undefined}
-									class="grid size-8 place-items-center rounded-sm border {p === pageNum
+									class="grid size-8 place-items-center rounded-sm border transition-colors duration-150 {p ===
+									pageNum
 										? 'border-copper bg-copper text-copper-text'
-										: 'border-border-strong hover:border-copper'}"
+										: 'border-border-strong hover:border-copper hover:text-copper'}"
 								>
 									{p + 1}
 								</button>
@@ -411,7 +428,7 @@
 							<button
 								onclick={() => (pageNum = Math.min(pageCount - 1, pageNum + 1))}
 								disabled={pageNum === pageCount - 1}
-								class="grid size-8 place-items-center rounded-sm border border-border-strong hover:border-copper disabled:border-border-disabled disabled:text-border-strong disabled:hover:border-border-disabled"
+								class="grid size-8 place-items-center rounded-sm border border-border-strong transition-colors duration-150 hover:border-copper hover:text-copper disabled:border-border-disabled disabled:text-border-strong disabled:hover:border-border-disabled disabled:hover:text-border-strong"
 								aria-label="Next page">→</button
 							>
 						</div>
@@ -423,5 +440,8 @@
 </div>
 
 {#if openAlbum}
-	<AlbumDetail album={openAlbum} onclose={close} />
+	<AlbumDetail album={openAlbum} onclose={close} onartist={openArtist} />
+{/if}
+{#if openArtistId}
+	<ArtistDetail id={openArtistId} onclose={() => (openArtistId = null)} onalbum={albumFromArtist} />
 {/if}

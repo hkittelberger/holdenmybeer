@@ -9,7 +9,6 @@
 	import MetricToggle from '$lib/design/MetricToggle.svelte';
 	import Heatmap from '$lib/design/Heatmap.svelte';
 	import DiscoveryChart from '$lib/design/DiscoveryChart.svelte';
-	import PlaylistPanel from '$lib/design/PlaylistPanel.svelte';
 	import ArtistDetail from '$lib/design/ArtistDetail.svelte';
 	import AlbumDetailById from '$lib/design/AlbumDetailById.svelte';
 	import Seo from '$lib/components/Seo.svelte';
@@ -122,7 +121,7 @@
 			: '—'
 	);
 
-	const panel = 'rounded-[3px] border border-border bg-raised p-5';
+	const panel = 'mat rounded-[3px] border border-border bg-raised p-5';
 </script>
 
 <Seo
@@ -146,7 +145,7 @@
 					href={data.spotifyProfileUrl}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="u-caps inline-block rounded-sm border border-copper px-3 py-2 font-mono text-[11px] tracking-[0.1em] text-copper hover:bg-copper hover:text-copper-text"
+					class="u-caps inline-block rounded-sm border border-copper px-3 py-2 font-mono text-[11px] tracking-[0.1em] text-copper transition-colors duration-150 hover:bg-copper hover:text-copper-text"
 				>
 					Spotify profile ↗
 				</a>
@@ -227,8 +226,8 @@
 			/>
 		</div>
 
-		<!-- top songs / playlist -->
-		<div class="mt-6 grid gap-6 {data.allTime ? '' : 'lg:grid-cols-2'}">
+		<!-- top songs -->
+		<div class="mt-6">
 			<RankBoard
 				title={data.allTime ? 'Top songs, all time' : `Top songs of ${data.year}`}
 				items={songItems}
@@ -239,14 +238,19 @@
 					<MetricToggle options={['plays', 'minutes']} bind:value={songMetric} label="Metric" />
 				{/snippet}
 			</RankBoard>
-			{#if !data.allTime}
-				<PlaylistPanel
-					year={data.year}
-					songs={data.songs}
-					playlistTracks={data.playlistTracks}
-					playlistName={data.yearPlaylistName}
-					url={data.yearPlaylistUrl}
-				/>
+			{#if !data.allTime && data.yearPlaylistUrl}
+				<!-- Spotify won't expose playlist contents to this app, so the
+				     year's playlist is just a link out. -->
+				<p class="mt-5 text-right">
+					<a
+						href={data.yearPlaylistUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="u-caps font-mono text-[11px] tracking-[0.12em] text-copper underline decoration-copper/40 underline-offset-4 transition-colors duration-150 hover:text-copper-deep hover:decoration-copper"
+					>
+						{data.yearPlaylistName ?? `My ${data.year} playlist`} on Spotify ↗
+					</a>
+				</p>
 			{/if}
 		</div>
 
@@ -303,10 +307,21 @@
 	<ArtistDetail
 		id={openArtist}
 		years={data.years}
-		year={data.year}
+		year={data.allTime ? 'all' : data.year}
 		onclose={() => (openArtist = null)}
+		onalbum={(id) => {
+			openArtist = null;
+			openAlbum = id;
+		}}
 	/>
 {/if}
 {#if openAlbum}
-	<AlbumDetailById id={openAlbum} onclose={() => (openAlbum = null)} />
+	<AlbumDetailById
+		id={openAlbum}
+		onclose={() => (openAlbum = null)}
+		onartist={(id) => {
+			openAlbum = null;
+			openArtist = id;
+		}}
+	/>
 {/if}

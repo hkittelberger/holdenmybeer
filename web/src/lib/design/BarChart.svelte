@@ -35,9 +35,9 @@
 						onclick={() => onselect(d.year)}
 						aria-pressed={d.year === selected}
 						aria-label="{d.year}: {fmt(d.minutes)} minutes{d.year === selected ? ' (showing)' : ''}"
-						class="w-full rounded-[1px] {d.year === selected
+						class="w-full rounded-[1px] transition-colors duration-150 {d.year === selected
 							? 'bg-copper'
-							: 'bg-bar-inactive hover:bg-ink-faintest'}"
+							: 'bg-bar-inactive hover:bg-copper-light'}"
 						style="height:max(3px, {h}%)"
 					></button>
 				{:else}

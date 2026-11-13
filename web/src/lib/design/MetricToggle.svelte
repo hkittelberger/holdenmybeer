@@ -11,7 +11,7 @@
 		<span class="u-caps font-mono text-[10px] tracking-[0.14em] text-ink-faint">{label}</span>
 	{/if}
 	<div
-		class="inline-flex rounded-sm border border-border-strong"
+		class="inline-flex overflow-hidden rounded-sm border border-border-strong"
 		role="group"
 		aria-label={label || 'Toggle'}
 	>
@@ -20,9 +20,10 @@
 				type="button"
 				onclick={() => (value = opt)}
 				aria-pressed={value === opt}
-				class="u-caps min-h-[32px] px-3 py-1 font-mono text-[11px] tracking-[0.06em] {value === opt
-					? 'bg-ink text-paper'
-					: 'text-ink-muted hover:text-copper'}"
+				class="u-caps min-h-[32px] px-3 py-1 font-mono text-[11px] tracking-[0.06em] transition-colors duration-150 {value ===
+				opt
+					? 'bg-copper text-copper-text'
+					: 'bg-field text-ink-muted hover:text-copper'}"
 			>
 				{opt}
 			</button>

@@ -29,7 +29,7 @@
 		{#each items as it, i (it.href)}
 			<li class="flex items-center gap-1.5">
 				{#if i < items.length - 1}
-					<a href={it.href} class="hover:text-copper">{it.label}</a>
+					<a href={it.href} class="transition-colors duration-150 hover:text-copper">{it.label}</a>
 					<span aria-hidden="true" class="text-ink-faintest">/</span>
 				{:else}
 					<span aria-current="page" class="text-ink-muted">{it.label}</span>
